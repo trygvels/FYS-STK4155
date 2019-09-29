@@ -1,7 +1,14 @@
-\contentsline {section}{\tocsection {}{1}{Theoretical Background}}{1}{section.1}% 
-\contentsline {section}{\tocsection {}{2}{Results}}{1}{section.2}% 
-\contentsline {section}{\tocsection {}{3}{Discussion}}{1}{section.3}% 
-\contentsline {section}{\tocsection {}{4}{Summary Remarks}}{1}{section.4}% 
-\contentsline {section}{\tocsection {}{}{References}}{1}{section*.3}% 
-\contentsline {section}{Appendices}{2}{section*.4}% 
-\contentsline {section}{\tocsection {}{A}{Parametrization from Patriarca et al.}}{2}{Appendix.a.A}% 
+\boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
+\contentsline {section}{\numberline {1}Introduction}{2}{section.1}% 
+\contentsline {section}{\numberline {2}Regression methods}{2}{section.2}% 
+\contentsline {subsection}{\numberline {2.1}Ordinary Least Squares (OLS)}{2}{subsection.2.1}% 
+\contentsline {subsection}{\numberline {2.2}Ridge regression}{2}{subsection.2.2}% 
+\contentsline {subsection}{\numberline {2.3}Lasso regression}{3}{subsection.2.3}% 
+\contentsline {section}{\numberline {3}Data}{3}{section.3}% 
+\contentsline {subsection}{\numberline {3.4}The Franke Function}{3}{subsection.3.4}% 
+\contentsline {subsection}{\numberline {3.5}Terrain data}{3}{subsection.3.5}% 
+\contentsline {section}{\numberline {4}Resampling and Bias variance}{3}{section.4}% 
+\contentsline {section}{\numberline {5}Application to real data}{3}{section.5}% 
+\contentsline {section}{\numberline {6}Comparison}{3}{section.6}% 
+\contentsline {section}{\numberline {7}Discussion}{3}{section.7}% 
+\contentsline {section}{\numberline {8}Summary Remarks}{3}{section.8}% 
