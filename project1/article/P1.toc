@@ -8,7 +8,10 @@
 \contentsline {subsection}{\numberline {3.4}The Franke Function}{3}{subsection.3.4}% 
 \contentsline {subsection}{\numberline {3.5}Terrain data}{3}{subsection.3.5}% 
 \contentsline {section}{\numberline {4}Resampling and Bias variance}{3}{section.4}% 
-\contentsline {section}{\numberline {5}Application to real data}{3}{section.5}% 
-\contentsline {section}{\numberline {6}Comparison}{3}{section.6}% 
-\contentsline {section}{\numberline {7}Discussion}{3}{section.7}% 
-\contentsline {section}{\numberline {8}Summary Remarks}{3}{section.8}% 
+\contentsline {section}{\numberline {5}Results}{4}{section.5}% 
+\contentsline {subsection}{\numberline {5.6}Franke function data}{4}{subsection.5.6}% 
+\contentsline {subsubsection}{\numberline {}Ordinary Least Squares}{4}{subsubsection.5.6.1}% 
+\contentsline {subsubsection}{\numberline {}Ridge regression}{4}{subsubsection.5.6.2}% 
+\contentsline {subsubsection}{\numberline {}Lasso regression}{4}{subsubsection.5.6.3}% 
+\contentsline {subsection}{\numberline {5.7}Terrain data}{5}{subsection.5.7}% 
+\contentsline {section}{\numberline {6}Summary Remarks}{5}{section.6}% 

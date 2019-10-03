@@ -7,7 +7,10 @@
 \BOOKMARK [2][-]{subsection.3.4}{The Franke Function}{section.3}% 7
 \BOOKMARK [2][-]{subsection.3.5}{Terrain data}{section.3}% 8
 \BOOKMARK [1][-]{section.4}{Resampling and Bias variance}{}% 9
-\BOOKMARK [1][-]{section.5}{Application to real data}{}% 10
-\BOOKMARK [1][-]{section.6}{Comparison}{}% 11
-\BOOKMARK [1][-]{section.7}{Discussion}{}% 12
-\BOOKMARK [1][-]{section.8}{Summary Remarks}{}% 13
+\BOOKMARK [1][-]{section.5}{Results}{}% 10
+\BOOKMARK [2][-]{subsection.5.6}{Franke function data}{section.5}% 11
+\BOOKMARK [3][-]{subsubsection.5.6.1}{Ordinary Least Squares}{subsection.5.6}% 12
+\BOOKMARK [3][-]{subsubsection.5.6.2}{Ridge regression}{subsection.5.6}% 13
+\BOOKMARK [3][-]{subsubsection.5.6.3}{Lasso regression}{subsection.5.6}% 14
+\BOOKMARK [2][-]{subsection.5.7}{Terrain data}{section.5}% 15
+\BOOKMARK [1][-]{section.6}{Summary Remarks}{}% 16

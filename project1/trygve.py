@@ -111,8 +111,8 @@ def plotterrain(y_train_pred,y_test_pred,error, besty,save,lamb):
     ax1 = fig.add_subplot(111, projection = '3d')
     
     ax1.set_zlim3d(-0.2,1.2) # Zlimit
-    ax1.view_init(5,60) # Optimal viewing angle
-    
+    #ax1.view_init(5,60) # Optimal viewing angle
+    ax1.view_init(5,150) # Optimal viewing angle
     # Remove background
     ax1.xaxis.pane.fill = False
     ax1.yaxis.pane.fill = False
@@ -122,7 +122,8 @@ def plotterrain(y_train_pred,y_test_pred,error, besty,save,lamb):
     ax1.zaxis.pane.set_edgecolor('w')
     
     # Plot franke function #alpha=0.5
-    surf = ax1.plot_surface(x_, y_, b, alpha=0.3, cmap=cm.coolwarm,label=r"Franke function $N(0,%.2f)$" %noise)
+    #surf = ax1.plot_surface(x_, y_, b, alpha=0.3, cmap=cm.coolwarm,label=r"Franke function $N(0,%.2f)$" %noise)
+    surf = ax1.plot_surface(x_, y_, b, alpha=0.3, cmap=cm.coolwarm,label=r"Terrain data")
     surf._facecolors2d=surf._facecolors3d # Bugfix for legend
     surf._edgecolors2d=surf._edgecolors3d
     #surf1 = ax1.plot_surface(x_, y_, besty.reshape(b.shape), alpha=.5, cmap=cm.BrBG, label="Best fit "+method.__name__+" P"+str(degree)+" $\lambda = %.4f$" %lamb)
@@ -138,11 +139,12 @@ def plotterrain(y_train_pred,y_test_pred,error, besty,save,lamb):
     plt.tight_layout()
     if save==True:
         plt.savefig(str(method.__name__)+"_L"+str(lamb)+"_P"+str(degree)+"_"+datatype+".png",bbox_inches = 'tight',pad_inches = 0) # Save whatever figure youre plotting
-        #plt.savefig("franke.png",bbox_inches = 'tight',pad_inches = 0)
+        #plt.savefig("terrain.png",bbox_inches = 'tight',pad_inches = 0)
     plt.show()
 
 # Print errors and plot bias-variance
-def error(errors, degrees, lamb, p):
+
+def error(errors, degrees, lamb, p,alpha):
     for i, degree in enumerate(degrees):
         print(" ")
         print("Polynomial of degree: ", degree)
@@ -157,26 +159,31 @@ def error(errors, degrees, lamb, p):
         return False
     
     method_name = str(method.__name__)
-
-    if method_name!="OLS":
-        lambd = r"$\lambda$="+str(lamb)+" "
-    else:
-        lambd=""
-
     plt.style.use(u"~/.matplotlib/stylelib/trygveplot_astro.mplstyle")
-    alpha = 0.5
+    if method_name=="OLS":
+        lambd=""
+        plt.semilogy(degrees, errors[0,1,:],label=lambd+"OLS",color="C0") # Test data
+    elif method_name=="ridge":
+        lambd = r"$\lambda$="+str(lamb)+" "
+        plt.semilogy(degrees, errors[0,1,:],label="Ridge "+lambd,color="C1") # Test data
+    elif method_name=="lasso":
+        lambd = r"$\lambda$="+str(lamb)+" "
+        plt.semilogy(degrees, errors[0,1,:],label="Lasso "+lambd,color="C2") # Test data
+
+
+
 
     # Error
-    plt.plot(degrees, errors[0,0,:],label=lambd+"MSE    -    Training data",color="C"+str(p)) # Test data
-    plt.plot(degrees, errors[0,1,:],label=lambd+"MSE    -    Test data",color="C"+str(p),alpha=alpha) # Test data
+    #plt.plot(degrees, errors[0,0,:],label=lambd+"MSE    -    Training data",color="C"+str(p),alpha=alpha) # Test data
+    #plt.plot(degrees, errors[0,1,:],label=lambd+"MSE    -    Test data",color="C"+str(p),linestyle="--",alpha=alpha) # Test data
     
     ## Bias
     #plt.plot(degrees, errors[2,0,:],label=lambd+"Training data - bias",color="C"+str(p+1), linestyle=":") # Training data
-    plt.plot(degrees, errors[2,1,:],label=lambd+"Bias     -    Test data",color="C"+str(p+1), linestyle=":", alpha=alpha) # Training data
+    #plt.plot(degrees, errors[2,1,:],label=lambd+"Bias     -    Test data",color="C"+str(p+1), alpha=alpha) # Training data
     #
     ## Variance
     #plt.plot(degrees, errors[3,0,:],label=lambd+"Training data - variance",linestyle="--",color="C"+str(p+2))
-    plt.plot(degrees, errors[3,1,:],label=lambd+"Variance - Test data",linestyle="--",color="C"+str(p+2),alpha=alpha) # Test data
+    #plt.plot(degrees, errors[3,1,:],label=lambd+"Variance - Test data",color="C"+str(p+2),alpha=alpha) # Test data
     #
     ## Bias + Variance
     #plt.plot(degrees, errors[2,0,:]+errors[3,0,:],label=r"Training data - Variance + Bias",linestyle="-.",color="C"+str(p+3)) # Test data
@@ -186,12 +193,18 @@ def error(errors, degrees, lamb, p):
     #plt.title("MSE for training and test data")
     plt.xlabel("Polynomial degree")
     plt.ylabel("Prediction error")
-    plt.title(method_name)
+    #plt.title(method_name)
     plt.xlim([0,len(degrees)-1])
     plt.ylim([0,errors[0,0,0]*1.5])
     plt.legend()
+    #if alpha==1:
+    #    plt.legend()
+        
+def rebin(a, shape):
+    sh = shape[0],a.shape[0]//shape[0],shape[1],a.shape[1]//shape[1]
+    return a.reshape(sh).mean(-1).mean(1)
 
-if True: # Use Franke function
+if False: # Use Franke function
     # Make data.
     N = 20
     x = np.linspace(0, 1, N)
@@ -202,16 +215,19 @@ if True: # Use Franke function
     data = pd.DataFrame(data)
 
     # Create and transform franke function data
-    noise = 0.05 # Amount of noise
+    noise = 0.1 # Amount of noise
     b = FrankeFunction(x_, y_) + np.random.normal(size=x_.shape)*noise # Franke function with optional gaussian noise
     y = pd.DataFrame(b.ravel().T)
     datatype = "franke_N"+str(noise)
 else: # Using real terrain data
     downsample = 60
-    b = imread("../MachineLearning/doc/Projects/2019/Project1/Datafiles/SRTM_data_Norway_2.tif")[:-1:downsample,:-1:downsample]
+    b = imread("../MachineLearning/doc/Projects/2019/Project1/Datafiles/SRTM_data_Norway_2.tif")[:-1,:-1]# [:-1:downsample,:-1:downsample]
+    b = rebin(b,(60,30))
+    print(b.shape)
     #b = imread("../MachineLearning/doc/Projects/2019/Project1/Datafiles/SRTM_data_Norway_2.tif")[100:120,100:120]
     b -= np.min(b)
     b = b/np.max(b)
+    noise = 0.0
     length = b.shape[0]
     width = b.shape[1]
     print(length,width)
@@ -223,24 +239,28 @@ else: # Using real terrain data
 # KFOLD
 kfolds = 5
 test_size=1/kfolds
-degrees = [5]#Range(15)
+degrees = range(15)
 ylen = y.shape[0]
 testsize = int(ylen/kfolds)
 trainsize = ylen-testsize
-
+alpha=1
 # RESAMPLING
 #kfolds = 100
 #test_size=0.2
-#degrees = [5]
+#degrees = []
 #ylen = y.shape[0]
 #testsize = int(ylen*test_size)
 #trainsize = ylen-testsize
 
-method = OLS; lambdas=[0]
-method = ridge; lambdas=[0.0001, 0.001, 0.01, 0.1, 0.3];# lambdas=[0.0001]
-method = lasso; lambdas=[0.0001, 0.001, 0.01, 0.1, 0.3];# lambdas=[0.0001]
-#lambdas=np.logspace(-5,0,1000)
+# Ridge gets 0.00720 on 10?
+# Lasso gets 0.00824 on 28 with 1e-5
 
+
+method = OLS; lambdas=[0] #00728 on 8
+#method = ridge; lambdas=[0.00001];# lambdas=[0.0001]
+method = lasso; lambdas=[1e-5] #0.001, 0.01,0.1,1];# lambdas=[0.0001]
+#lambdas=np.logspace(-5,0,1000)
+methods = [OLS, ridge, lasso] 
 # Something wrong with the bias in OLS? Ridge is weird too.
 def splitdata(X,y):
     X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=test_size, shuffle=True)
@@ -260,59 +280,64 @@ def kfold(X,nsplits):
 
 terms = int((degrees[0]+1)*(degrees[0]+2)/2)
 bestbetas = np.zeros((terms,len(lambdas),2))
-for l, lamb in enumerate(lambdas): # Iterate over all hyperparemeters lambda
-    k_errors = np.zeros((4, 2, len(degrees))) # Initializing error array
-    for d, degree in enumerate(degrees): # Iterate over polynomial complexity
-        y_train = np.zeros((trainsize,kfolds))
-        y_test = np.zeros((testsize,kfolds))
-        y_train_pred = np.zeros((trainsize,kfolds))
-        y_test_pred = np.zeros((testsize,kfolds))
-        intercept = np.zeros(kfolds)
-        terms = int((degree+1)*(degree+2)/2)
-        betas = np.zeros((terms,kfolds))
+for method in methods:
+    for l, lamb in enumerate(lambdas): # Iterate over all hyperparemeters lambda
+        k_errors = np.zeros((4, 2, len(degrees))) # Initializing error array
+        for d, degree in enumerate(degrees): # Iterate over polynomial complexity
+            y_train = np.zeros((trainsize,kfolds))
+            y_test = np.zeros((testsize,kfolds))
+            y_train_pred = np.zeros((trainsize,kfolds))
+            y_test_pred = np.zeros((testsize,kfolds))
+            intercept = np.zeros(kfolds)
+            terms = int((degree+1)*(degree+2)/2)
+            bestbetas = np.zeros((terms,len(lambdas),2))
+            betas = np.zeros((terms,kfolds))
 
-        train_idx, test_idx = kfold(data,kfolds) # Kfold splits
-        for k in range(kfolds): # K-fold test. Do it k times and check errors.
-            # K FOLD STUFF
-            data_train, data_test,y_tra,y_tes = data.iloc[train_idx[k,:]],\
-                data.iloc[test_idx[k,:]] ,y.iloc[train_idx[k,:]], y.iloc[test_idx[k,:]]
+            train_idx, test_idx = kfold(data,kfolds) # Kfold splits
+            for k in range(kfolds): # K-fold test. Do it k times and check errors.
+                # K FOLD STUFF
+                data_train, data_test,y_tra,y_tes = data.iloc[train_idx[k,:]],\
+                    data.iloc[test_idx[k,:]] ,y.iloc[train_idx[k,:]], y.iloc[test_idx[k,:]]
 
-            # RESAMPLING (OLD)
-            #data_train, data_test, y_tra, y_tes = splitdata(data,y) # Sample data
+                # RESAMPLING (OLD)
+                #data_train, data_test, y_tra, y_tes = splitdata(data,y) # Sample data
 
-            X_train = design(data_train,degree) # Design matrix for training data
-            X_test = design(data_test,degree) # Design matrix for training data
+                X_train = design(data_train,degree) # Design matrix for training data
+                X_test = design(data_test,degree) # Design matrix for training data
             
-            y_train[:,k] = y_tra[0] # Index stuff
-            y_test[:,k] = y_tes[0]
+                y_train[:,k] = y_tra[0] # Index stuff
+                y_test[:,k] = y_tes[0]
 
-            y_train_pred[:,k], y_test_pred[:,k], betas[:,k], intercept[k] = method(X_train,y_train[:,k],\
+                y_train_pred[:,k], y_test_pred[:,k], betas[:,k], intercept[k] = method(X_train,y_train[:,k],\
                                                                      X_test,y_test[:,k],lamb)
 
 
-        # calculate averaged over kfolds (Best fit)
-        bestbetas[:,l,0] = np.mean(betas,axis=1)
-
+            # calculate averaged over kfolds (Best fit)
+            bestbetas[:,l,0] = np.mean(betas,axis=1)
+            bestbetas[:,l,1] = np.var(betas,axis=1)
         
-        bestbetas[:,l,1] = np.var(betas,axis=1)
+            besty = design(data, degree).dot(bestbetas[:,l,0])+np.mean(intercept)
+            mse(y.values, besty)
 
-        besty = design(data, degree).dot(bestbetas[:,l,0])+np.mean(intercept)
-        mse(y.values, besty)
-        
-        # Save training errors
-        k_errors[0, 0, d] = mse(y_train, y_train_pred)
-        k_errors[1, 0, d] = R_squared(y_train, y_train_pred)
-        k_errors[2, 0, d] = bias(y_train, y_train_pred)
-        k_errors[3, 0, d] = var2(y_train_pred)
-        
-        # Save test errors
-        k_errors[0, 1, d] = mse(y_test, y_test_pred)
-        k_errors[1, 1, d] = R_squared(y_test, y_test_pred)
-        k_errors[2, 1, d] = bias(y_test, y_test_pred)
-        k_errors[3, 1, d] = var2(y_test_pred)
+            # Save training errors
+            k_errors[0, 0, d] = mse(y_train, y_train_pred)
+            k_errors[1, 0, d] = R_squared(y_train, y_train_pred)
+            k_errors[2, 0, d] = bias(y_train, y_train_pred)
+            k_errors[3, 0, d] = var2(y_train_pred)
+            
+            # Save test errors
+            k_errors[0, 1, d] = mse(y_test, y_test_pred)
+            k_errors[1, 1, d] = R_squared(y_test, y_test_pred)
+            k_errors[2, 1, d] = bias(y_test, y_test_pred)
+            k_errors[3, 1, d] = var2(y_test_pred)
 
-        plotterrain(y_train_pred,y_test_pred, k_errors[1,1,d],besty,True, lamb) # Plot surfaces
-    #error(k_errors, degrees, lamb, p) # Bias variance plot and errors
+            #plotterrain(y_train_pred,y_test_pred, k_errors[1,1,d],besty,False, lamb) # Plot surfaces
+        error(k_errors, degrees, lamb, p,alpha) # Bias variance plot and errors
+        alpha -= 0.2
+    #plt.savefig("BV_"+str(method.__name__)+"_L+"+str(lamb)+"_N"+str(noise)+"_"+datatype+".png",bbox_inches = 'tight',pad_inches = 0) # Save whatever figure youre plotting
+    #plt.savefig("BV_terrain.png",bbox_inches = 'tight',pad_inches = 0) # Save whatever figure youre plotting
+plt.show()    
+
 """
 alpha = 1.0
 for i in range(14):
@@ -327,8 +352,6 @@ plt.tight_layout()
 plt.savefig(method.__name__+"_lambdas.png",bbox_inches = 'tight',pad_inches = 0)
 plt.show()
 """
-#plt.savefig("BV_"+str(method.__name__)+"_L"+str(lamb)+"_"+datatype+".png",bbox_inches = 'tight',pad_inches = 0) # Save whatever figure youre plotting
-#plt.show()    
 
 
 
