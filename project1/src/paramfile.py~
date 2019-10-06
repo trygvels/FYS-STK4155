@@ -1,0 +1,17 @@
+import numpy as np
+from functions import *
+
+def params():
+    dataset = "franke" # Terrain or franke
+    degrees = range(15) #[5]
+    methods = [OLS] 
+    lambdas = [1e-5, 0.001, 0.01,0.1,1];
+    noise = 0.05
+    kfolds = 5
+    
+    plotterrain = True
+    ploterror = True
+    plotbetas = False
+
+    return dataset, noise, degrees, methods, lambdas, plotterrain, ploterror, plotbetas, kfolds
+
