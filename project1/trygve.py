@@ -132,7 +132,7 @@ def plotterrain(y_train_pred,y_test_pred,error, besty,save,lamb):
 
 
     # Plot training data fit
-    ax1.scatter(x_,y_,besty,alpha=1, s=1, color="C1", label="Best fit "+method.__name__+" P"+str(degree)+" $\lambda = %.4f$" %lamb)
+    ax1.scatter(x_,y_,besty,alpha=1, s=1, color="C1", label="Best fit "+method.__name__+" P"+str(degree)+" $\lambda$ = %.e" %lamb)
     #ax1.scatter(data_train[0],data_train[1],y_train_pred[:,-1],alpha=1, s=1, color="C1", label="Training data")
     #ax1.scatter(data_test[0],data_test[1],y_test_pred[:,-1],alpha=1, s=1, color="C0", label=r"Test data - $R^2 = %.3f$" %error)
     plt.legend()
@@ -160,6 +160,7 @@ def error(errors, degrees, lamb, p,alpha):
     
     method_name = str(method.__name__)
     plt.style.use(u"~/.matplotlib/stylelib/trygveplot_astro.mplstyle")
+
     if method_name=="OLS":
         lambd=""
         plt.semilogy(degrees, errors[0,1,:],label=lambd+"OLS",color="C0") # Test data
@@ -239,7 +240,7 @@ else: # Using real terrain data
 # KFOLD
 kfolds = 5
 test_size=1/kfolds
-degrees = range(15)
+degrees = [10] #range(15)
 ylen = y.shape[0]
 testsize = int(ylen/kfolds)
 trainsize = ylen-testsize
@@ -331,9 +332,9 @@ for method in methods:
             k_errors[2, 1, d] = bias(y_test, y_test_pred)
             k_errors[3, 1, d] = var2(y_test_pred)
 
-            #plotterrain(y_train_pred,y_test_pred, k_errors[1,1,d],besty,False, lamb) # Plot surfaces
-        error(k_errors, degrees, lamb, p,alpha) # Bias variance plot and errors
-        alpha -= 0.2
+            plotterrain(y_train_pred,y_test_pred, k_errors[1,1,d],besty,True, lamb) # Plot surfaces
+        #error(k_errors, degrees, lamb, p,alpha) # Bias variance plot and errors
+        #alpha -= 0.2
     #plt.savefig("BV_"+str(method.__name__)+"_L+"+str(lamb)+"_N"+str(noise)+"_"+datatype+".png",bbox_inches = 'tight',pad_inches = 0) # Save whatever figure youre plotting
     #plt.savefig("BV_terrain.png",bbox_inches = 'tight',pad_inches = 0) # Save whatever figure youre plotting
 plt.show()    
