@@ -2,7 +2,7 @@
 \contentsline {section}{\numberline {1}Introduction}{2}{section.1}% 
 \contentsline {section}{\numberline {2}Regression methods}{2}{section.2}% 
 \contentsline {subsection}{\numberline {2.1}Ordinary Least Squares (OLS)}{2}{subsection.2.1}% 
-\contentsline {subsection}{\numberline {2.2}Ridge regression}{2}{subsection.2.2}% 
+\contentsline {subsection}{\numberline {2.2}Ridge regression}{3}{subsection.2.2}% 
 \contentsline {subsection}{\numberline {2.3}Lasso regression}{3}{subsection.2.3}% 
 \contentsline {section}{\numberline {3}Data}{3}{section.3}% 
 \contentsline {subsection}{\numberline {3.4}The Franke Function}{3}{subsection.3.4}% 

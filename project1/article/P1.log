@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.9.4)  6 OCT 2019 17:30
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.9.4)  7 OCT 2019 15:42
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1476,36 +1476,36 @@ LaTeX Warning: Reference `fig:OLSfranke' on page 5 undefined on input line 260.
 
 LaTeX Warning: Reference `fig:BVols' on page 5 undefined on input line 260.
 
-<../figs/BV_OLS_L+0_N0.1_franke_N0.1.png, id=66, 406.1574pt x 295.8252pt>
+<../figs/BV_OLS_L+0_N0.1_franke_N0.1.png, id=67, 406.1574pt x 295.8252pt>
 File: ../figs/BV_OLS_L+0_N0.1_franke_N0.1.png Graphic file (type png)
 <use ../figs/BV_OLS_L+0_N0.1_franke_N0.1.png>
 Package pdftex.def Info: ../figs/BV_OLS_L+0_N0.1_franke_N0.1.png  used on input
  line 264.
 (pdftex.def)             Requested size: 203.39862pt x 148.14244pt.
-<../figs/BV_OLS_L+0_N0.05_franke_N0.05.png, id=68, 406.1574pt x 295.8252pt>
+<../figs/BV_OLS_L+0_N0.05_franke_N0.05.png, id=69, 406.1574pt x 295.8252pt>
 File: ../figs/BV_OLS_L+0_N0.05_franke_N0.05.png Graphic file (type png)
 <use ../figs/BV_OLS_L+0_N0.05_franke_N0.05.png>
 Package pdftex.def Info: ../figs/BV_OLS_L+0_N0.05_franke_N0.05.png  used on inp
 ut line 265.
 (pdftex.def)             Requested size: 203.39862pt x 148.14244pt.
-<../figs/franke.png, id=69, 440.847pt x 325.215pt>
+<../figs/franke.png, id=70, 440.847pt x 325.215pt>
 File: ../figs/franke.png Graphic file (type png)
 <use ../figs/franke.png>
 Package pdftex.def Info: ../figs/franke.png  used on input line 271.
 (pdftex.def)             Requested size: 203.39862pt x 150.04732pt.
-<../figs/OLS_L0_P5_franke_N0.05.png, id=70, 440.847pt x 325.215pt>
+<../figs/OLS_L0_P5_franke_N0.05.png, id=71, 440.847pt x 325.215pt>
 File: ../figs/OLS_L0_P5_franke_N0.05.png Graphic file (type png)
 <use ../figs/OLS_L0_P5_franke_N0.05.png>
 Package pdftex.def Info: ../figs/OLS_L0_P5_franke_N0.05.png  used on input line
  272.
 (pdftex.def)             Requested size: 203.39862pt x 150.04732pt.
-<../figs/OLS_L0_P5_franke_N0.1.png, id=71, 440.847pt x 325.215pt>
+<../figs/OLS_L0_P5_franke_N0.1.png, id=72, 440.847pt x 325.215pt>
 File: ../figs/OLS_L0_P5_franke_N0.1.png Graphic file (type png)
 <use ../figs/OLS_L0_P5_franke_N0.1.png>
 Package pdftex.def Info: ../figs/OLS_L0_P5_franke_N0.1.png  used on input line 
 273.
 (pdftex.def)             Requested size: 203.39862pt x 150.04732pt.
-<../figs/OLS_L0_P5_franke_N0.png, id=72, 440.847pt x 325.215pt>
+<../figs/OLS_L0_P5_franke_N0.png, id=73, 440.847pt x 325.215pt>
 File: ../figs/OLS_L0_P5_franke_N0.png Graphic file (type png)
 <use ../figs/OLS_L0_P5_franke_N0.png>
 Package pdftex.def Info: ../figs/OLS_L0_P5_franke_N0.png  used on input line 27
@@ -1552,39 +1552,39 @@ LaTeX Warning: Empty bibliography on input line 301.
 [7
 
 ]
-<../figs/BV_ridge_L+0.01_N0.1_franke_N0.1.png, id=106, 406.1574pt x 295.8252pt>
+<../figs/BV_ridge_L+0.01_N0.1_franke_N0.1.png, id=107, 406.1574pt x 295.8252pt>
 
 File: ../figs/BV_ridge_L+0.01_N0.1_franke_N0.1.png Graphic file (type png)
 <use ../figs/BV_ridge_L+0.01_N0.1_franke_N0.1.png>
 Package pdftex.def Info: ../figs/BV_ridge_L+0.01_N0.1_franke_N0.1.png  used on 
 input line 306.
 (pdftex.def)             Requested size: 203.39862pt x 148.14244pt.
-<../figs/BV_lasso_L+0.01_N0.1_franke_N0.1.png, id=107, 406.1574pt x 295.8252pt>
+<../figs/BV_lasso_L+0.01_N0.1_franke_N0.1.png, id=108, 406.1574pt x 295.8252pt>
 
 File: ../figs/BV_lasso_L+0.01_N0.1_franke_N0.1.png Graphic file (type png)
 <use ../figs/BV_lasso_L+0.01_N0.1_franke_N0.1.png>
 Package pdftex.def Info: ../figs/BV_lasso_L+0.01_N0.1_franke_N0.1.png  used on 
 input line 307.
 (pdftex.def)             Requested size: 203.39862pt x 148.14244pt.
-<../figs/ridge_L0.1_P5_franke_N0.05.png, id=108, 440.847pt x 325.215pt>
+<../figs/ridge_L0.1_P5_franke_N0.05.png, id=109, 440.847pt x 325.215pt>
 File: ../figs/ridge_L0.1_P5_franke_N0.05.png Graphic file (type png)
 <use ../figs/ridge_L0.1_P5_franke_N0.05.png>
 Package pdftex.def Info: ../figs/ridge_L0.1_P5_franke_N0.05.png  used on input 
 line 313.
 (pdftex.def)             Requested size: 203.39862pt x 150.04732pt.
-<../figs/ridge_L0.01_P5_franke_N0.05.png, id=109, 440.847pt x 325.215pt>
+<../figs/ridge_L0.01_P5_franke_N0.05.png, id=110, 440.847pt x 325.215pt>
 File: ../figs/ridge_L0.01_P5_franke_N0.05.png Graphic file (type png)
 <use ../figs/ridge_L0.01_P5_franke_N0.05.png>
 Package pdftex.def Info: ../figs/ridge_L0.01_P5_franke_N0.05.png  used on input
  line 314.
 (pdftex.def)             Requested size: 203.39862pt x 150.04732pt.
-<../figs/ridge_L0.001_P5_franke_N0.05.png, id=110, 440.847pt x 325.215pt>
+<../figs/ridge_L0.001_P5_franke_N0.05.png, id=111, 440.847pt x 325.215pt>
 File: ../figs/ridge_L0.001_P5_franke_N0.05.png Graphic file (type png)
 <use ../figs/ridge_L0.001_P5_franke_N0.05.png>
 Package pdftex.def Info: ../figs/ridge_L0.001_P5_franke_N0.05.png  used on inpu
 t line 315.
 (pdftex.def)             Requested size: 203.39862pt x 150.04732pt.
-<../figs/ridge_L0.0001_P5_franke_N0.05.png, id=111, 440.847pt x 325.215pt>
+<../figs/ridge_L0.0001_P5_franke_N0.05.png, id=112, 440.847pt x 325.215pt>
 File: ../figs/ridge_L0.0001_P5_franke_N0.05.png Graphic file (type png)
 <use ../figs/ridge_L0.0001_P5_franke_N0.05.png>
 Package pdftex.def Info: ../figs/ridge_L0.0001_P5_franke_N0.05.png  used on inp
@@ -1594,36 +1594,36 @@ ut line 316.
 1_franke_N0.1.png> <../figs/ridge_L0.1_P5_franke_N0.05.png> <../figs/ridge_L0.0
 1_P5_franke_N0.05.png> <../figs/ridge_L0.001_P5_franke_N0.05.png> <../figs/ridg
 e_L0.0001_P5_franke_N0.05.png>]
-<../figs/lasso_L0.1_P5_franke_N0.05.png, id=130, 440.847pt x 325.215pt>
+<../figs/lasso_L0.1_P5_franke_N0.05.png, id=131, 440.847pt x 325.215pt>
 File: ../figs/lasso_L0.1_P5_franke_N0.05.png Graphic file (type png)
 <use ../figs/lasso_L0.1_P5_franke_N0.05.png>
 Package pdftex.def Info: ../figs/lasso_L0.1_P5_franke_N0.05.png  used on input 
 line 324.
 (pdftex.def)             Requested size: 203.39862pt x 150.04732pt.
-<../figs/lasso_L0.01_P5_franke_N0.05.png, id=131, 440.847pt x 325.215pt>
+<../figs/lasso_L0.01_P5_franke_N0.05.png, id=132, 440.847pt x 325.215pt>
 File: ../figs/lasso_L0.01_P5_franke_N0.05.png Graphic file (type png)
 <use ../figs/lasso_L0.01_P5_franke_N0.05.png>
 Package pdftex.def Info: ../figs/lasso_L0.01_P5_franke_N0.05.png  used on input
  line 325.
 (pdftex.def)             Requested size: 203.39862pt x 150.04732pt.
-<../figs/lasso_L0.001_P5_franke_N0.05.png, id=132, 440.847pt x 325.215pt>
+<../figs/lasso_L0.001_P5_franke_N0.05.png, id=133, 440.847pt x 325.215pt>
 File: ../figs/lasso_L0.001_P5_franke_N0.05.png Graphic file (type png)
 <use ../figs/lasso_L0.001_P5_franke_N0.05.png>
 Package pdftex.def Info: ../figs/lasso_L0.001_P5_franke_N0.05.png  used on inpu
 t line 326.
 (pdftex.def)             Requested size: 203.39862pt x 150.04732pt.
-<../figs/lasso_L0.0001_P5_franke_N0.05.png, id=133, 440.847pt x 325.215pt>
+<../figs/lasso_L0.0001_P5_franke_N0.05.png, id=134, 440.847pt x 325.215pt>
 File: ../figs/lasso_L0.0001_P5_franke_N0.05.png Graphic file (type png)
 <use ../figs/lasso_L0.0001_P5_franke_N0.05.png>
 Package pdftex.def Info: ../figs/lasso_L0.0001_P5_franke_N0.05.png  used on inp
 ut line 327.
 (pdftex.def)             Requested size: 203.39862pt x 150.04732pt.
-<../figs/ridge_lambdas.png, id=134, 462.528pt x 346.896pt>
+<../figs/ridge_lambdas.png, id=135, 462.528pt x 346.896pt>
 File: ../figs/ridge_lambdas.png Graphic file (type png)
 <use ../figs/ridge_lambdas.png>
 Package pdftex.def Info: ../figs/ridge_lambdas.png  used on input line 335.
 (pdftex.def)             Requested size: 203.39862pt x 152.55pt.
-<../figs/lasso_lambdas.png, id=135, 462.528pt x 346.896pt>
+<../figs/lasso_lambdas.png, id=136, 462.528pt x 346.896pt>
 File: ../figs/lasso_lambdas.png Graphic file (type png)
 <use ../figs/lasso_lambdas.png>
 Package pdftex.def Info: ../figs/lasso_lambdas.png  used on input line 336.
@@ -1631,29 +1631,29 @@ Package pdftex.def Info: ../figs/lasso_lambdas.png  used on input line 336.
  [9 <../figs/lasso_L0.1_P5_franke_N0.05.png> <../figs/lasso_L0.01_P5_franke_N0.
 05.png> <../figs/lasso_L0.001_P5_franke_N0.05.png> <../figs/lasso_L0.0001_P5_fr
 anke_N0.05.png> <../figs/ridge_lambdas.png> <../figs/lasso_lambdas.png>]
-<../figs/BV_terrain.png, id=154, 405.6756pt x 297.2706pt>
+<../figs/BV_terrain.png, id=155, 405.6756pt x 297.2706pt>
 File: ../figs/BV_terrain.png Graphic file (type png)
 <use ../figs/BV_terrain.png>
 Package pdftex.def Info: ../figs/BV_terrain.png  used on input line 345.
 (pdftex.def)             Requested size: 180.79724pt x 132.48232pt.
-<../figs/terrain.png, id=155, 440.847pt x 325.215pt>
+<../figs/terrain.png, id=156, 440.847pt x 325.215pt>
 File: ../figs/terrain.png Graphic file (type png)
 <use ../figs/terrain.png>
 Package pdftex.def Info: ../figs/terrain.png  used on input line 351.
 (pdftex.def)             Requested size: 203.39862pt x 150.04732pt.
-<../figs/OLS_L1e-05_P10_terrain.png, id=156, 440.847pt x 325.215pt>
+<../figs/OLS_L1e-05_P10_terrain.png, id=157, 440.847pt x 325.215pt>
 File: ../figs/OLS_L1e-05_P10_terrain.png Graphic file (type png)
 <use ../figs/OLS_L1e-05_P10_terrain.png>
 Package pdftex.def Info: ../figs/OLS_L1e-05_P10_terrain.png  used on input line
  352.
 (pdftex.def)             Requested size: 203.39862pt x 150.04732pt.
-<../figs/ridge_L1e-05_P10_terrain.png, id=157, 440.847pt x 325.215pt>
+<../figs/ridge_L1e-05_P10_terrain.png, id=158, 440.847pt x 325.215pt>
 File: ../figs/ridge_L1e-05_P10_terrain.png Graphic file (type png)
 <use ../figs/ridge_L1e-05_P10_terrain.png>
 Package pdftex.def Info: ../figs/ridge_L1e-05_P10_terrain.png  used on input li
 ne 353.
 (pdftex.def)             Requested size: 203.39862pt x 150.04732pt.
-<../figs/lasso_L1e-05_P10_terrain.png, id=158, 440.847pt x 325.215pt>
+<../figs/lasso_L1e-05_P10_terrain.png, id=159, 440.847pt x 325.215pt>
 File: ../figs/lasso_L1e-05_P10_terrain.png Graphic file (type png)
 <use ../figs/lasso_L1e-05_P10_terrain.png>
 Package pdftex.def Info: ../figs/lasso_L1e-05_P10_terrain.png  used on input li
@@ -1721,11 +1721,12 @@ e/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/2
 019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/20
 19/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/texlive/2019
 /texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2019/t
-exmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb>
-Output written on P1.pdf (10 pages, 7160377 bytes).
+exmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2019/te
+xmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
+Output written on P1.pdf (10 pages, 7170485 bytes).
 PDF statistics:
- 263 PDF objects out of 1000 (max. 8388607)
- 181 compressed objects within 2 object streams
+ 267 PDF objects out of 1000 (max. 8388607)
+ 184 compressed objects within 2 object streams
  70 named destinations out of 1000 (max. 500000)
  116 words of extra memory for PDF output out of 10000 (max. 10000000)
 
