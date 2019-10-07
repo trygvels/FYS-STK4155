@@ -12,6 +12,7 @@ import numpy as np
 import numpy.linalg as la
 from random import random, seed, shuffle
 import pandas as pd
+import pytest
 from functions import *
 from paramfile import params
 plt.style.use(u"~/.matplotlib/stylelib/trygveplot_astro.mplstyle")
@@ -161,87 +162,121 @@ trainsize = ylen-testsize
 alpha=1 # Start alpha for plotting with decreasing transparency
 terms = int((degrees[0]+1)*(degrees[0]+2)/2) # Number of beta terms per polynomial degrees
 bestbetas = np.zeros((terms,len(lambdas),2)) # Array with best beta values after k-fold
-for method in methods:
-    bestbetas     = np.zeros((terms,len(lambdas),2))
-    for l, lamb in enumerate(lambdas): # Iterate over all hyperparemeters lambda
-        k_errors = np.zeros((4, 2, len(degrees))) # Initializing error array
-        for d, degree in enumerate(degrees): # Iterate over polynomial complexity
+def runthething(test):
+    global terms, method, degree
+    for method in methods:
+        bestbetas     = np.zeros((terms,len(lambdas),2))
+        for l, lamb in enumerate(lambdas): # Iterate over all hyperparemeters lambda
+            k_errors = np.zeros((4, 2, len(degrees))) # Initializing error array
+            for d, degree in enumerate(degrees): # Iterate over polynomial complexity
             
-            # Create arrays 
-            y_train       = np.zeros((trainsize,kfolds))
-            y_test        = np.zeros((testsize,kfolds))
-            y_train_pred  = np.zeros((trainsize,kfolds))
-            y_test_pred   = np.zeros((testsize,kfolds))
-            intercept     = np.zeros(kfolds)
-            terms         = int((degree+1)*(degree+2)/2)
-            betas         = np.zeros((terms,kfolds))
+                # Create arrays 
+                y_train       = np.zeros((trainsize,kfolds))
+                y_test        = np.zeros((testsize,kfolds))
+                y_train_pred  = np.zeros((trainsize,kfolds))
+                y_test_pred   = np.zeros((testsize,kfolds))
+                intercept     = np.zeros(kfolds)
+                terms         = int((degree+1)*(degree+2)/2)
+                betas         = np.zeros((terms,kfolds))
 
-            if len(degrees)>1: # Fix bug with varying number of terms
-                bestbetas     = np.zeros((terms,len(lambdas),2))
+                if len(degrees)>1: # Fix bug with varying number of terms
+                    bestbetas     = np.zeros((terms,len(lambdas),2))
             
-            train_idx, test_idx = kfold(data,kfolds,testsize,trainsize, ylen) # Kfold splits
+                train_idx, test_idx = kfold(data,kfolds,testsize,trainsize, ylen) # Kfold splits
             
-            for k in range(kfolds): # K-fold test. Do it k times and check errors.
+                for k in range(kfolds): # K-fold test. Do it k times and check errors.
 
-                # Get test and train data for this fold
-                data_train, data_test,y_tra,y_tes = data.iloc[train_idx[k,:]],\
-                    data.iloc[test_idx[k,:]] ,y.iloc[train_idx[k,:]], y.iloc[test_idx[k,:]]
+                    # Get test and train data for this fold
+                    data_train, data_test,y_tra,y_tes = data.iloc[train_idx[k,:]],\
+                        data.iloc[test_idx[k,:]] ,y.iloc[train_idx[k,:]], y.iloc[test_idx[k,:]]
 
-                # OLD RESAMPLING
-                #data_train, data_test, y_tra, y_tes = splitdata(data,y) # Sample data
+                    # OLD RESAMPLING
+                    #data_train, data_test, y_tra, y_tes = splitdata(data,y) # Sample data
 
-                X_train = design(data_train,degree) # Design matrix for training data
-                X_test  = design(data_test,degree)  # Design matrix for training data
+                    X_train = design(data_train,degree) # Design matrix for training data
+                    X_test  = design(data_test,degree)  # Design matrix for training data
             
-                y_train[:,k] = y_tra[0] # Index stuff
-                y_test[:,k] = y_tes[0]
+                    y_train[:,k] = y_tra[0] # Index stuff
+                    y_test[:,k] = y_tes[0]
 
-                y_train_pred[:,k], y_test_pred[:,k], betas[:,k], intercept[k] = method(X_train,y_train[:,k],\
+                    y_train_pred[:,k], y_test_pred[:,k], betas[:,k], intercept[k] = method(X_train,y_train[:,k],\
                                                                                        X_test,y_test[:,k],lamb, test)
 
-            # calculate averaged over kfolds (Best fit)
-            # Should be weighted
-            bestbetas[:,l,0] = np.mean(betas,axis=1)
-            bestbetas[:,l,1] = np.var(betas,axis=1) # Variance within folds
+                # calculate averaged over kfolds (Best fit)
+                # Should be weighted
+                bestbetas[:,l,0] = np.mean(betas,axis=1)
+                bestbetas[:,l,1] = np.var(betas,axis=1) # Variance within folds
         
-            besty = design(data, degree).dot(bestbetas[:,l,0])+np.mean(intercept) # Calculate y on full data
-            mse(y.values, besty) # Error on full data
+                besty = design(data, degree).dot(bestbetas[:,l,0])+np.mean(intercept) # Calculate y on full data
+                mse(y.values, besty) # Error on full data
 
-            # Save training errors
-            k_errors[0, 0, d] = mse(y_train, y_train_pred)
-            k_errors[1, 0, d] = R_squared(y_train, y_train_pred)
-            k_errors[2, 0, d] = bias(y_train, y_train_pred)
-            k_errors[3, 0, d] = var2(y_train_pred)
+                # Save training errors
+                k_errors[0, 0, d] = mse(y_train, y_train_pred)
+                k_errors[1, 0, d] = R_squared(y_train, y_train_pred)
+                k_errors[2, 0, d] = bias(y_train, y_train_pred)
+                k_errors[3, 0, d] = var2(y_train_pred)
             
-            # Save test errors
-            k_errors[0, 1, d] = mse(y_test, y_test_pred)
-            k_errors[1, 1, d] = R_squared(y_test, y_test_pred)
-            k_errors[2, 1, d] = bias(y_test, y_test_pred)
-            k_errors[3, 1, d] = var2(y_test_pred)
+                # Save test errors
+                k_errors[0, 1, d] = mse(y_test, y_test_pred)
+                k_errors[1, 1, d] = R_squared(y_test, y_test_pred)
+                k_errors[2, 1, d] = bias(y_test, y_test_pred)
+                k_errors[3, 1, d] = var2(y_test_pred)
 
-            if plotterrain_:
-                plotterrain(y_train_pred, y_test_pred, k_errors[1,1,d], besty, False, lamb,dataset) # Plot surfaces
+                if plotterrain_:
+                    plotterrain(y_train_pred, y_test_pred, k_errors[1,1,d], besty, False, lamb,dataset) # Plot surfaces
 
-        if ploterror_:
-            error(k_errors, degrees, lamb, p,alpha) # Bias variance plot and errors
-        #alpha -= 0.2 # Used for decreasing plot alpha per iteration
-    #plt.savefig("BV_"+str(method.__name__)+"_L+"+str(lamb)+"_N"+str(noise)+"_"+datatype+".png",bbox_inches = 'tight',pad_inches = 0) # Save whatever figure youre plotting
-    #plt.savefig("BV_terrain.png",bbox_inches = 'tight',pad_inches = 0) # Save whatever figure youre plotting
-    plt.show()    
+            if ploterror_:
+                error(k_errors, degrees, lamb, p,alpha) # Bias variance plot and errors
+            #alpha -= 0.2 # Used for decreasing plot alpha per iteration
+        #plt.savefig("BV_"+str(method.__name__)+"_L+"+str(lamb)+"_N"+str(noise)+"_"+datatype+".png",bbox_inches = 'tight',pad_inches = 0) # Save whatever figure youre plotting
+        #plt.savefig("BV_terrain.png",bbox_inches = 'tight',pad_inches = 0) # Save whatever figure youre plotting
+        plt.show()    
 
-    if plotbetas_:     # Plotting betas per lambda
-        alpha = 1.0
-        for i in range(14):
-            if i>6:
-                alpha = 0.5
-            plt.errorbar(lambdas, bestbetas[i,:,0],yerr=np.sqrt(bestbetas[i,:,1]), errorevery=20,label=r"$\beta_{%i}$"%i,alpha=alpha)
-        plt.xscale("log")
-        plt.legend(loc="right")
-        plt.ylabel(r"$\beta$")
-        plt.xlabel(r"$\lambda$")
-        plt.tight_layout()
-        #plt.savefig(method.__name__+"_lambdas.png",bbox_inches = 'tight',pad_inches = 0)
-        plt.show()
+        if plotbetas_:     # Plotting betas per lambda
+            alpha = 1.0
+            for i in range(14):
+                if i>6:
+                    alpha = 0.5
+                plt.errorbar(lambdas, bestbetas[i,:,0],yerr=np.sqrt(bestbetas[i,:,1]), errorevery=20,label=r"$\beta_{%i}$"%i,alpha=alpha)
+                plt.xscale("log")
+            plt.legend(loc="right")
+            plt.ylabel(r"$\beta$")
+            plt.xlabel(r"$\lambda$")
+            plt.tight_layout()
+            #plt.savefig(method.__name__+"_lambdas.png",bbox_inches = 'tight',pad_inches = 0)
+            plt.show()
+        return besty, k_errors[3,1,-1]
+
+# If test=true, then check against sklearn values    
+if test:
+    besty_homemade, variance = runthething(test=False)
+    besty_sklearn, variance = runthething(test)
+    print("variance:",variance)
+    print("Min and max values of sklearn: ", min(besty_sklearn), max(besty_sklearn))
+    print("Max absolute difference: ", max(abs(besty_homemade-besty_sklearn)))
+
+    # Plot difference plot
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111, projection = '3d')
+    # Remove background
+    ax1.xaxis.pane.fill = False
+    ax1.yaxis.pane.fill = False
+    ax1.zaxis.pane.fill = False
+    ax1.xaxis.pane.set_edgecolor('w')
+    ax1.yaxis.pane.set_edgecolor('w')
+    ax1.zaxis.pane.set_edgecolor('w')
+
+    diff=besty_homemade-besty_sklearn
+    surf = ax1.plot_surface(x_, y_, diff.reshape(b.shape), alpha=0.9, cmap=cm.coolwarm)
+    plt.tight_layout()
+    plt.show()
+
+    assert besty_homemade == pytest.approx(besty_sklearn, abs=variance), "The difference between self-implemented method and scikit-learn is not within variance level (%.4f)" %variance
+    print("Self implementation of the method is reasonably close to the SKlearn alternative.")
+else:
+    besty,variance = runthething(test)
+    
+    
 
 
 
