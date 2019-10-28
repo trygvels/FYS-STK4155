@@ -224,10 +224,10 @@ def runthething(test):
 
                 if plotterrain_:
                     plotterrain(y_train_pred, y_test_pred, k_errors[1,1,d], besty, False, lamb,dataset) # Plot surfaces
-
+            
+            alpha = 1 # Used for decreasing plot alpha per iteration
             if ploterror_:
                 error(k_errors, degrees, lamb, p,alpha) # Bias variance plot and errors
-            #alpha -= 0.2 # Used for decreasing plot alpha per iteration
         #plt.savefig("BV_"+str(method.__name__)+"_L+"+str(lamb)+"_N"+str(noise)+"_"+datatype+".png",bbox_inches = 'tight',pad_inches = 0) # Save whatever figure youre plotting
         #plt.savefig("BV_terrain.png",bbox_inches = 'tight',pad_inches = 0) # Save whatever figure youre plotting
         plt.show()    
