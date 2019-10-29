@@ -1,39 +1,37 @@
-#%% [markdown]
-import sys
-import os
-import random
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
+from cost_functions import CostFunctions
+from scipy.special import expit
 
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.metrics import confusion_matrix, accuracy_score, roc_auc_score, classification_report
+class LogReg:
+    def __init__(self, 
+                cost = 'cross_entropy', 
+                path=None):
 
-#%% Functions
-def cross_entropy(beta, X, y):
-    # Cross-entropy loss for logistic regression:
-    a = np.dot(X,beta)
-    reg = 0 # Regularization term
-    return -np.sum(y*a - np.log(1+np.exp(a))) + reg
+        self.cost = CostFunctions(cost) # Init cross_entropy cost function
+        self.path = path
+        
+      
+    def SGD(self, X, y, lr = 0.01, iter=100, tol=1e-4): 
+        # Fits beta using stochastic gradient descent
+        n = len(y)
+        costs = np.zeros(iter)
+        self.beta = np.random.randn(X.shape[1],1)
 
-def SGD(beta, X,y, lr = 0.01, iter=100): 
-    n = len(y)
-    costs = np.zeros(iter)
-    for i in range(iter):
-        cost = 0.0
-        for j in range(n):
-            idx = np.random.randint(0,n)
-            X_ = X[idx,:].reshape(1,X.shape[1])
-            y_ = y[idx].reshape(1,1)
-            a = np.dot(X_,beta)
-            
-            beta -= 1/m * lr * X_.T.dot(a-y)
-            cost += cross_entropy(beta,X_,y_)
-        costs[i] = cost
-    return beta, costs
+        i = 0
+        while 1 > tol and i < iter: # Tol placeholder
+            cost = 0.0
+            for j in range(n):
+                idx = np.random.randint(0,n)
+                X_ = X[idx,:].reshape(1,X.shape[1])
+                y_ = y[idx].reshape(1,1)
 
-#%%
-beta = np.random(-0.5, 0.5, X.shape[1])
+                b = np.dot(X_,self.beta)
+                self.beta -= lr/n*np.dot(X_.T,b-y_)
+                cost += self.cost(self.beta,X_,y_)
+            costs[i] = cost # Saves cost of beta over iterations
+            i+=1
+        return self.beta, costs
+
+    def predict(self,X):
+        # Returns probabilities
+        return expit(np.dot(X,self.beta))
