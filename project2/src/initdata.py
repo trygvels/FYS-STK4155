@@ -25,13 +25,17 @@ class InitData:
         self.path = os.getcwd() # Get current path
         self.path = '/Users/svalheim/work/fys-stk4155/project2' # quickfix
 
+        ## Categorical variables to one-hot's
+        # Dividing every variable into 2 categories
+        self.onehotencoder = OneHotEncoder(categories="auto")
+
 
     def credit_data(self):
         print("loading Credit card data")
         #%% Read data as pandas dataframe from excel format
         self.filename = self.path + '/default of credit card clients.xls'
         nanDict = {} # Empty dictionary for storing nanvalues
-        self.df = pd.read_excel(self.filename, header = 1, skiprows=0, index_col=0, na_values=nanDict)
+        self.df = pd.read_excel(self.filename, header = 1, skiprows=0, index_col=0, na_values=nanDict) #, nrows=1000) #faster
         self.df.rename(index=str, columns={"default payment next month": "defaultPaymentNextMonth"}, inplace=True)
 
         ## Features and targets
@@ -39,10 +43,6 @@ class InitData:
         self.X = self.df.loc[:, self.df.columns != 'defaultPaymentNextMonth'].values
         self.y = self.df.loc[:, self.df.columns == 'defaultPaymentNextMonth'].values
 
-
-        ## Categorical variables to one-hot's
-        # Dividing every variable into 2 categories
-        self.onehotencoder = OneHotEncoder(categories="auto")
 
         self.X = ColumnTransformer(
             [("", self.onehotencoder, [3]),],
@@ -78,7 +78,6 @@ class InitData:
         self.XTest = sc.transform(self.XTest) 
 
         #%% One-hot's of the target vector
-        # ??? Is this necessary if we only have 1 type of prediction?
         self.Y_train_onehot, self.Y_test_onehot = self.onehotencoder.fit_transform(self.yTrain), self.onehotencoder.fit_transform(self.yTest)
         
         return self.XTrain, self.yTrain, self.XTest, self.yTest, self.Y_train_onehot, self.Y_test_onehot

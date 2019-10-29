@@ -18,6 +18,6 @@ data = InitData()
 XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot = data.credit_data()
 
 logreg = LogReg()
-beta, costs = logreg.SGD(XTrain,yTrain) # Fit using SGD
-y_pred = logreg.predict(XTest)
-print(y_pred)
+logreg.SGD(XTrain,yTrain) # Fit using SGD
+logreg.predict(XTest)     # Predict
+logreg.stats(Y_test_onehot)            # print stats

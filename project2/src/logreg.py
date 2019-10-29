@@ -1,6 +1,7 @@
 import numpy as np
 from cost_functions import CostFunctions
 from scipy.special import expit
+from initdata import InitData
 
 class LogReg:
     def __init__(self, 
@@ -8,6 +9,7 @@ class LogReg:
                 path=None):
 
         self.cost = CostFunctions(cost) # Init cross_entropy cost function
+        self.initdata = InitData() # Init cross_entropy cost function
         self.path = path
         
       
@@ -34,4 +36,16 @@ class LogReg:
 
     def predict(self,X):
         # Returns probabilities
-        return expit(np.dot(X,self.beta))
+        self.probabilities = expit(np.dot(X,self.beta))
+        ints = (self.probabilities > 0.5).astype(int) 
+        self.y_pred_onehot = self.initdata.onehotencoder.fit_transform(ints)
+        return self.probabilities, self.y_pred_onehot
+
+    def stats(self, y_test_onehot):
+        # Make this output a nice dictionary
+        s = np.sum(y_test_onehot, axis=0)
+        print("number of true defaults / not defaults", s)
+        m = np.dot(self.y_pred_onehot.T,y_test_onehot) # Number of correctly characterized defaults
+        stats = m/s
+        print(stats)
+        return stats
