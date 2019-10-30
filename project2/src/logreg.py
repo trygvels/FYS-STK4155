@@ -38,7 +38,7 @@ class LogReg: # Logistic regression class
         #plt.show()
         return self.beta, costs
 
-    def SGD(self, X, y, lr = 0.01, iter=150, tol=1e-4): # Stochastic gradient descent method
+    def SGD(self, X, y, lr = 0.01, tol=1e-4): # Stochastic gradient descent method
         print("Doing SGD for logreg")
         n = len(y) 
         costs = []                                  # Initializing cost list
