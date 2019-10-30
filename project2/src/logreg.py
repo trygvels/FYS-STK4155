@@ -14,6 +14,9 @@ class LogReg: # Logistic regression class
         self.cost = CostFunctions(cost)             # Init cross_entropy cost function
         self.initdata = InitData()                  # Init cross_entropy cost function
         
+    def sigmoid(self, z):
+        return 1 / (1 + np.exp(-z))
+
     def GD(self, X, y, lr = 1, tol=1e-2):           #Gradient descent method
         print("Doing GD for logreg")
         n = len(y) 
@@ -22,8 +25,8 @@ class LogReg: # Logistic regression class
 
         i = 0; t = 1
         while t > tol:                              # Do gradient descent while below threshold
-            b = np.dot(X,self.beta)                 # Calculate current prediction
-            gradient = 1/n*np.dot(X.T,expit(b)-y)   # Calculate gradient
+            b = X@self.beta                         # Calculate current prediction
+            gradient = 1/n*( X.T @ (self.sigmoid(b)-y) ) # Calculate gradient
             self.beta -= lr*gradient                # Calculate perturbation to beta
             costs.append(self.cost(self.beta,X,y))  # Save cost of new beta
             t = np.linalg.norm(gradient)            # Calculate norm of gradient
@@ -52,8 +55,8 @@ class LogReg: # Logistic regression class
                 X_ = X[idx,:].reshape(1,X.shape[1]) # Select random data row
                 y_ = y[idx].reshape(1,1)            # select corresponding prediction
 
-                b = np.dot(X_,self.beta)                # Calculate current prediction
-                gradient = 1/n*np.dot(X_.T,expit(b)-y_) # Calculate gradient
+                b = X_@self.beta                # Calculate current prediction
+                gradient = 1/n*( X_.T @ (self.sigmoid(b)-y_)) # Calculate gradient
                 self.beta -= lr*gradient                # Calculate perturbation to beta
                 cost += self.cost(self.beta,X_,y_)
 
@@ -70,20 +73,10 @@ class LogReg: # Logistic regression class
     def predict(self,X):                           # Calculates probabilities and onehots for y
         print("Predicting y using logreg")
         # Returns probabilities
-        self.probabilities = expit(np.dot(X,self.beta)) # Makes prediction using trained betas
-        ints = (self.probabilities > 0.5).astype(int)   # Converts probabilities to ints
-        self.y_pred_onehot = self.initdata.onehotencoder.fit_transform(ints) # Converts to onehot
-        print("---------—--------—--------—--------—--------—--------—")
-        print("Checking prections", self.probabilities.shape, self.y_pred_onehot.shape)
-        print("Checking prections", self.probabilities[0], self.y_pred_onehot[0,0], self.y_pred_onehot[0,1])
-        print("---------—--------—--------—--------—--------—--------—")
-        return self.probabilities, self.y_pred_onehot
-
-    def stats(self, y_test_onehot): # Prints accuracy report
-        # Make this output a nice dictionary
-        stats = classification_report(self.y_pred_onehot,y_test_onehot)
-        print(stats)
-        return stats
+        self.yprobs = self.sigmoid(X@self.beta)
+        self.yPred = (self.yprobs > 0.5).astype(int)
+        self.y_pred_onehot = self.initdata.onehotencoder.fit_transform(self.yPred) # Converts to onehot
+        return self.yPred
 
     def sklearn_alternative(self, XTrain, yTrain, XTest, yTest): # Does SKLEARN method
         print("Doing logreg using sklearn")
@@ -96,7 +89,7 @@ class LogReg: # Logistic regression class
         parameters = [{'C': 1./lambdas, "solver":["lbfgs"]}]#*len(parameters)}]
         scoring = ['accuracy', 'roc_auc']
         logReg = LogisticRegression()
-        # ??? Finds best hyperparameters, then does regression.
+        # Finds best hyperparameters, then does regression.
         gridSearch = GridSearchCV(logReg, parameters, cv=5, scoring=scoring, refit='roc_auc') 
 
         # Fit stuff
@@ -108,7 +101,6 @@ class LogReg: # Logistic regression class
 
         logreg_df = pd.DataFrame(gridSearch.cv_results_) # Shows behaviour of CV
         display(logreg_df[['param_C','mean_test_accuracy', 'rank_test_accuracy','mean_test_roc_auc', 'rank_test_roc_auc']])
-
 
         logreg_df.columns
         logreg_df.plot(x='param_C', y='mean_test_accuracy', yerr='std_test_accuracy', logx=True)
