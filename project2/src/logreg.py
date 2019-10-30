@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from scipy.special import expit
 from sklearn.metrics import confusion_matrix, accuracy_score, roc_auc_score, classification_report
 
 from cost_functions import CostFunctions
@@ -83,7 +82,7 @@ class LogReg: # Logistic regression class
         #%Setting up grid search for optimal parameters of Logistic regression
         from sklearn.linear_model import LogisticRegression
         from sklearn.model_selection import GridSearchCV
-        from sklearn.metrics import confusion_matrix, accuracy_score, roc_auc_score, classification_report
+        from sklearn.metrics import classification_report
 
         lambdas=np.logspace(-5,7,13)
         parameters = [{'C': 1./lambdas, "solver":["lbfgs"]}]#*len(parameters)}]
@@ -100,7 +99,7 @@ class LogReg: # Logistic regression class
         display(rep)
 
         logreg_df = pd.DataFrame(gridSearch.cv_results_) # Shows behaviour of CV
-        display(logreg_df[['param_C','mean_test_accuracy', 'rank_test_accuracy','mean_test_roc_auc', 'rank_test_roc_auc']])
+        pd.display(logreg_df[['param_C','mean_test_accuracy', 'rank_test_accuracy','mean_test_roc_auc', 'rank_test_roc_auc']])
 
         logreg_df.columns
         logreg_df.plot(x='param_C', y='mean_test_accuracy', yerr='std_test_accuracy', logx=True)
