@@ -7,32 +7,28 @@ from sklearn.metrics import confusion_matrix, accuracy_score, roc_auc_score, cla
 from cost_functions import CostFunctions
 from initdata import InitData
 
-class LogReg:
-    def __init__(self, 
-                cost = 'cross_entropy', 
-                path=None):
+class LogReg: # Logistic regression class
+    def __init__(self, # Specify cost function to calculate with
+                cost = 'cross_entropy'):
 
-        self.cost = CostFunctions(cost) # Init cross_entropy cost function
-        self.initdata = InitData() # Init cross_entropy cost function
-        self.path = path
+        self.cost = CostFunctions(cost)             # Init cross_entropy cost function
+        self.initdata = InitData()                  # Init cross_entropy cost function
         
-    def GD(self, X, y, lr = 1, tol=1e-2):
+    def GD(self, X, y, lr = 1, tol=1e-2):           #Gradient descent method
         print("Doing GD for logreg")
-
-        # Fits beta using stochastic gradient descent
-        n = len(y)
-        costs = []
-        self.beta = np.random.randn(X.shape[1],1)
+        n = len(y) 
+        costs = []                                  # Initializing cost list
+        self.beta = np.random.randn(X.shape[1],1)   # Drawing initial random beta values
 
         i = 0; t = 1
-        while t > tol:
-            b = np.dot(X,self.beta) # Calculate current prediction
-            gradient = 1/n*np.dot(X.T,expit(b)-y) # Calculate gradient
-            self.beta -= lr*gradient # Calculate perturbation to beta
-            costs.append(self.cost(self.beta,X,y)) # Save cost of new beta
-            t = np.linalg.norm(gradient) 
-            i += 1
-            if i > 1e5:
+        while t > tol:                              # Do gradient descent while below threshold
+            b = np.dot(X,self.beta)                 # Calculate current prediction
+            gradient = 1/n*np.dot(X.T,expit(b)-y)   # Calculate gradient
+            self.beta -= lr*gradient                # Calculate perturbation to beta
+            costs.append(self.cost(self.beta,X,y))  # Save cost of new beta
+            t = np.linalg.norm(gradient)            # Calculate norm of gradient
+            i += 1  
+            if i > 1e5:                             # If descent takes too long, break.
                 print("This takes way too long, %d iterations, with learning rage %e" %(i,lr))
                 break
 
@@ -42,49 +38,54 @@ class LogReg:
         #plt.show()
         return self.beta, costs
 
-    def SGD(self, X, y, lr = 0.01, iter=150, tol=1e-4):
+    def SGD(self, X, y, lr = 0.01, iter=150, tol=1e-4): # Stochastic gradient descent method
         print("Doing SGD for logreg")
+        n = len(y) 
+        costs = []                                  # Initializing cost list
+        self.beta = np.random.randn(X.shape[1],1)   # Drawing initial random beta values
 
-        # Fits beta using stochastic gradient descent
-        n = len(y)
-        costs = np.zeros(iter)
-        self.beta = np.random.randn(X.shape[1],1)
-        self.beta = np.random.uniform(-0.5,0.5,(X.shape[1], 1))
-    
-        i = 0
-        while 1 > tol and i < iter: # Tol placeholder
-            cost = 0.0
+        i = 0; t = 1
+        while t > tol:                              # Do gradient descent while below threshold
+            cost = 0
             for j in range(n):
-                idx = np.random.randint(0,n) # Chose random data row
+                idx = np.random.randint(0,n)        # Chose random data row
                 X_ = X[idx,:].reshape(1,X.shape[1]) # Select random data row
                 y_ = y[idx].reshape(1,1)            # select corresponding prediction
 
-                b = np.dot(X_,self.beta) # Calculate current prediction
-                self.beta -= lr/n*np.dot(X_.T,b-y_) #Calculate change to prediction
+                b = np.dot(X_,self.beta)                # Calculate current prediction
+                gradient = 1/n*np.dot(X_.T,expit(b)-y_) # Calculate gradient
+                self.beta -= lr*gradient                # Calculate perturbation to beta
                 cost += self.cost(self.beta,X_,y_)
-            costs[i] = cost # Saves cost of beta over iterations
-            i+=1
+
+            costs.append(cost)                      # Save cost of new beta
+            t = np.linalg.norm(gradient)            # Calculate norm of gradient #Fix this for SGD
+            i += 1  
+            if i > 1e5:                             # If descent takes too long, break.
+                print("This takes way too long, %d iterations, with learning rage %e" %(i,lr))
+                break
+
+        print("Stochastic gradient solver has converged after %d iterations" % i )
         return self.beta, costs
 
-    def predict(self,X):
+    def predict(self,X):                           # Calculates probabilities and onehots for y
         print("Predicting y using logreg")
         # Returns probabilities
         self.probabilities = expit(np.dot(X,self.beta)) # Makes prediction using trained betas
-        ints = (self.probabilities > 0.5).astype(int) 
-        self.y_pred_onehot = self.initdata.onehotencoder.fit_transform(ints)
+        ints = (self.probabilities > 0.5).astype(int)   # Converts probabilities to ints
+        self.y_pred_onehot = self.initdata.onehotencoder.fit_transform(ints) # Converts to onehot
         print("---------—--------—--------—--------—--------—--------—")
         print("Checking prections", self.probabilities.shape, self.y_pred_onehot.shape)
         print("Checking prections", self.probabilities[0], self.y_pred_onehot[0,0], self.y_pred_onehot[0,1])
         print("---------—--------—--------—--------—--------—--------—")
         return self.probabilities, self.y_pred_onehot
 
-    def stats(self, y_test_onehot):
+    def stats(self, y_test_onehot): # Prints accuracy report
         # Make this output a nice dictionary
         stats = classification_report(self.y_pred_onehot,y_test_onehot)
         print(stats)
         return stats
 
-    def sklearn_alternative(self, XTrain, yTrain, XTest, yTest):
+    def sklearn_alternative(self, XTrain, yTrain, XTest, yTest): # Does SKLEARN method
         print("Doing logreg using sklearn")
         #%Setting up grid search for optimal parameters of Logistic regression
         from sklearn.linear_model import LogisticRegression

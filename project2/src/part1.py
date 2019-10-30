@@ -9,7 +9,7 @@ from logreg import LogReg
 from initdata import InitData
 
 data = InitData()
-XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot = data.credit_data()
+XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot = data.credit_data(trainingShare=0.5)
 
 
 from sklearn.linear_model import LogisticRegression
