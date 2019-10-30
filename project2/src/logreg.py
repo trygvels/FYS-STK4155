@@ -5,7 +5,7 @@ from scipy.special import expit
 from sklearn.metrics import confusion_matrix, accuracy_score, roc_auc_score, classification_report
 
 from cost_functions import CostFunctions
-from initdata import InitData
+from initdata       import InitData
 
 class LogReg: # Logistic regression class
     def __init__(self, # Specify cost function to calculate with

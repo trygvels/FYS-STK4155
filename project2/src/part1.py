@@ -9,6 +9,12 @@ from sklearn.metrics import confusion_matrix, accuracy_score, roc_auc_score, cla
 from logreg import LogReg
 from initdata import InitData
 
+"""
+In this part of the project, we assess the predictive ability of logistic regression on 
+determining default based on credit card data. The weights are trained using a gradient
+solver and compared with Scikit-Learns Logistic regression method.
+"""
+
 ## Get data from InitData Class
 data = InitData()
 XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot = data.credit_data(trainingShare=0.5)
