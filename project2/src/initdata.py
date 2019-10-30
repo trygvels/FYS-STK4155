@@ -1,4 +1,4 @@
-#%% [markdown]
+
 import sys
 import os
 import random
@@ -18,7 +18,6 @@ seed = 42069
 np.random.seed(seed)
 random.seed(seed)
 
-#%%
 
 class InitData: 
     def __init__(self, path=None):
@@ -50,7 +49,7 @@ class InitData:
         ).fit_transform(self.X)
 
         #%% Train-test split
-        self.trainingShare = 0.5 
+        self.trainingShare = 0.5
         self.XTrain, self.XTest, self.yTrain, self.yTest=train_test_split(self.X, self.y, train_size=self.trainingShare, \
                                                     test_size = 1-self.trainingShare,
                                                     random_state=seed)
@@ -77,41 +76,12 @@ class InitData:
         self.XTrain = sc.fit_transform(self.XTrain) 
         self.XTest = sc.transform(self.XTest) 
 
-        #%% One-hot's of the target vector
+        # One-hot's of the target vector
         self.Y_train_onehot, self.Y_test_onehot = self.onehotencoder.fit_transform(self.yTrain), self.onehotencoder.fit_transform(self.yTest)
         
         return self.XTrain, self.yTrain, self.XTest, self.yTest, self.Y_train_onehot, self.Y_test_onehot
 
-#%%
-"""
-#%% Setting up grid search for optimal parameters of Logistic regression
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import GridSearchCV
 
-lambdas=np.logspace(-5,7,13)
-parameters = [{'C': 1./lambdas, "solver":["lbfgs"]}]#*len(parameters)}]
-scoring = ['accuracy', 'roc_auc']
-logReg = LogisticRegression()
-# ??? Finds best hyperparameters, then does regression.
-gridSearch = GridSearchCV(logReg, parameters, cv=5, scoring=scoring, refit='roc_auc') 
-
-#%% Fit stuff
-gridSearch.fit(XTrain, yTrain.ravel())
-yTrue, yPred = yTest, gridSearch.predict(XTest)
-print(classification_report(yTrue,yPred))
-rep = pd.DataFrame(classification_report(yTrue,yPred,output_dict=True)).transpose()
-display(rep)
-
-logreg_df = pd.DataFrame(gridSearch.cv_results_) # Shows behaviour of CV
-display(logreg_df)
-
-
-logreg_df.columns
-logreg_df.plot(x='param_C', y='mean_test_accuracy', yerr='std_test_accuracy', logx=True)
-logreg_df.plot(x='param_C', y='mean_test_roc_auc', yerr='std_test_roc_auc', logx=True)
-plt.show()
-"""
-# %%
 
 
 
