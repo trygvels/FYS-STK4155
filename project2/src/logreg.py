@@ -11,7 +11,7 @@ class LogReg: # Logistic regression class
                 cost = 'cross_entropy'):
 
         self.cost = CostFunctions(cost)             # Init cross_entropy cost function
-        self.initdata = InitData()                  # Init cross_entropy cost function
+        self.initdata = InitData()                  # Init data set
         
     def sigmoid(self, z):
         return 1 / (1 + np.exp(-z))
