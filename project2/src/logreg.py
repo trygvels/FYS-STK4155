@@ -21,7 +21,7 @@ class LogReg: # Logistic regression class
         print("Doing GD for logreg")
         n = len(y) 
         costs = []                                  # Initializing cost list
-        self.beta = np.random.randn(X.shape[1],1)   # Drawing initial random beta values
+        self.beta = np.random.randn(X.shape[1])   # Drawing initial random beta values
 
         i = 0; t = 1
         while t > tol:                              # Do gradient descent while below threshold
@@ -75,7 +75,7 @@ class LogReg: # Logistic regression class
         # Returns probabilities
         self.yprobs = self.sigmoid(X@self.beta)
         self.yPred = (self.yprobs > 0.5).astype(int)
-        self.y_pred_onehot = self.initdata.onehotencoder.fit_transform(self.yPred) # Converts to onehot
+        self.y_pred_onehot = self.initdata.onehotencoder.fit_transform(self.yPred.reshape(-1,1)) # Converts to onehot
         return self.yPred
 
     def sklearn_alternative(self, XTrain, yTrain, XTest, yTest): # Does SKLEARN method

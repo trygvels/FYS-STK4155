@@ -20,12 +20,12 @@ logreg = LogReg() # init Logreg class
 #lrs = np.logspace(-5,7,13)
 lrs = [0.01]
 for lr in lrs:
-    beta, costs = logreg.GD(XTrain,yTrain,lr=lr) # Fit using SGD. This can be looped over for best lambda.
+    beta, costs = logreg.GD(XTrain,yTrain.ravel(),lr=lr) # Fit using SGD. This can be looped over for best lambda.
     #plt.plot(costs)
 #plt.show()
 
-# Check results
-print("---------—--------—--------—--------—--------—--------—")
+# Check results statistics
+print("---------—--------—--- Our Regression --------—--------—--------—")
 yTrue, yPred = yTest, logreg.predict(XTest)     # Predict
 print(classification_report(yPred, yTrue))
 
@@ -34,6 +34,7 @@ if True: # Simple sklearn
     from sklearn.linear_model import LogisticRegression
     logReg = LogisticRegression(solver="lbfgs").fit(XTrain,yTrain.ravel())
     yTrue, yPred = yTest, logReg.predict(XTest)
+    print("---------—--------—-- Sklearn Regression --------------—--------—")
     print(classification_report(yPred, yTrue))
 else:   # Fancy optimal sklearn
     logreg.sklearn_alternative(XTrain, yTrain, XTest, yTest)
