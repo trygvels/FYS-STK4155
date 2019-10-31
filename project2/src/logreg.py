@@ -1,3 +1,4 @@
+import time
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -68,6 +69,43 @@ class LogReg: # Logistic regression class
 
         print("Stochastic gradient solver has converged after %d iterations" % i )
         return self.beta, costs
+
+    def SGD_batch(self, X, y, lr = 0.01, tol=1e-4, max_iter=1000, batch_size=100, n_epoch=100, adj_lr=False): # Stochastic gradient descent method
+        print("Doing SGD for logreg")
+        n = len(y) 
+        costs = []                                  # Initializing cost list
+        self.beta = np.random.randn(X.shape[1],1)   # Drawing initial random beta values
+        min_cost = self.cost(self.beta,X,y)
+        best_beta=self.beta.copy()
+
+        if (adj_lr):
+            t0 = n
+            lr0=lr
+            
+        i = 0; t = 1
+        for k in range(n_epoch):
+            print('epoch %i of %i'%(k+1,n_epoch))
+            for j in range(max_iter):
+                idx_arr=np.linspace(0,batch_size-1,batch_size, dtype='int')
+                idx = np.random.randint(0,n) # Choose a random data row
+                idx_arr = np.mod(idx_arr+idx,n)
+                # take idx_arr to be indexes from idx to dix+batch_size-1
+                X_ = X[idx_arr,:].reshape(batch_size,X.shape[1]) # Select batch data
+                y_ = y[idx_arr].reshape(batch_size,1)            # select corresponding prediction
+                b = X_@self.beta                # Calculate current prediction
+                gradient = ( X_.T @ (self.activations.sigmoid(b)-y_)) # Calculate gradient
+                if (adj_lr):
+                    lr=(lr0*t0)/(t0+k*max_iter+j)
+                    #as iterations increase, the step size in beta is reduced
+                self.beta -= lr*gradient                # Calculate perturbation to beta
+            #after each epoch we compute the cost
+            cost = self.cost(self.beta,X,y) #calculate total cost (This takes a long time!!)
+            costs.append(cost)                      # Save cost of new beta
+            if (cost < min_cost):
+                min_cost=cost
+                best_beta=self.beta.copy()
+            i += 1  
+        return best_beta, costs
 
     def predict(self,X):                           # Calculates probabilities and onehots for y
         print("Predicting y using logreg")
