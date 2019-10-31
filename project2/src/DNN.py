@@ -6,8 +6,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, accuracy_score, roc_auc_score, classification_report
 
-from logreg     import LogReg
-from initdata   import InitData
+from logreg      import LogReg
+from initdata    import InitData
+from activations import Activations
 
 """
 This class is a feed-forward dense neural network used to train an arbitrary dataset.
@@ -19,9 +20,9 @@ class NeuralNetwork:
             X_data,
             Y_data,
             n_hidden_neurons=50,
-            n_categories=2,
-            epochs=10,
-            batch_size=100,
+            n_categories=1,
+            epochs=1,
+            batch_size=1,
             eta=0.1,
             lmbd=0.0):
 
@@ -39,9 +40,9 @@ class NeuralNetwork:
         self.eta = eta
         self.lmbd = lmbd
 
-        self.create_biases_and_weights()
+        self.create_biases_and_weights() # Initialize random weights and biases for two layers
 
-        self.logreg = LogReg()
+        self.activations = Activations()
 
     def create_biases_and_weights(self):
         # Calculate inital weights and biases for hidden layer
@@ -52,30 +53,28 @@ class NeuralNetwork:
         self.output_weights = np.random.randn(self.n_hidden_neurons, self.n_categories)
         self.output_bias = np.zeros(self.n_categories) + 0.01
 
-
     def feed_forward(self):
         ## feed-forward for training
         # calculate w*X + b
         self.z_h = np.matmul(self.X_data, self.hidden_weights) + self.hidden_bias
         # Pass through non-linear sigmoid gate
-        self.a_h = self.logreg.sigmoid(self.z_h)
+        self.a_h = self.activations.sigmoid(self.z_h)
 
         # Calculate output output layer
         self.z_o = np.matmul(self.a_h, self.output_weights) + self.output_bias
 
         # Calculate probabolities from output layer
-        exp_term = np.exp(self.z_o)
-        self.probabilities = exp_term / np.sum(exp_term, axis=1, keepdims=True)
+        self.probabilities = self.activations.softmax(self.z_o)
 
     def feed_forward_out(self, X):
         # feed-forward for output
         z_h = np.matmul(X, self.hidden_weights) + self.hidden_bias
-        a_h = self.logreg.sigmoid(z_h)
+        a_h = self.activations.sigmoid(z_h)
 
         z_o = np.matmul(a_h, self.output_weights) + self.output_bias
         
-        exp_term = np.exp(z_o)
-        probabilities = exp_term / np.sum(exp_term, axis=1, keepdims=True)
+        probabilities = self.activations.softmax(z_o)
+
         return probabilities
 
     def backpropagation(self):
@@ -108,9 +107,13 @@ class NeuralNetwork:
 
     def train(self):
         data_indices = np.arange(self.n_inputs)
-
+   
         for i in range(self.epochs):
             for j in range(self.iterations):
+                if np.isnan(self.hidden_weights).any():
+                    print("found nan in",i,j)
+                    sys.exit()
+
                 # pick datapoints with replacement
                 chosen_datapoints = np.random.choice(
                     data_indices, size=self.batch_size, replace=False
@@ -122,3 +125,5 @@ class NeuralNetwork:
 
                 self.feed_forward()
                 self.backpropagation()
+
+        

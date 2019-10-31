@@ -5,6 +5,7 @@ from sklearn.metrics import confusion_matrix, accuracy_score, roc_auc_score, cla
 
 from cost_functions import CostFunctions
 from initdata       import InitData
+from activations    import Activations
 
 class LogReg: # Logistic regression class
     def __init__(self, # Specify cost function to calculate with
@@ -12,9 +13,7 @@ class LogReg: # Logistic regression class
 
         self.cost = CostFunctions(cost)             # Init cross_entropy cost function
         self.initdata = InitData()                  # Init data set
-        
-    def sigmoid(self, z): # Non-linear gate function
-        return 1 / (1 + np.exp(-z))
+        self.activations = Activations()
 
     def GD(self, X, y, lr = 1, tol=1e-2):           #Gradient descent method
         print("Doing GD for logreg")
@@ -25,7 +24,7 @@ class LogReg: # Logistic regression class
         i = 0; t = 1
         while t > tol:                              # Do gradient descent while below threshold
             b = X@self.beta                         # Calculate current prediction
-            gradient = 1/n*( X.T @ (self.sigmoid(b)-y) ) # Calculate gradient
+            gradient = 1/n*( X.T @ (self.activations.sigmoid(b)-y) ) # Calculate gradient
             self.beta -= lr*gradient                # Calculate perturbation to beta
             costs.append(self.cost(self.beta,X,y))  # Save cost of new beta
             t = np.linalg.norm(gradient)            # Calculate norm of gradient
@@ -51,11 +50,12 @@ class LogReg: # Logistic regression class
             cost = 0
             for j in range(n):
                 idx = np.random.randint(0,n)        # Chose random data row
-                X_ = X[idx,:].reshape(1,X.shape[1]) # Select random data row
+                X_ = X[idx,:].reshape(1,X.shapels
+                [1]) # Select random data row
                 y_ = y[idx].reshape(1,1)            # select corresponding prediction
 
                 b = X_@self.beta                # Calculate current prediction
-                gradient = 1/n*( X_.T @ (self.sigmoid(b)-y_)) # Calculate gradient
+                gradient = 1/n*( X_.T @ (self.activations.sigmoid(b)-y_)) # Calculate gradient
                 self.beta -= lr*gradient                # Calculate perturbation to beta
                 cost += self.cost(self.beta,X_,y_)
 
@@ -72,7 +72,7 @@ class LogReg: # Logistic regression class
     def predict(self,X):                           # Calculates probabilities and onehots for y
         print("Predicting y using logreg")
         # Returns probabilities
-        self.yprobs = self.sigmoid(X@self.beta)
+        self.yprobs = self.activations.sigmoid(X@self.beta)
         self.yPred = (self.yprobs > 0.5).astype(int)
         self.y_pred_onehot = self.initdata.onehotencoder.fit_transform(self.yPred.reshape(-1,1)) # Converts to onehot
         return self.yPred

@@ -17,9 +17,15 @@ network on determining default based on credit card data.
 ## Get data from InitData Class
 data = InitData()
 XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot = data.credit_data(trainingShare=0.5)
-print(Y_test_onehot.shape)
+
 # Running neural network
-dnn = NeuralNetwork(XTrain, yTrain)
+dnn = NeuralNetwork(XTrain, yTrain,
+                    n_hidden_neurons=100,
+                    n_categories=2,
+                    epochs=10,
+                    batch_size=100,
+                    eta=0.1,
+                    lmbd=0.0)
 dnn.train()
 
 yPred = dnn.predict_probabilities(XTest)
