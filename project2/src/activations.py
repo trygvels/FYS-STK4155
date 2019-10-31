@@ -1,8 +1,7 @@
 import numpy as np
 
 class Activations():
-    def __init__(self, activation, alpha = 1):
-        FunctionBase.__init__(self, func_name = activation)
+    def __init__(self, alpha = 1):
         self.alpha = alpha
 
     # Sigmoid
