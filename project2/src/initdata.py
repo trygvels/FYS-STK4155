@@ -50,7 +50,7 @@ class InitData: # Class for initializing different data sets
         self.XTrain, self.XTest, self.yTrain, self.yTest=train_test_split(self.X, self.y, train_size=self.trainingShare, \
                                                     test_size = 1-self.trainingShare,
                                                     random_state=seed)
-
+        
         # Drop data points with no bill and payment info
         self.df = self.df.drop(self.df[(self.df.BILL_AMT1 == 0) &
                         (self.df.BILL_AMT2 == 0) &
@@ -64,7 +64,7 @@ class InitData: # Class for initializing different data sets
                         (self.df.PAY_AMT4 == 0) &
                         (self.df.PAY_AMT5 == 0) &
                         (self.df.PAY_AMT6 == 0)].index)
-
+        
 
         #%% Input Scaling
         sc = StandardScaler() # Scale to zero mean and unit variance
