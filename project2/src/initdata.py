@@ -35,7 +35,7 @@ class InitData: # Class for initializing different data sets
         self.df = pd.read_excel(self.filename, header = 1, skiprows=0, index_col=0, na_values=nanDict) #, nrows=1000) #faster
         self.df.rename(index=str, columns={"default payment next month": "defaultPaymentNextMonth"}, inplace=True)
 
-        # Target is last column (defaultpayment 0 or 1), featues is everything else
+        # Target is last column (defaultpayment 0 or 1), features is everything else
         self.X = self.df.loc[:, self.df.columns != 'defaultPaymentNextMonth'].values
         self.y = self.df.loc[:, self.df.columns == 'defaultPaymentNextMonth'].values
 
