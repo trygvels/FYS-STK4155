@@ -16,4 +16,3 @@ class CostFunctions: # Class with different cost functions
     def mse(self, beta, X, y) :         # Mean Squared error
         b = np.dot(X,beta)
         return ((y - b)**2).mean() * 0.5
-

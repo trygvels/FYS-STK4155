@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, accuracy_score, roc_auc_score, classification_report
+plt.style.use(u"~/.matplotlib/stylelib/trygveplot_astro.mplstyle")
 
 from logreg import LogReg
 from initdata import InitData
@@ -27,8 +28,8 @@ logreg = LogReg() # init Logreg class
 lrs = [0.01]
 for lr in lrs:
     beta, costs = logreg.GD(XTrain,yTrain.ravel(),lr=lr) # Fit using SGD. This can be looped over for best lambda.
-    #plt.plot(costs)
-#plt.show()
+    plt.plot(costs)
+plt.show()
 
 # Check results statistics
 print("---------—--------—--- Our Regression --------—--------—--------—")

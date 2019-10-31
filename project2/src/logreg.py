@@ -11,9 +11,9 @@ class LogReg: # Logistic regression class
                 cost = 'cross_entropy'):
 
         self.cost = CostFunctions(cost)             # Init cross_entropy cost function
-        self.initdata = InitData()                  # Init cross_entropy cost function
+        self.initdata = InitData()                  
         
-    def sigmoid(self, z):
+    def sigmoid(self, z): # Non-linear gate function
         return 1 / (1 + np.exp(-z))
 
     def GD(self, X, y, lr = 1, tol=1e-2):           #Gradient descent method
