@@ -38,10 +38,12 @@ lrs = [0.01]
 for lr in lrs:
       beta, costs = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lr,adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=100) # Fit using SGD. This can be looped over for best lambda.
       plt.plot(costs)
-
+      print("---------—--------—--- Our Regression (manual) --------—--------—")
+      yPred=logreg.predict(XTest)
+      logreg.own_classification(yTest,yPred)
       print("---------—--------—--- Our Regression --------—--------—--------—")
       yTrue, yPred = yTest, logreg.predict(XTest)     # Predict
-      print(classification_report(yPred, yTrue))
+      print(classification_report(yTrue,yPred))
 
 plt.show()
 
@@ -52,6 +54,6 @@ if True: # Simple sklearn
     logReg = LogisticRegression(solver="lbfgs").fit(XTrain,yTrain.ravel())
     yTrue, yPred = yTest, logReg.predict(XTest)
     print("---------—--------—-- Sklearn Regression --------------—--------—")
-    print(classification_report(yPred, yTrue))
+    print(classification_report(yTrue, yPred))
 else:   # Fancy optimal sklearn
     logreg.sklearn_alternative(XTrain, yTrain, XTest, yTest)

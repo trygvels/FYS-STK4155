@@ -152,3 +152,37 @@ class LogReg: # Logistic regression class
         logreg_df.plot(x='param_C', y='mean_test_accuracy', yerr='std_test_accuracy', logx=True)
         logreg_df.plot(x='param_C', y='mean_test_roc_auc', yerr='std_test_roc_auc', logx=True)
         plt.show()
+
+    def own_classification(self,ytrue,pred,threshold=0.5):
+        tp=0
+        tn=0
+        fp=0
+        fn=0
+        pred=np.where(pred>threshold,1,0)
+        for i in range(len(ytrue)):
+            if (pred[i]==1 and ytrue[i]==1):
+                tp +=1
+            elif (pred[i]==1 and ytrue[i]==0):
+                fp +=1
+            elif (pred[i]==0 and ytrue[i]==0):
+                tn +=1
+            elif (pred[i]==0 and ytrue[i]==1):
+                fn +=1
+        pcp=np.sum(np.where(pred==1,1,0))
+        pcn=np.sum(np.where(pred==0,1,0))
+        cp=np.sum(np.where(ytrue==1,1,0))
+        cn=np.sum(np.where(ytrue==0,1,0))
+        ppv=[tn*1.0/pcn, tp*1.0/pcp]
+        trp=[tn*1.0/cn, tp*1.0/cp]
+        f1=[2.0*ppv[0]*trp[0]/(ppv[0]+trp[0]), 2.0*ppv[1]*trp[1]/(ppv[1]+trp[1])]
+        print("              precision     recall     f1-score     true number    predicted number")
+        print()
+        print("           0      %5.3f      %5.3f        %5.3f        %8i    %16i"%(ppv[0],trp[0],f1[0],cn,pcn))
+        print("           1      %5.3f      %5.3f        %5.3f        %8i    %16i"%(ppv[1],trp[1],f1[1],cp,pcp))
+        print()
+        print("    accuracy                              %5.3f        %8i"%((tp+tn)*1.0/(cp+cn),cp+cn))
+        print("   macro avg      %5.3f      %5.3f        %5.3f        %8i"%((ppv[0]+ppv[1])/2.0,(trp[0]+trp[1])/2.0, (f1[0]+f1[1])/2.0,cn+cp))
+        print("weighted avg      %5.3f      %5.3f        %5.3f        %8i"%((ppv[0]*pcn+ppv[1]*pcp)/(pcn+pcp),(trp[0]*pcn+trp[1]*pcp)/(pcn+pcp), (f1[0]*pcn+f1[1]*pcp)/(pcn+pcp),cn+cp))
+        print()
+
+        return
