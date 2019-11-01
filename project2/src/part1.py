@@ -24,18 +24,27 @@ XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot = data.credit_data(t
 ## Initialize Logreg Class
 logreg = LogReg() # init Logreg class
 
+
+# Check results statistics
+print("---------—--------------- True data ----------—--------—--------—")
+print(" total test data: %i"%(len(yTest)))
+print("               0: %i"%(len(yTest)-np.sum(yTest[:,-1])))
+print("               1: %i"%(np.sum(yTest[:,-1])))
+print()
+      
 # Optimize parameters
 #lrs = np.logspace(-5,7,13)
 lrs = [0.01]
 for lr in lrs:
-    beta, costs = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lr,adj_lr=True, n_epoch=100) # Fit using SGD. This can be looped over for best lambda.
-    plt.plot(costs)
+      beta, costs = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lr,adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=100) # Fit using SGD. This can be looped over for best lambda.
+      plt.plot(costs)
+
+      print("---------—--------—--- Our Regression --------—--------—--------—")
+      yTrue, yPred = yTest, logreg.predict(XTest)     # Predict
+      print(classification_report(yPred, yTrue))
+
 plt.show()
 
-# Check results statistics
-print("---------—--------—--- Our Regression --------—--------—--------—")
-yTrue, yPred = yTest, logreg.predict(XTest)     # Predict
-print(classification_report(yPred, yTrue))
 
 # Compare with sklearn
 if True: # Simple sklearn

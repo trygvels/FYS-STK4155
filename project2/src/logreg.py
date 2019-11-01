@@ -70,10 +70,13 @@ class LogReg: # Logistic regression class
         print("Stochastic gradient solver has converged after %d iterations" % i )
         return self.beta, costs
 
-    def SGD_batch(self, X, y, lr = 0.01, tol=1e-4, max_iter=1000, batch_size=100, n_epoch=100, adj_lr=False): # Stochastic gradient descent method
+    def SGD_batch(self, X, y, lr = 0.01, tol=1e-4, max_iter=1000, batch_size=100, n_epoch=100, rnd_seed=False, adj_lr=False,verbosity=0): # Stochastic gradient descent method
         print("Doing SGD for logreg")
         n = len(y) 
         costs = []                                  # Initializing cost list
+        
+        if (rnd_seed):
+            np.random.seed(int(time.time()))
         self.beta = np.random.randn(X.shape[1],1)   # Drawing initial random beta values
         min_cost = self.cost(self.beta,X,y)
         best_beta=self.beta.copy()
@@ -84,12 +87,17 @@ class LogReg: # Logistic regression class
             
         i = 0; t = 1
         for k in range(n_epoch):
-            print('epoch %i of %i'%(k+1,n_epoch))
+            if (verbosity>0):
+                print('epoch %i of %i'%(k+1,n_epoch))
             for j in range(max_iter):
-                idx_arr=np.linspace(0,batch_size-1,batch_size, dtype='int')
-                idx = np.random.randint(0,n) # Choose a random data row
-                idx_arr = np.mod(idx_arr+idx,n)
-                # take idx_arr to be indexes from idx to dix+batch_size-1
+                #idx_arr=np.linspace(0,batch_size-1,batch_size, dtype='int')
+                #idx = np.random.randint(0,n) # Choose a random data row
+                #idx_arr = np.mod(idx_arr+idx,n)
+                ## take idx_arr to be indices from idx to idx+batch_size-1
+                #data is sorted on age after index ~15000, try to use completely random
+                #values instead
+                idx_arr = np.random.randint(0,n,batch_size) # Choose n random data rows
+                
                 X_ = X[idx_arr,:].reshape(batch_size,X.shape[1]) # Select batch data
                 y_ = y[idx_arr].reshape(batch_size,1)            # select corresponding prediction
                 b = X_@self.beta                # Calculate current prediction
@@ -104,7 +112,8 @@ class LogReg: # Logistic regression class
             if (cost < min_cost):
                 min_cost=cost
                 best_beta=self.beta.copy()
-            i += 1  
+            i += 1
+        self.beta=best_beta.copy()
         return best_beta, costs
 
     def predict(self,X):                           # Calculates probabilities and onehots for y
