@@ -25,8 +25,9 @@ class InitData: # Class for initializing different data sets
         # Dividing every variable into 2 categories
         self.onehotencoder = OneHotEncoder(categories="auto")
 
-
-    def credit_data(self, trainingShare): # Function for initializing credit card data
+    # Function for initializing credit card data
+    def credit_data(self, trainingShare, drop_zero=False,drop_neg2=False, per_col=False):
+        
         print("loading Credit card data")
         
         # Read data as pandas dataframe from excel format
@@ -59,7 +60,7 @@ class InitData: # Class for initializing different data sets
         self.df = self.df.drop(self.df[(self.df.EDUCATION == 6)].index)
 
         # Note: following removals will remove the majority of the data (~26000 samples) 
-        if (False): #the majority is here!
+        if (drop_zero): #the majority is here!
             # Drop data points with payment history equal to 0
             self.df = self.df.drop(self.df[(self.df.PAY_0 == 0)].index)
             self.df = self.df.drop(self.df[(self.df.PAY_2 == 0)].index)
@@ -67,7 +68,7 @@ class InitData: # Class for initializing different data sets
             self.df = self.df.drop(self.df[(self.df.PAY_4 == 0)].index)
             self.df = self.df.drop(self.df[(self.df.PAY_5 == 0)].index)
             self.df = self.df.drop(self.df[(self.df.PAY_6 == 0)].index)
-        if (False):
+        if (drop_neg2):
             # Drop data points with payment history equal to -2
             self.df = self.df.drop(self.df[(self.df.PAY_0 == -2)].index)
             self.df = self.df.drop(self.df[(self.df.PAY_2 == -2)].index)
@@ -80,13 +81,43 @@ class InitData: # Class for initializing different data sets
         self.X = self.df.loc[:, self.df.columns != 'defaultPaymentNextMonth'].values
         self.y = self.df.loc[:, self.df.columns == 'defaultPaymentNextMonth'].values
 
+        # If we choose not to exclude '0' or '-2' in PAY_i, we try to add extra columns to
+        # classify the data containing these flags. Two options: (1) 1 column per flag for 
+        # all 'PAY_i' columns (i.e. 2 new columns), or (2) 1 column per flag per 'PAY_i'
+        # column (i.e 12 new columns
+        if (not drop_zero):
+            if (per_col):
+                Xtemp=np.zeros(shape=(self.X.shape[0],6),dtype='int')
+                #find where X == 0 in the 'PAY_i' columns 
+                Xtemp=np.where(self.X[:,5:11] == 0, 1, 0)
+            else:
+                Xtemp=np.zeros(shape=(self.X.shape[0],1),dtype='int')
+                for i in range(self.X.shape[0]):
+                    if (np.any(self.X[i,5:11] == 0)):
+                        Xtemp[i,0]=1
+            #merge the arrays (append at the end)
+            self.X = np.concatenate((self.X,Xtemp),axis=1)
+
+        if (not drop_neg2):
+            if (per_col):
+                Xtemp=np.zeros(shape=(self.X.shape[0],6),dtype='int')
+                #find where X == 0 in the 'PAY_i' columns 
+                Xtemp=np.where(self.X[:,5:11] == -2, 1, 0)
+            else:
+                Xtemp=np.zeros(shape=(self.X.shape[0],1),dtype='int')
+                for i in range(self.X.shape[0]):
+                    if (np.any(self.X[i,5:11] == -2)):
+                        Xtemp[i,0]=1
+            #merge the arrays (append at the end)
+            self.X = np.concatenate((self.X,Xtemp),axis=1)
+
         #Onehotencode column index 1,2 and 3 in data (gender, education and Marriage status)
         self.X = ColumnTransformer(
             [("", self.onehotencoder, [1,2,3]),],
             remainder="passthrough"
         ).fit_transform(self.X)
         
-        
+
         # Train-test split
         self.trainingShare = trainingShare
         self.XTrain, self.XTest, self.yTrain, self.yTest=train_test_split(self.X, self.y, train_size=self.trainingShare, test_size = 1-self.trainingShare, random_state=seed)

@@ -19,7 +19,7 @@ solver and compared with Scikit-Learns Logistic regression method.
 
 ## Get data from InitData Class
 data = InitData()
-XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot = data.credit_data(trainingShare=0.5)
+XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot = data.credit_data(trainingShare=0.5,per_col=True,drop_zero=True,drop_neg2=True)
 
 ## Initialize Logreg Class
 logreg = LogReg() # init Logreg class
@@ -36,14 +36,15 @@ print()
 #lrs = np.logspace(-5,7,13)
 lrs = [0.01]
 for lr in lrs:
-      beta, costs = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lr,adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=100) # Fit using SGD. This can be looped over for best lambda.
+      beta, costs = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lr,adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=20) # Fit using SGD. This can be looped over for best lambda.
       plt.plot(costs)
-      print("---------—--------—--- Our Regression (manual) --------—--------—")
-      yPred=logreg.predict(XTest)
-      logreg.own_classification(yTest,yPred)
       print("---------—--------—--- Our Regression --------—--------—--------—")
-      yTrue, yPred = yTest, logreg.predict(XTest)     # Predict
-      print(classification_report(yTrue,yPred))
+      print("-—--------—--- Training data -------—--------—")
+      yPred=logreg.predict(XTrain) #predict
+      logreg.own_classification_report(yTrain,yPred)
+      print("-—--------—--- Validation data -------—--------—")
+      yPred=logreg.predict(XTest) #predict
+      logreg.own_classification_report(yTest,yPred)
 
 plt.show()
 
@@ -54,6 +55,12 @@ if True: # Simple sklearn
     logReg = LogisticRegression(solver="lbfgs").fit(XTrain,yTrain.ravel())
     yTrue, yPred = yTest, logReg.predict(XTest)
     print("---------—--------—-- Sklearn Regression --------------—--------—")
-    print(classification_report(yTrue, yPred))
+    print("-—--------—--- Training data -------—--------—")
+    yPred=logReg.predict(XTrain) #predict
+    logreg.own_classification_report(yTrain,yPred)
+    print("-—--------—--- Validation data -------—--------—")
+    yPred=logReg.predict(XTest) #predict
+    logreg.own_classification_report(yTest,yPred)
+
 else:   # Fancy optimal sklearn
     logreg.sklearn_alternative(XTrain, yTrain, XTest, yTest)

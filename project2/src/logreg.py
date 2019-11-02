@@ -153,7 +153,7 @@ class LogReg: # Logistic regression class
         logreg_df.plot(x='param_C', y='mean_test_roc_auc', yerr='std_test_roc_auc', logx=True)
         plt.show()
 
-    def own_classification(self,ytrue,pred,threshold=0.5):
+    def own_classification_report(self,ytrue,pred,threshold=0.5):
         tp=0
         tn=0
         fp=0
