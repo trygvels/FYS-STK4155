@@ -14,6 +14,7 @@ from activations import Activations
 This class is a feed-forward dense neural network used to train an arbitrary dataset.
 """
 
+
 class NeuralNetwork:
     def __init__(
             self,
@@ -24,7 +25,8 @@ class NeuralNetwork:
             epochs=10,
             batch_size=100,
             eta=0.01,
-            lmbd=0.0):
+            lmbd=0.0,
+            activation="sigmoid"):
 
         self.X_data_full        = X_data
         self.Y_data_full        = Y_data
@@ -35,6 +37,8 @@ class NeuralNetwork:
         self.n_hidden_neurons   = n_hidden_neurons
         self.n_categories       = n_categories
 
+        self.act = Activations(activation)
+
         self.epochs             = epochs
         self.batch_size         = batch_size
         self.iterations         = self.n_inputs // self.batch_size
@@ -43,7 +47,6 @@ class NeuralNetwork:
 
         self.create_biases_and_weights() # Initialize random weights and biases for two layers
 
-        self.activations = Activations()
 
     def create_biases_and_weights(self):
         # Calculate inital weights and biases for hidden layer
@@ -59,34 +62,30 @@ class NeuralNetwork:
         # calculate w*X + b
         self.z_h = np.matmul(self.X_data, self.hidden_weights) + self.hidden_bias
         # Pass through non-linear sigmoid gate
-        self.a_h = self.activations.sigmoid(self.z_h)
+        self.a_h = self.act.f(self.z_h)
 
         # Calculate output output layer
         self.z_o = np.matmul(self.a_h, self.output_weights) + self.output_bias
 
         # Calculate probabolities from output layer
-        self.probabilities = self.activations.softmax(self.z_o)
+        self.probabilities = self.act.f(self.z_o)
 
 
     def feed_forward_out(self, X): # Run network without saving 
         # feed-forward for output
         z_h = np.matmul(X, self.hidden_weights) + self.hidden_bias
-        a_h = self.activations.sigmoid(z_h)
+        a_h = self.act.f(z_h)
 
         z_o = np.matmul(a_h, self.output_weights) + self.output_bias
         
 
-        probabilities = self.activations.softmax(z_o)
+        probabilities = self.act.softmax(z_o)
 
         return probabilities
 
     def backpropagation(self):
-        error_output = self.probabilities - self.Y_data
-        error_hidden = np.matmul(error_output, self.output_weights.T) * self.a_h * (1 - self.a_h)
-
-        self.output_weights_gradient = np.matmul(self.a_h.T, error_output)
-        self.output_bias_gradient = np.sum(error_output, axis=0)
-
+        error_output = self.probabilities - self.Y_data 
+        error_hidden = np.matmul(error_output, self.output_weights.T) * self.act.df(self.a_h)
 
         self.output_weights_gradient    = np.matmul(self.a_h.T, error_output)
         self.output_bias_gradient       = np.sum(error_output, axis=0)

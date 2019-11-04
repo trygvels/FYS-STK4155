@@ -1,21 +1,33 @@
 import numpy as np
+import random
 
 class Activations():
-    def __init__(self, alpha = 1):
-        self.alpha = alpha
+    def __init__(self, activation="sigmoid"):
+        self.getactivation(activation)
+
+    def getactivation(self, name) :
+        if name == 'sigmoid' :
+            self.f = self.sigmoid
+            self.df = self.dsigmoid
+        elif name == 'tanh' :
+            self.f = self.tanh
+            self.df = self.dtanh
+        elif name == 'relu' :
+            self.f = self.relu
+            self.df= self.drelu
+        elif name == 'elu' :
+            self.f = self.elu
+            self.df = self.delu
+        else :
+            raise ValueError("Did not find activation: " + str(name))
 
     # Sigmoid
     def sigmoid(self, z):
         return 1.0/(1.0 + np.exp(-z))
 
     def dsigmoid(self, z):
-        return self.sigmoid(z)*(1.0 - self.sigmoid(z))
+        return z*(1 - z)
 
-    # Softmax
-    def softmax(self, z):
-        exp_term = np.exp(z)
-        return exp_term / np.sum(exp_term, axis=1, keepdims=True)
-    
     # tanh
     def tanh(self, z):
         return np.tanh(z)
@@ -25,18 +37,22 @@ class Activations():
 
     # Relu
     def relu(self, z):
-        return self.alpha*np.maximum(z, 0)
+        return np.maximum(z, 0)
     
     def drelu(self, z):
-        return self.alpha * (z > 0)
+        return (z > 0)
 
     # elu
     def elu(self, z):
-        return np.choose(z < 0, [z, self.salpha*(np.exp(z)-1)])
+        return np.choose(z < 0, [z, (np.exp(z)-1)])
         
     def delu(self, z):
-        return np.choose(x > 0, [1, self.alpha * np.exp(z)])
+        return np.choose(z > 0, [1,  np.exp(z)])
 
-
+    # Softmax
+    def softmax(self, z):
+        exp_term = np.exp(z)
+        return exp_term / np.sum(exp_term, axis=1, keepdims=True)
+    
 
 

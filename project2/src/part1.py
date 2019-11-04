@@ -36,7 +36,7 @@ print()
 #lrs = np.logspace(-5,7,13)
 lrs = [0.01]
 for lr in lrs:
-      beta, costs = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lr,adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=20) # Fit using SGD. This can be looped over for best lambda.
+      beta, costs = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lr,adj_lr=True, rnd_seed=False, batch_size=100,n_epoch=20) # Fit using SGD. This can be looped over for best lambda.
       plt.plot(costs)
       print("---------—--------—--- Our Regression --------—--------—--------—")
       print("-—--------—--- Training data -------—--------—")

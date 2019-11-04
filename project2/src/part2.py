@@ -16,11 +16,17 @@ network on determining default based on credit card data.
 """
 ## Get data from InitData Class
 data = InitData()
-XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot = data.credit_data(trainingShare=0.5)
-# Running neural network, Needs onehot input
-dnn = NeuralNetwork(XTrain,Y_train_onehot.toarray())
-dnn.train()
+XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot =  data.credit_data(trainingShare=0.5)#,drop_zero=True,drop_neg2=True)
 
+logreg = LogReg() # init Logreg class
+
+# Running neural network, Needs onehot input
+dnn = NeuralNetwork(XTrain,Y_train_onehot.toarray(), activation="tanh")
+dnn.train()
 yPred = dnn.predict_probabilities(XTest)
 yTrue, yPred = yTest, dnn.predict(XTest)
-print(classification_report(yPred, yTrue))
+logreg.own_classification_report(yTest,yPred)
+
+#TODO
+#Generalize for easy activation choosing
+# Iterate over Batch size, lr, regularization, activations

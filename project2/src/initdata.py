@@ -27,7 +27,7 @@ class InitData: # Class for initializing different data sets
 
     # Function for initializing credit card data
     def credit_data(self, trainingShare, drop_zero=False,drop_neg2=False, per_col=False):
-        
+
         print("loading Credit card data")
         
         # Read data as pandas dataframe from excel format
