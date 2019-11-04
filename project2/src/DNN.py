@@ -20,9 +20,9 @@ class NeuralNetwork:
             self,
             X_data,
             Y_data,
-            n_hidden_neurons=1000,
+            n_hidden_neurons=5,
             n_categories=2,
-            epochs=10,
+            epochs=1000,
             batch_size=100,
             eta=0.01,
             lmbd=0.0,
@@ -66,7 +66,6 @@ class NeuralNetwork:
 
         # Calculate output output layer
         self.z_o = np.matmul(self.a_h, self.output_weights) + self.output_bias
-
         # Calculate probabolities from output layer
         self.probabilities = self.act.f(self.z_o)
 
@@ -74,11 +73,10 @@ class NeuralNetwork:
     def feed_forward_out(self, X): # Run network without saving 
         # feed-forward for output
         z_h = np.matmul(X, self.hidden_weights) + self.hidden_bias
-        a_h = self.act.f(z_h)
+        a_h = self.act.f(z_h) #Activation function gate 
 
+        # Output layer
         z_o = np.matmul(a_h, self.output_weights) + self.output_bias
-        
-
         probabilities = self.act.softmax(z_o)
 
         return probabilities
@@ -116,9 +114,9 @@ class NeuralNetwork:
    
         for i in range(self.epochs):
             for j in range(self.iterations):
-                if np.isnan(self.hidden_weights).any():
-                    print("found nan in",i,j)
-                    sys.exit()
+                #if np.isnan(self.hidden_weights).any():
+                #    print("found nan in",i,j)
+                #    sys.exit()
 
                 # pick datapoints with replacement
                 chosen_datapoints = np.random.choice(
