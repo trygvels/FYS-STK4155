@@ -31,86 +31,71 @@ Activation    : sigmoid   Current best :  relu
 Hidden neurons: 50        Current best :  16
 Accuracy      : 0.808335  Current best :  0.8258
 """
+## Params
+explore = False
+sklearn = True
+
+
 ## Get data from InitData Class
 data = InitData()
 XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot =  data.credit_data(trainingShare=0.5)#, drop_zero=True,drop_neg2=True)
-XTrain, yTrain, XTest, yTest =  data.franke_data()
+
 
 logreg = LogReg() # init Logreg class
-"""
-#Find best params
-param_grid = [
-        {
-            'activation' : ['identity', 'logistic', 'tanh', 'relu'],
-            'solver' : ['lbfgs', 'sgd', 'adam'],
-            'hidden_layer_sizes': [
-             (1,),(2,),(3,),(4,),(5,),(6,),(7,),(8,),(9,),(10,),(11,), (12,),(13,),(14,),(15,),(16,),(17,),(18,),(19,),(20,),(21,)
-             ]
-        }
-       ]
-
-clf = GridSearchCV(MLPClassifier(), param_grid, cv=3,
-                           scoring='accuracy')
-clf.fit(XTrain,yTrain.ravel())
 
 
-print("Best parameters set found on development set:")
-print(clf.best_params_)
-"""
-if False:
+if explore=True:
+    eta_vals = np.logspace(-5, 1, 7)
+    lmbd_vals = np.logspace(-5, 1, 7)
+    activations = ["sigmoid", "tanh", "relu", "elu"]
+    hidden_neurons = [4,8,12,16,50,100] 
+else:
+    eta_vals = [0.01]
+    lmbd_vals = [0.0001]
+    activations = ["sigmoid"]
+    hidden_neurons = [4] 
+
+if sklearn = False:
+    # grid search
+    best_accuracy = 0
+    for i, eta in enumerate(eta_vals):
+        for j, lmbd in enumerate(lmbd_vals):
+            for k, act in enumerate(activations):
+                for l, hn in enumerate(hidden_neurons):
+                    dnn = NeuralNetwork(XTrain, Y_train_onehot.toarray(), eta=eta, lmbd=lmbd, n_hidden_neurons=hn, activation=act)
+                    dnn.train()
+                    
+                    
+                    test_predict = dnn.predict(XTest)
+                    
+
+                    accuracy = accuracy_score(yTest, test_predict)
+                    if accuracy > best_accuracy:
+                        best_accuracy = accuracy
+                        best_eta = eta
+                        best_lmbd = lmbd
+                        best_hn = hn
+                        best_act = act
+
+                    print("---------------------------------------------------")
+                    print("Learning rate : {:<8}".format(eta), " Current best : ", best_eta) 
+                    print("Lambda        : {:<8}".format(lmbd), " Current best : ", best_lmbd)
+                    print("Activation    : {:<8}".format(act), " Current best : ", best_act)
+                    print("Hidden neurons: {:<8}".format(hn), " Current best : ", best_hn)
+                    print("Accuracy      : {:.6}".format(accuracy), " Current best :  %.4f" % best_accuracy)
+                    print()
+
+    print("------------------ Best Results -------------------")
+    print("Best lambda          : ", best_lmbd)
+    print("Best learning rate   : ", best_eta)
+    print("Best activation      : ", best_act)
+    print("Best hidden neurons  : ", best_hn)
+    print("Best accuracy        :  %.4f" % best_accuracy)
+    print("---------------------------------------------------")
+
+else:
     # Classify using sklearn
     clf = MLPClassifier(solver="lbfgs", alpha=1e-5,hidden_layer_sizes=(3))
     clf.fit(XTrain, yTrain)
     yTrue, yPred = yTest, clf.predict(XTest)
     logreg.own_classification_report(yTrain,yPred)
-else: 
-    # Regress using sklearn
-    mlp = MLPRegressor()
-    mlp.fit(XTrain, yTrain)
-    yTrue, yPred = yTest, mlp.predict(XTest)
-    print(mlp.score(XTest,yTrue))
-sys.exit()
-
-eta_vals = np.logspace(-5, 1, 7)
-lmbd_vals = np.logspace(-5, 1, 7)
-activations = ["sigmoid", "tanh", "relu", "elu"]
-hidden_neurons = [4,8,12,16,50,100] 
-
-# store the models for later use
-DNN_numpy = np.zeros((len(eta_vals), len(lmbd_vals)), dtype=object)
-# grid search
-best_accuracy = 0
-for i, eta in enumerate(eta_vals):
-    for j, lmbd in enumerate(lmbd_vals):
-        for k, act in enumerate(activations):
-            for l, hn in enumerate(hidden_neurons):
-                dnn = NeuralNetwork(XTrain, Y_train_onehot.toarray(), eta=eta, lmbd=lmbd, n_hidden_neurons=hn, activation=act)
-                dnn.train()
-                
-                
-                test_predict = dnn.predict(XTest)
-                
-
-                accuracy = accuracy_score(yTest, test_predict)
-                if accuracy > best_accuracy:
-                    best_accuracy = accuracy
-                    best_eta = eta
-                    best_lmbd = lmbd
-                    best_hn = hn
-                    best_act = act
-
-                print("---------------------------------------------------")
-                print("Learning rate : {:<8}".format(eta), " Current best : ", best_eta) 
-                print("Lambda        : {:<8}".format(lmbd), " Current best : ", best_lmbd)
-                print("Activation    : {:<8}".format(act), " Current best : ", best_act)
-                print("Hidden neurons: {:<8}".format(hn), " Current best : ", best_hn)
-                print("Accuracy      : {:.6}".format(accuracy), " Current best :  %.4f" % best_accuracy)
-                print()
-
-print("------------------ Best Results -------------------")
-print("Best lambda          : ", best_lmbd)
-print("Best learning rate   : ", best_eta)
-print("Best activation      : ", best_act)
-print("Best hidden neurons  : ", best_hn)
-print("Best accuracy        :  %.4f" % best_accuracy)
-print("---------------------------------------------------")
