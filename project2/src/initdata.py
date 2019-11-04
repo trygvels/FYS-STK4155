@@ -145,7 +145,7 @@ class InitData: # Class for initializing different data sets
 
         # Create and transform franke function data
         b = self.FrankeFunction(x_, y_) + np.random.normal(size=x_.shape)*noise # Franke function with optional gaussian noise
-        y = pd.DataFrame(b.ravel().T)
+        y = b.ravel()
 
         # Create design matrix with polynomial features
         poly = PolynomialFeatures(degree=degree) 

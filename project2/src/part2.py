@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, accuracy_score, roc_auc_score, classification_report
-from sklearn.neural_network import MLPClassifier
+from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.model_selection import GridSearchCV
 plt.style.use(u"~/.matplotlib/stylelib/trygveplot_astro.mplstyle")
 
@@ -38,6 +38,7 @@ XTrain, yTrain, XTest, yTest =  data.franke_data()
 
 logreg = LogReg() # init Logreg class
 """
+#Find best params
 param_grid = [
         {
             'activation' : ['identity', 'logistic', 'tanh', 'relu'],
@@ -56,11 +57,18 @@ clf.fit(XTrain,yTrain.ravel())
 print("Best parameters set found on development set:")
 print(clf.best_params_)
 """
-clf = MLPClassifier(solver="lbfgs", alpha=1e-5,hidden_layer_sizes=(3))
-clf.fit(XTrain, yTrain)
-yTrue, yPred = yTest, clf.predict(XTest)
-logreg.own_classification_report(yTrain,yPred)
-
+if False:
+    # Classify using sklearn
+    clf = MLPClassifier(solver="lbfgs", alpha=1e-5,hidden_layer_sizes=(3))
+    clf.fit(XTrain, yTrain)
+    yTrue, yPred = yTest, clf.predict(XTest)
+    logreg.own_classification_report(yTrain,yPred)
+else: 
+    # Regress using sklearn
+    mlp = MLPRegressor()
+    mlp.fit(XTrain, yTrain)
+    yTrue, yPred = yTest, mlp.predict(XTest)
+    print(mlp.score(XTest,yTrue))
 sys.exit()
 
 eta_vals = np.logspace(-5, 1, 7)
