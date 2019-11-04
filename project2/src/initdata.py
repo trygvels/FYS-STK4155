@@ -8,14 +8,13 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, PolynomialFeatures
 from sklearn.metrics import confusion_matrix, accuracy_score, roc_auc_score, classification_report
 
 # Chosing optimal seed
-seed = 42069
+seed = 42069    
 np.random.seed(seed)
 random.seed(seed)
-
 
 class InitData: # Class for initializing different data sets
     def __init__(self, path=None): # Chose path of 
@@ -27,6 +26,7 @@ class InitData: # Class for initializing different data sets
 
     # Function for initializing credit card data
     def credit_data(self, trainingShare, drop_zero=False,drop_neg2=False, per_col=False):
+
 
         print("loading Credit card data")
         
@@ -135,7 +135,28 @@ class InitData: # Class for initializing different data sets
         
         return self.XTrain, self.yTrain, self.XTest, self.yTest, self.Y_train_onehot, self.Y_test_onehot
 
+    def franke_data(self, N=20, noise=0.1, trainingShare = 0.5, degree=5):
+        x = np.linspace(0, 1, N)
+        y = np.linspace(0, 1, N)
+        x_, y_ = np.meshgrid(x,y)
 
+        data = np.c_[(x_.ravel()).T,(y_.ravel()).T]
+        data = pd.DataFrame(data)
 
+        # Create and transform franke function data
+        b = self.FrankeFunction(x_, y_) + np.random.normal(size=x_.shape)*noise # Franke function with optional gaussian noise
+        y = pd.DataFrame(b.ravel().T)
 
+        # Create design matrix with polynomial features
+        poly = PolynomialFeatures(degree=degree) 
+        X = poly.fit_transform(data) 
 
+        XTrain, XTest, yTrain, yTest = train_test_split(X,y,test_size=1-trainingShare, shuffle=True)
+        return XTrain, yTrain, XTest, yTest
+        
+    def FrankeFunction(self, x, y):
+        term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
+        term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1))
+        term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
+        term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
+        return term1 + term2 + term3 + term4

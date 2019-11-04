@@ -6,6 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, accuracy_score, roc_auc_score, classification_report
 from sklearn.neural_network import MLPClassifier
+from sklearn.model_selection import GridSearchCV
 plt.style.use(u"~/.matplotlib/stylelib/trygveplot_astro.mplstyle")
 
 from logreg     import LogReg
@@ -33,14 +34,33 @@ Accuracy      : 0.808335  Current best :  0.8258
 ## Get data from InitData Class
 data = InitData()
 XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot =  data.credit_data(trainingShare=0.5)#, drop_zero=True,drop_neg2=True)
+XTrain, yTrain, XTest, yTest =  data.franke_data()
 
 logreg = LogReg() # init Logreg class
+"""
+param_grid = [
+        {
+            'activation' : ['identity', 'logistic', 'tanh', 'relu'],
+            'solver' : ['lbfgs', 'sgd', 'adam'],
+            'hidden_layer_sizes': [
+             (1,),(2,),(3,),(4,),(5,),(6,),(7,),(8,),(9,),(10,),(11,), (12,),(13,),(14,),(15,),(16,),(17,),(18,),(19,),(20,),(21,)
+             ]
+        }
+       ]
 
-clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(5, 2), random_state=1)
-clf.fit(XTrain, yTrain) 
+clf = GridSearchCV(MLPClassifier(), param_grid, cv=3,
+                           scoring='accuracy')
+clf.fit(XTrain,yTrain.ravel())
+
+
+print("Best parameters set found on development set:")
+print(clf.best_params_)
+"""
+clf = MLPClassifier(solver="lbfgs", alpha=1e-5,hidden_layer_sizes=(3))
+clf.fit(XTrain, yTrain)
 yTrue, yPred = yTest, clf.predict(XTest)
 logreg.own_classification_report(yTrain,yPred)
-    
+
 sys.exit()
 
 eta_vals = np.logspace(-5, 1, 7)
