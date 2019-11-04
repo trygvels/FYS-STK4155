@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, accuracy_score, roc_auc_score, classification_report
+from sklearn.neural_network import MLPClassifier
 plt.style.use(u"~/.matplotlib/stylelib/trygveplot_astro.mplstyle")
 
 from logreg     import LogReg
@@ -21,6 +22,13 @@ Best activation      :  4
 Best hidden neurons  :  sigmoid
 Best accuracy        :  0.8236
 Full data
+
+---------------------------------------------------
+Learning rate : 0.0001    Current best :  0.0001
+Lambda        : 1.0       Current best :  0.1
+Activation    : sigmoid   Current best :  relu
+Hidden neurons: 50        Current best :  16
+Accuracy      : 0.808335  Current best :  0.8258
 """
 ## Get data from InitData Class
 data = InitData()
@@ -28,6 +36,12 @@ XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot =  data.credit_data(
 
 logreg = LogReg() # init Logreg class
 
+clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(5, 2), random_state=1)
+clf.fit(XTrain, yTrain) 
+yTrue, yPred = yTest, clf.predict(XTest)
+logreg.own_classification_report(yTrain,yPred)
+    
+sys.exit()
 
 eta_vals = np.logspace(-5, 1, 7)
 lmbd_vals = np.logspace(-5, 1, 7)
