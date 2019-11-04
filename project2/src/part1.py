@@ -19,8 +19,10 @@ solver and compared with Scikit-Learns Logistic regression method.
 
 ## Get data from InitData Class
 data = InitData()
-XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot = data.credit_data(trainingShare=0.5,per_col=True,drop_zero=True,drop_neg2=True)
+#XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot = data.credit_data(trainingShare=0.5,per_col=True,drop_zero=True,drop_neg2=True)
 
+#testing out dropping specific columns of the data
+XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot = data.credit_data(trainingShare=0.5,drop_zero=True,drop_neg2=False,per_col=True,exclude_col=['SEX','PAY_6'])
 ## Initialize Logreg Class
 logreg = LogReg() # init Logreg class
 
@@ -61,6 +63,5 @@ if True: # Simple sklearn
     print("-—--------—--- Validation data -------—--------—")
     yPred=logReg.predict(XTest) #predict
     logreg.own_classification_report(yTest,yPred)
-
 else:   # Fancy optimal sklearn
     logreg.sklearn_alternative(XTrain, yTrain, XTest, yTest)

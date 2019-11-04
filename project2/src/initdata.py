@@ -25,7 +25,7 @@ class InitData: # Class for initializing different data sets
         self.onehotencoder = OneHotEncoder(categories="auto")
 
     # Function for initializing credit card data
-    def credit_data(self, trainingShare, drop_zero=False,drop_neg2=False, per_col=False):
+    def credit_data(self, trainingShare, drop_zero=False,drop_neg2=False, per_col=False, exclude_col=['none']):
 
 
         print("loading Credit card data")
@@ -36,6 +36,16 @@ class InitData: # Class for initializing different data sets
         self.df = pd.read_excel(self.filename, header = 1, skiprows=0, index_col=0, na_values=nanDict) #, nrows=1000) #faster
         self.df.rename(index=str, columns={"default payment next month": "defaultPaymentNextMonth"}, inplace=True)
 
+        excl_cols=[]
+        # Check if we are to exclude any columns
+        if (not exclude_col[0]=='none'):
+            for j in range(len(exclude_col)):
+                for k in range(len(self.df.columns)):
+                    if (exclude_col[j]==self.df.columns[k]):
+                        excl_cols.append(k)
+            if (len(excl_cols)>0):
+                excl_cols=np.sort(excl_cols) #get columns in rising indices
+                excl_cols=np.array(excl_cols)
 
         # Drop data points with no bill and payment info
         self.df = self.df.drop(self.df[(self.df.BILL_AMT1 == 0) &
@@ -59,23 +69,39 @@ class InitData: # Class for initializing different data sets
         self.df = self.df.drop(self.df[(self.df.EDUCATION == 5)].index)
         self.df = self.df.drop(self.df[(self.df.EDUCATION == 6)].index)
 
-        # Note: following removals will remove the majority of the data (~26000 samples) 
+        # Note: following removals will remove the majority of the data (~26000 samples)
+        # We must also check if we are to remove any column, i.e. not throw out data based
+        # on columns we are not to use
         if (drop_zero): #the majority is here!
             # Drop data points with payment history equal to 0
-            self.df = self.df.drop(self.df[(self.df.PAY_0 == 0)].index)
-            self.df = self.df.drop(self.df[(self.df.PAY_2 == 0)].index)
-            self.df = self.df.drop(self.df[(self.df.PAY_3 == 0)].index)
-            self.df = self.df.drop(self.df[(self.df.PAY_4 == 0)].index)
-            self.df = self.df.drop(self.df[(self.df.PAY_5 == 0)].index)
-            self.df = self.df.drop(self.df[(self.df.PAY_6 == 0)].index)
+            # if the column is not to be removed
+            if (not np.any(excl_cols==5)):
+                self.df = self.df.drop(self.df[(self.df.PAY_0 == 0)].index)
+            if (not np.any(excl_cols==6)):
+                self.df = self.df.drop(self.df[(self.df.PAY_2 == 0)].index)
+            if (not np.any(excl_cols==7)):
+                self.df = self.df.drop(self.df[(self.df.PAY_3 == 0)].index)
+            if (not np.any(excl_cols==8)):
+                self.df = self.df.drop(self.df[(self.df.PAY_4 == 0)].index)
+            if (not np.any(excl_cols==9)):
+                self.df = self.df.drop(self.df[(self.df.PAY_5 == 0)].index)
+            if (not np.any(excl_cols==10)):
+                self.df = self.df.drop(self.df[(self.df.PAY_6 == 0)].index)
         if (drop_neg2):
             # Drop data points with payment history equal to -2
-            self.df = self.df.drop(self.df[(self.df.PAY_0 == -2)].index)
-            self.df = self.df.drop(self.df[(self.df.PAY_2 == -2)].index)
-            self.df = self.df.drop(self.df[(self.df.PAY_3 == -2)].index)
-            self.df = self.df.drop(self.df[(self.df.PAY_4 == -2)].index)
-            self.df = self.df.drop(self.df[(self.df.PAY_5 == -2)].index)
-            self.df = self.df.drop(self.df[(self.df.PAY_6 == -2)].index)
+            # if the column is not to be removed
+            if (not np.any(excl_cols==5)):
+                self.df = self.df.drop(self.df[(self.df.PAY_0 == -2)].index)
+            if (not np.any(excl_cols==6)):
+                self.df = self.df.drop(self.df[(self.df.PAY_2 == -2)].index)
+            if (not np.any(excl_cols==7)):
+                self.df = self.df.drop(self.df[(self.df.PAY_3 == -2)].index)
+            if (not np.any(excl_cols==8)):
+                self.df = self.df.drop(self.df[(self.df.PAY_4 == -2)].index)
+            if (not np.any(excl_cols==9)):
+                self.df = self.df.drop(self.df[(self.df.PAY_5 == -2)].index)
+            if (not np.any(excl_cols==10)):
+                self.df = self.df.drop(self.df[(self.df.PAY_6 == -2)].index)
 
         # Target is last column (defaultpayment 0 or 1), features is everything else
         self.X = self.df.loc[:, self.df.columns != 'defaultPaymentNextMonth'].values
@@ -85,39 +111,68 @@ class InitData: # Class for initializing different data sets
         # classify the data containing these flags. Two options: (1) 1 column per flag for 
         # all 'PAY_i' columns (i.e. 2 new columns), or (2) 1 column per flag per 'PAY_i'
         # column (i.e 12 new columns
+
+        # we must check if we are to exclude any of the columns
+        incl_col=[]
+        for i in range(5,11):
+            if (not np.any(excl_cols==i)):
+                incl_col.append(i)
+
         if (not drop_zero):
-            if (per_col):
-                Xtemp=np.zeros(shape=(self.X.shape[0],6),dtype='int')
-                #find where X == 0 in the 'PAY_i' columns 
-                Xtemp=np.where(self.X[:,5:11] == 0, 1, 0)
-            else:
-                Xtemp=np.zeros(shape=(self.X.shape[0],1),dtype='int')
-                for i in range(self.X.shape[0]):
-                    if (np.any(self.X[i,5:11] == 0)):
-                        Xtemp[i,0]=1
-            #merge the arrays (append at the end)
-            self.X = np.concatenate((self.X,Xtemp),axis=1)
+            if len(incl_col)>0:
+                if (per_col):
+                    #find where X == 0 in the 'PAY_i' columns 
+                    Xtemp=np.where(self.X[:,incl_col] == 0, 1, 0)
+                else:
+                    Xtemp=np.zeros(shape=(self.X.shape[0],1),dtype='int')
+                    for i in range(self.X.shape[0]):
+                        if (np.any(self.X[i,incl_col] == 0)):
+                            Xtemp[i,0]=1
+                #merge the arrays (append at the end)
+                self.X = np.concatenate((self.X,Xtemp),axis=1)
 
         if (not drop_neg2):
-            if (per_col):
-                Xtemp=np.zeros(shape=(self.X.shape[0],6),dtype='int')
-                #find where X == 0 in the 'PAY_i' columns 
-                Xtemp=np.where(self.X[:,5:11] == -2, 1, 0)
+            if len(incl_col)>0:
+                if (per_col):
+                    #find where X == 0 in the 'PAY_i' columns 
+                    Xtemp=np.where(self.X[:,incl_col] == -2, 1, 0)
+                else:
+                    Xtemp=np.zeros(shape=(self.X.shape[0],1),dtype='int')
+                    for i in range(self.X.shape[0]):
+                        if (np.any(self.X[i,incl_col] == -2)):
+                            Xtemp[i,0]=1
+                #merge the arrays (append at the end)
+                self.X = np.concatenate((self.X,Xtemp),axis=1)
+
+        #exclude columns
+        if (not exclude_col[0]=='none'):
+            if len(excl_cols) > 0:
+                for j in np.arange(len(excl_cols)-1,-1,-1): #removing given columns, starting from the last column
+                    self.X=np.concatenate((self.X[:,0:excl_cols[j]],self.X[:,excl_cols[j]+1:]),axis=1)
+            
+            #check if one of the onehot-encoded columns are removed:
+            onehot_col=[]
+            i=0
+            for j in range(1,4):
+                removed=False
+                if np.any(excl_cols==j):
+                    removed=True
+                if (not removed):
+                    i+=1
+            if i>0:
+                onehot_col=np.arange(1,i+1)
             else:
-                Xtemp=np.zeros(shape=(self.X.shape[0],1),dtype='int')
-                for i in range(self.X.shape[0]):
-                    if (np.any(self.X[i,5:11] == -2)):
-                        Xtemp[i,0]=1
-            #merge the arrays (append at the end)
-            self.X = np.concatenate((self.X,Xtemp),axis=1)
+                onehot_col=[]
+        else:
+            onehot_col=[1,2,3]
 
         #Onehotencode column index 1,2 and 3 in data (gender, education and Marriage status)
-        self.X = ColumnTransformer(
-            [("", self.onehotencoder, [1,2,3]),],
-            remainder="passthrough"
-        ).fit_transform(self.X)
+        if len(onehot_col)>0:
+            self.X = ColumnTransformer(
+                [("", self.onehotencoder, onehot_col),],
+                remainder="passthrough"
+            ).fit_transform(self.X)
         
-
         # Train-test split
         self.trainingShare = trainingShare
         self.XTrain, self.XTest, self.yTrain, self.yTest=train_test_split(self.X, self.y, train_size=self.trainingShare, test_size = 1-self.trainingShare, random_state=seed)

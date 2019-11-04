@@ -184,7 +184,7 @@ class LogReg: # Logistic regression class
         print()
         print("    accuracy                              %5.3f        %8i"%((tp+tn)*1.0/(cp+cn),cp+cn))
         print("   macro avg      %5.3f      %5.3f        %5.3f        %8i"%((ppv[0]+ppv[1])/2.0,(trp[0]+trp[1])/2.0, (f1[0]+f1[1])/2.0,cn+cp))
-        print("weighted avg      %5.3f      %5.3f        %5.3f        %8i"%((ppv[0]*pcn+ppv[1]*pcp)/(pcn+pcp),(trp[0]*pcn+trp[1]*pcp)/(pcn+pcp), (f1[0]*pcn+f1[1]*pcp)/(pcn+pcp),cn+cp))
+        print("weighted avg      %5.3f      %5.3f        %5.3f        %8i"%((ppv[0]*cn+ppv[1]*cp)/(cn+cp),(trp[0]*cn+trp[1]*cp)/(cn+cp), (f1[0]*cn+f1[1]*cp)/(cn+cp),cn+cp))
         print()
 
         return
