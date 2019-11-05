@@ -36,6 +36,7 @@ class InitData: # Class for initializing different data sets
         self.df = pd.read_excel(self.filename, header = 1, skiprows=0, index_col=0, na_values=nanDict) #, nrows=1000) #faster
         self.df.rename(index=str, columns={"default payment next month": "defaultPaymentNextMonth"}, inplace=True)
 
+        self.plot_credit_data('_alldata')
         excl_cols=[]
         # Check if we are to exclude any columns
         if (not exclude_col[0]=='none'):
@@ -215,3 +216,79 @@ class InitData: # Class for initializing different data sets
         term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
         term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
         return term1 + term2 + term3 + term4
+
+    def plot_credit_data(self,label):
+        #plot sex
+        Xtemp = self.df.loc[:, self.df.columns == 'SEX'].values
+        ticks=['male','female']
+        xval=[1,2]
+        plt.figure(1)
+        plt.hist(Xtemp,range=(0.5,2.5),bins=2,rwidth=0.8,align='mid', color='b')
+        plt.yticks(fontsize=12)
+        plt.xticks(xval,labels=ticks,fontsize=12)
+        plt.xlabel('Gender',fontsize=14)
+        plt.ylabel('Observations count',fontsize=14)
+        plt.savefig('plots/gender'+label+'.pdf',bbox_inches='tight',pad_inches=0.02)
+        plt.clf()
+        
+        #plot marriage
+        Xtemp = self.df.loc[:, self.df.columns == 'MARRIAGE'].values
+        ticks=['missing','married','single','other']
+        xval=[0,1,2,3]
+        xval_str=['0','1','2','3']
+        plt.figure(1)
+        plt.hist(Xtemp,range=(-0.5,3.5),bins=4,rwidth=0.8,align='mid', color='b')
+        plt.yticks(fontsize=12)
+        plt.xticks(xval,labels=ticks,fontsize=12)
+        plt.xlabel('Marriage status',fontsize=14)
+        plt.ylabel('Observations count',fontsize=14)
+        plt.savefig('plots/marriage'+label+'.pdf',bbox_inches='tight',pad_inches=0.02)
+        plt.xticks(xval,labels=xval_str,fontsize=12)
+        plt.savefig('plots/marriage_val'+label+'.pdf',bbox_inches='tight',pad_inches=0.02)
+        plt.clf()
+
+        #plot education
+        Xtemp = self.df.loc[:, self.df.columns == 'EDUCATION'].values
+        ticks=['flag 0','grad. sch.','university','high sch.','other','flag 5', 'flag 6']
+        xval=[0,1,2,3,4,5,6]
+        xval_str=['0','1','2','3','4','5','6']
+        plt.figure(1)
+        plt.hist(Xtemp,range=(-0.5,6.5),bins=7,rwidth=0.8,align='mid', color='b')
+        plt.yticks(fontsize=12)
+        plt.xticks(xval,labels=ticks,fontsize=12)
+        plt.xlabel('Education',fontsize=14)
+        plt.ylabel('Observations count',fontsize=14)
+        plt.savefig('plots/education'+label+'.pdf',bbox_inches='tight',pad_inches=0.02)
+        plt.xticks(xval,labels=xval_str,fontsize=12)
+        plt.savefig('plots/education_val'+label+'.pdf',bbox_inches='tight',pad_inches=0.02)
+        plt.clf()
+
+        #plot age
+        Xtemp = self.df.loc[:, self.df.columns == 'AGE'].values
+        xval=[20,40,60,80]
+        xval_str=['20','40','60','80']
+        plt.figure(1)
+        maxage=np.amax(Xtemp[:,0])
+        minage=np.amin(Xtemp[:,0])
+        plt.hist(Xtemp,range=(minage-0.5,maxage+0.5),bins=(maxage-minage+1),rwidth=1.0,align='mid', color='k')
+        plt.yticks(fontsize=12)
+        plt.xticks(xval,labels=xval_str,fontsize=12)
+        plt.xlabel('Age',fontsize=14)
+        plt.ylabel('Observations count',fontsize=14)
+        plt.savefig('plots/age'+label+'.pdf',bbox_inches='tight',pad_inches=0.02)
+        plt.clf()
+
+        #plot pay history
+        for i in ['0','2','3','4','5','6']:
+            Xtemp = self.df.loc[:, self.df.columns == 'PAY_'+i].values
+            xval=[-2,-1,0,1,2,3,4,5,6,7,8,9]
+            xval_str=['-2','-1','0','1','2','3','4','5','6','7','8','9']
+            plt.figure(1)
+            plt.hist(Xtemp,range=(-2.5,9.5),bins=12,rwidth=0.8,align='mid', color='k')
+            plt.yticks(fontsize=12)
+            plt.xticks(xval,labels=xval_str,fontsize=12)
+            plt.xlabel('Payment history (PAY_'+i+')',fontsize=14)
+            plt.ylabel('Observations count',fontsize=14)
+            plt.savefig('plots/pay'+i+label+'.pdf',bbox_inches='tight',pad_inches=0.02)
+            plt.clf()
+        exit()
