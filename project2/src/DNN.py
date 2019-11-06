@@ -6,9 +6,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, accuracy_score, roc_auc_score, classification_report
 
-from logreg      import LogReg
-from initdata    import InitData
-from activations import Activations
+from logreg         import LogReg
+from initdata       import InitData
+from activations    import Activations
+from cost_functions import CostFunctions
 
 """
 This class is a feed-forward dense neural network used to train an arbitrary dataset.
@@ -26,7 +27,7 @@ class NeuralNetwork:
             batch_size=100,
             eta=0.01,
             lmbd=0.0,
-            activation="sigmoid"):
+            activation="sigmoid", cost="cross_entropy"):
 
         self.X_data_full        = X_data
         self.Y_data_full        = Y_data
@@ -38,6 +39,7 @@ class NeuralNetwork:
         self.n_categories       = n_categories
 
         self.act = Activations(activation)
+        self.cost = CostFunctions(cost)
 
         self.epochs             = epochs
         self.batch_size         = batch_size
@@ -46,7 +48,6 @@ class NeuralNetwork:
         self.lmbd               = lmbd
 
         self.create_biases_and_weights() # Initialize random weights and biases for two layers
-
 
     def create_biases_and_weights(self):
         # Calculate inital weights and biases for hidden layer
@@ -82,12 +83,13 @@ class NeuralNetwork:
         return probabilities
 
     def backpropagation(self):
+        # Change cost function here for regression
         error_output = self.probabilities - self.Y_data 
-        error_hidden = np.matmul(error_output, self.output_weights.T) * self.act.df(self.a_h)
-
         self.output_weights_gradient    = np.matmul(self.a_h.T, error_output)
         self.output_bias_gradient       = np.sum(error_output, axis=0)
 
+        # Check if dsigmoid is correct
+        error_hidden = np.matmul(error_output, self.output_weights.T) * self.act.df(self.z_h) 
         self.hidden_weights_gradient    = np.matmul(self.X_data.T, error_hidden)
         self.hidden_bias_gradient       = np.sum(error_hidden, axis=0)
 
@@ -126,7 +128,6 @@ class NeuralNetwork:
                 # minibatch training data
                 self.X_data = self.X_data_full[chosen_datapoints]
                 self.Y_data = self.Y_data_full[chosen_datapoints]
-
 
                 self.feed_forward()
                 self.backpropagation()                

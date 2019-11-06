@@ -30,10 +30,18 @@ Lambda        : 1.0       Current best :  0.1
 Activation    : sigmoid   Current best :  relu
 Hidden neurons: 50        Current best :  16
 Accuracy      : 0.808335  Current best :  0.8258
+
+------------------ Best Results -------------------
+Best lambda          :  0.1
+Best learning rate   :  0.01
+Best activation      :  sigmoid
+Best hidden neurons  :  12
+Best accuracy        :  0.8260
+---------------------------------------------------
 """
 ## Params
 explore = False
-sklearn = True
+sklearn = False
 
 
 ## Get data from InitData Class
@@ -44,25 +52,33 @@ XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot =  data.credit_data(
 logreg = LogReg() # init Logreg class
 
 
-if explore=True:
+if explore==True: # Explore parameter space for credit card data
     eta_vals = np.logspace(-5, 1, 7)
     lmbd_vals = np.logspace(-5, 1, 7)
     activations = ["sigmoid", "tanh", "relu", "elu"]
     hidden_neurons = [4,8,12,16,50,100] 
-else:
-    eta_vals = [0.01]
-    lmbd_vals = [0.0001]
-    activations = ["sigmoid"]
-    hidden_neurons = [4] 
+    epochs = 1000
+else: # Optimal setup for credit card using all data
+    eta_vals = [0.0001]
+    lmbd_vals = [0.1]
+    activations = ["relu"]
+    hidden_neurons = [16] 
+    epochs=500
 
-if sklearn = False:
+    lmbd_vals = [0.1]
+    eta_vals = [0.01]
+    activations = ["sigmoid"]
+    hidden_neurons = [12] 
+    epochs=500
+    
+if sklearn == False:
     # grid search
     best_accuracy = 0
     for i, eta in enumerate(eta_vals):
         for j, lmbd in enumerate(lmbd_vals):
             for k, act in enumerate(activations):
                 for l, hn in enumerate(hidden_neurons):
-                    dnn = NeuralNetwork(XTrain, Y_train_onehot.toarray(), eta=eta, lmbd=lmbd, n_hidden_neurons=hn, activation=act)
+                    dnn = NeuralNetwork(XTrain, Y_train_onehot.toarray(), eta=eta, lmbd=lmbd, n_hidden_neurons=hn, activation=act, epochs=epochs)
                     dnn.train()
                     
                     
@@ -86,8 +102,8 @@ if sklearn = False:
                     print()
 
     print("------------------ Best Results -------------------")
-    print("Best lambda          : ", best_lmbd)
     print("Best learning rate   : ", best_eta)
+    print("Best lambda          : ", best_lmbd)
     print("Best activation      : ", best_act)
     print("Best hidden neurons  : ", best_hn)
     print("Best accuracy        :  %.4f" % best_accuracy)

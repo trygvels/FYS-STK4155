@@ -26,7 +26,7 @@ class Activations():
         return 1.0/(1.0 + np.exp(-z))
 
     def dsigmoid(self, z):
-        return z*(1 - z)
+        return self.sigmoid(z)*(1 - self.sigmoid(z))
 
     # tanh
     def tanh(self, z):

@@ -29,7 +29,8 @@ class LogReg: # Logistic regression class
             b = X@self.beta                         # Calculate current prediction
             gradient = 1/n*( X.T @ (self.act.f(b)-y) ) # Calculate gradient
             self.beta -= lr*gradient                # Calculate perturbation to beta
-            costs.append(self.cost(self.beta,X,y))  # Save cost of new beta
+            tar = X@self.beta
+            costs.append(self.cost(tar,y))  # Save cost of new beta
             t = np.linalg.norm(gradient)            # Calculate norm of gradient
             i += 1  
             if i > 1e5:                             # If descent takes too long, break.
@@ -60,7 +61,8 @@ class LogReg: # Logistic regression class
                 b = X_@self.beta                # Calculate current prediction
                 gradient = 1/n*( X_.T @ (self.act.f(b)-y_)) # Calculate gradient
                 self.beta -= lr*gradient                # Calculate perturbation to beta
-                cost += self.cost(self.beta,X_,y_)
+                tar = X_@self.beta
+                cost += self.cost(tar,y_)  # Save cost of new beta
 
             costs.append(cost)                      # Save cost of new beta
             t = np.linalg.norm(gradient)            # Calculate norm of gradient #Fix this for SGD
@@ -80,7 +82,8 @@ class LogReg: # Logistic regression class
         if (rnd_seed):
             np.random.seed(int(time.time()))
         self.beta = np.random.randn(X.shape[1],1)   # Drawing initial random beta values
-        min_cost = self.cost(self.beta,X,y)
+        tar = X@self.beta
+        min_cost = self.cost(tar,y)  # Save cost of new beta
         best_beta=self.beta.copy()
 
         if (adj_lr):
@@ -109,7 +112,8 @@ class LogReg: # Logistic regression class
                     #as iterations increase, the step size in beta is reduced
                 self.beta -= lr*gradient                # Calculate perturbation to beta
             #after each epoch we compute the cost
-            cost = self.cost(self.beta,X,y) #calculate total cost (This takes a long time!!)
+            tar = X@self.beta
+            cost = self.cost(tar,y) #calculate total cost (This takes a long time!!)
             costs.append(cost)                      # Save cost of new beta
             if (cost < min_cost):
                 min_cost=cost
