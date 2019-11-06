@@ -25,10 +25,12 @@ class InitData: # Class for initializing different data sets
         self.onehotencoder = OneHotEncoder(categories="auto")
 
     # Function for initializing credit card data
-    def credit_data(self, trainingShare, drop_zero=False,drop_neg2=False, per_col=False, exclude_col=['none']):
+    def credit_data(self, trainingShare, drop_zero=False,drop_neg2=False, per_col=False, exclude_col=['none'],plot_alldata=False, return_cols=False, onehot_encode_col=['SEX','EDUCATION','MARRIAGE']):
 
 
         print("loading Credit card data")
+
+        onehot_encode_col=np.array(onehot_encode_col)
         
         # Read data as pandas dataframe from excel format
         self.filename = self.path + '/../data/default of credit card clients.xls'
@@ -36,7 +38,11 @@ class InitData: # Class for initializing different data sets
         self.df = pd.read_excel(self.filename, header = 1, skiprows=0, index_col=0, na_values=nanDict) #, nrows=1000) #faster
         self.df.rename(index=str, columns={"default payment next month": "defaultPaymentNextMonth"}, inplace=True)
 
-        self.plot_credit_data('_alldata')
+        
+        if (plot_alldata):
+            #plot data distributions of all the credit card data
+            self.plot_credit_data('_alldata')
+            
         excl_cols=[]
         # Check if we are to exclude any columns
         if (not exclude_col[0]=='none'):
@@ -46,7 +52,75 @@ class InitData: # Class for initializing different data sets
                         excl_cols.append(k)
             if (len(excl_cols)>0):
                 excl_cols=np.sort(excl_cols) #get columns in rising indices
-                excl_cols=np.array(excl_cols)
+                excl_cols=np.array(excl_cols) #make it a numpy array
+
+        if (return_cols):
+            # Make the data string array
+            self.data_cols=self.df.columns[:-1].copy()
+            if (len(excl_cols)>0):
+                for i in np.arange(len(excl_cols)-1,-1,-1,dtype='int'):
+                    self.data_cols=np.concatenate((self.data_cols[:excl_cols[i]],self.data_cols[excl_cols[i]+1:]))
+            first_cols=[]
+            i=0
+            if (self.data_cols[0]=='LIMIT_BAL'):
+                j=1
+            else:
+                j=0
+            if (np.any(self.data_cols=='SEX')):
+                if (np.any(onehot_encode_col=='SEX')):
+                    first_cols.append('SEX_male')
+                    first_cols.append('SEX_female')
+                    i+=1
+                    self.data_cols=np.concatenate((self.data_cols[:j],self.data_cols[j+1:]))
+                else:
+                    j+=1
+            if np.any(self.data_cols=='EDUCATION'):
+                if (np.any(onehot_encode_col=='EDUCATION')):
+                    first_cols.append('EDUCATION_grad_school')
+                    first_cols.append('EDUCATION_university')
+                    first_cols.append('EDUCATION_high_school')
+                    first_cols.append('EDUCATION_other')
+                    i+=1
+                    self.data_cols=np.concatenate((self.data_cols[:j],self.data_cols[j+1:]))
+                else:
+                    j+=1
+            if np.any(self.data_cols=='MARRIAGE'):
+                if (np.any(onehot_encode_col=='MARRIAGE')):
+                    first_cols.append('MARRIAGE_married')
+                    first_cols.append('MARRIAGE_single')
+                    first_cols.append('MARRIAGE_other')
+                    i+=1
+                    self.data_cols=np.concatenate((self.data_cols[:j],self.data_cols[j+1:]))
+            if (i>0):
+                self.data_cols=np.concatenate((first_cols,self.data_cols))
+            pay_cols=['PAY_0','PAY_2','PAY_3','PAY_4','PAY_5','PAY_6']
+            last_cols=[]
+            if (not drop_zero):
+                if (per_col):
+                    for i in range(6):
+                        if (np.any(self.data_cols==pay_cols[i])):
+                            last_cols.append(pay_cols[i]+'_flag0')
+                else:
+                    any_pay=False
+                    for i in range(6):
+                        if (np.any(self.data_cols==pay_cols[i])):
+                            any_pay=True
+                    if (any_pay):
+                        last_cols.append('PAY_flag0')
+            if (not drop_neg2):
+                if (per_col):
+                    for i in range(6):
+                        if (np.any(self.data_cols==pay_cols[i])):
+                            last_cols.append(pay_cols[i]+'_flag_neg2')
+                else:
+                    any_pay=False
+                    for i in range(6):
+                        if (np.any(self.data_cols==pay_cols[i])):
+                            any_pay=True
+                    if (any_pay):
+                        last_cols.append('PAY_flag_neg2')
+            if (len(last_cols)>0):
+                self.data_cols=np.concatenate((self.data_cols,last_cols))            
 
         # Drop data points with no bill and payment info
         self.df = self.df.drop(self.df[(self.df.BILL_AMT1 == 0) &
@@ -110,10 +184,10 @@ class InitData: # Class for initializing different data sets
 
         # If we choose not to exclude '0' or '-2' in PAY_i, we try to add extra columns to
         # classify the data containing these flags. Two options: (1) 1 column per flag for 
-        # all 'PAY_i' columns (i.e. 2 new columns), or (2) 1 column per flag per 'PAY_i'
-        # column (i.e 12 new columns
+        # all 'PAY_i' columns combines (i.e. 2 new columns), or (2) 1 column per flag per
+        #'PAY_i' column (i.e. up to 12 new columns)
 
-        # we must check if we are to exclude any of the columns
+        # we must check if we are to exclude any of the payment history columns
         incl_col=[]
         for i in range(5,11):
             if (not np.any(excl_cols==i)):
@@ -150,30 +224,39 @@ class InitData: # Class for initializing different data sets
             if len(excl_cols) > 0:
                 for j in np.arange(len(excl_cols)-1,-1,-1): #removing given columns, starting from the last column
                     self.X=np.concatenate((self.X[:,0:excl_cols[j]],self.X[:,excl_cols[j]+1:]),axis=1)
-            
-            #check if one of the onehot-encoded columns are removed:
-            onehot_col=[]
-            i=0
-            for j in range(1,4):
-                removed=False
-                if np.any(excl_cols==j):
-                    removed=True
-                if (not removed):
-                    i+=1
-            if i>0:
-                onehot_col=np.arange(1,i+1)
-            else:
-                onehot_col=[]
-        else:
-            onehot_col=[1,2,3]
 
+        #We need to find the column numbers of the columns to be onehot encoded 
+        onehot_col=[]
+        for i in range(len(onehot_encode_col)):
+            for j in range(len(self.df.columns)):
+                if (self.df.columns[j]==onehot_encode_col[i]):
+                    onehot_col.append(j)
+        if (len(onehot_col)>0):
+            onehot_col=np.sort(onehot_col)
+        #check if any of the onehot-encoded columns have been removed.
+        # if yes, remove the column and shift the columns of higher indices 1 lower.
+        if len(excl_cols) > 0:
+            i=0
+            j=0
+            for k in np.arange(0,len(self.df.columns)):
+                if ((i<len(onehot_col)) and (j<len(excl_cols))):
+                    if (k==excl_cols[j]):
+                        if (k==onehot_col[i]):
+                            onehot_col=np.concatenate((onehot_col[:i],onehot_col[i+1:]-1))
+                            i += 1
+                        else:
+                            onehot_col=np.where(onehot_col>excl_cols[j],onehot_col-1,onehot_col)
+                            j+=1
+                        
         #Onehotencode column index 1,2 and 3 in data (gender, education and Marriage status)
         if len(onehot_col)>0:
+            print(onehot_col)
+            print(self.data_cols)
             self.X = ColumnTransformer(
                 [("", self.onehotencoder, onehot_col),],
                 remainder="passthrough"
             ).fit_transform(self.X)
-        
+
         # Train-test split
         self.trainingShare = trainingShare
         self.XTrain, self.XTest, self.yTrain, self.yTest=train_test_split(self.X, self.y, train_size=self.trainingShare, test_size = 1-self.trainingShare, random_state=seed)
@@ -188,8 +271,11 @@ class InitData: # Class for initializing different data sets
         
         # One-hot's of the target vector
         self.Y_train_onehot, self.Y_test_onehot = self.onehotencoder.fit_transform(self.yTrain), self.onehotencoder.fit_transform(self.yTest)
-        
-        return self.XTrain, self.yTrain, self.XTest, self.yTest, self.Y_train_onehot, self.Y_test_onehot
+
+        if (not return_cols):
+            return self.XTrain, self.yTrain, self.XTest, self.yTest, self.Y_train_onehot, self.Y_test_onehot
+        else:
+            return self.XTrain, self.yTrain, self.XTest, self.yTest, self.Y_train_onehot, self.Y_test_onehot, self.data_cols
 
     def franke_data(self, N=20, noise=0.1, trainingShare = 0.5, degree=5):
         x = np.linspace(0, 1, N)
@@ -291,4 +377,4 @@ class InitData: # Class for initializing different data sets
             plt.ylabel('Observations count',fontsize=14)
             plt.savefig('plots/pay'+i+label+'.pdf',bbox_inches='tight',pad_inches=0.02)
             plt.clf()
-        exit()
+
