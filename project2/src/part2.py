@@ -46,7 +46,7 @@ sklearn = False
 
 ## Get data from InitData Class
 data = InitData()
-XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot =  data.credit_data(trainingShare=0.5)#, drop_zero=True,drop_neg2=True)
+XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot =  data.credit_data(trainingShare=0.5, return_cols=False)#, drop_zero=True,drop_neg2=True)
 
 
 logreg = LogReg() # init Logreg class
@@ -63,14 +63,14 @@ else: # Optimal setup for credit card using all data
     lmbd_vals = [0.1]
     activations = ["relu"]
     hidden_neurons = [16] 
-    epochs=500
+    epochs=20
 
     lmbd_vals = [0.1]
     eta_vals = [0.01]
     activations = ["sigmoid"]
     hidden_neurons = [12] 
-    epochs=500
-    
+    epochs=20
+
 if sklearn == False:
     # grid search
     best_accuracy = 0
@@ -84,8 +84,8 @@ if sklearn == False:
                     
                     test_predict = dnn.predict(XTest)
                     
-
                     accuracy = accuracy_score(yTest, test_predict)
+                    logreg.own_classification_report(yTest,test_predict)
                     if accuracy > best_accuracy:
                         best_accuracy = accuracy
                         best_eta = eta
@@ -114,4 +114,4 @@ else:
     clf = MLPClassifier(solver="lbfgs", alpha=1e-5,hidden_layer_sizes=(3))
     clf.fit(XTrain, yTrain)
     yTrue, yPred = yTest, clf.predict(XTest)
-    logreg.own_classification_report(yTrain,yPred)
+    logreg.own_classification_report(yTrue,yPred)

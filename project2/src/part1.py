@@ -66,3 +66,54 @@ if True: # Simple sklearn
     logreg.own_classification_report(yTest,yPred)
 else:   # Fancy optimal sklearn
     logreg.sklearn_alternative(XTrain, yTrain, XTest, yTest)
+
+
+
+
+"""
+CURRENT OUTPUT:
+
+
+-—--------—--- Training data -------—--------—
+Predicting y using logreg
+              precision     recall     f1-score     true number    predicted number
+
+           0      0.878      0.806        0.841           11080               10175
+           1      0.448      0.584        0.507            2980                3885
+
+    accuracy                              0.759           14060
+   macro avg      0.663      0.695        0.674           14060
+weighted avg      0.787      0.759        0.770           14060
+
+-—--------—--- Validation data -------—--------—
+Predicting y using logreg
+              precision     recall     f1-score     true number    predicted number
+
+           0      0.873      0.801        0.836           10998               10090
+           1      0.450      0.583        0.508            3063                3971
+
+    accuracy                              0.754           14061
+   macro avg      0.662      0.692        0.672           14061
+weighted avg      0.781      0.754        0.764           14061
+
+---------—--------—-- Sklearn Regression --------------—--------—
+-—--------—--- Training data -------—--------—
+              precision     recall     f1-score     true number    predicted number
+
+           0      0.846      0.949        0.895           11080               12428
+           1      0.657      0.360        0.465            2980                1632
+
+    accuracy                              0.824           14060
+   macro avg      0.752      0.655        0.680           14060
+weighted avg      0.806      0.824        0.804           14060
+
+-—--------—--- Validation data -------—--------—
+              precision     recall     f1-score     true number    predicted number
+
+           0      0.842      0.952        0.894           10998               12430
+           1      0.674      0.359        0.469            3063                1631
+
+    accuracy                              0.823           14061
+   macro avg      0.758      0.655        0.681           14061
+weighted avg      0.806      0.823        0.801           14061
+"""

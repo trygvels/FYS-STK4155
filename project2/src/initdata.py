@@ -250,8 +250,6 @@ class InitData: # Class for initializing different data sets
                         
         #Onehotencode column index 1,2 and 3 in data (gender, education and Marriage status)
         if len(onehot_col)>0:
-            print(onehot_col)
-            print(self.data_cols)
             self.X = ColumnTransformer(
                 [("", self.onehotencoder, onehot_col),],
                 remainder="passthrough"
