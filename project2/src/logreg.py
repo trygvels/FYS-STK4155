@@ -128,7 +128,8 @@ class LogReg: # Logistic regression class
                         #as iterations increase, the step size in beta is reduced
                     self.beta = self.beta - lr*gradient                # Calculate perturbation to beta
                 #after each epoch we compute the cost (majority of runtime)
-                cost = self.cost(self.beta,X,y) #calculate total cost (This takes a long time!!)
+                tar = X@self.beta
+                cost = self.cost(tar,y) #calculate total cost (This takes a long time!!)
                 costs.append(cost)                      # Save cost of new beta
                 if (cost < min_cost):
                     min_cost=cost
