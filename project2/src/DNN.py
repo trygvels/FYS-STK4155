@@ -92,13 +92,15 @@ class NeuralNetwork:
 
     def backpropagation(self):
         # Calculate gradients for output layer
-        if self.nn_type=="classification":
-            error_output = self.tar - self.Ydata   
-        elif self.nn_type=="regression": 
+    
+        error_output = self.tar - self.Ydata   
+        error_output =  self.cost.df(self.tar,self.Ydata) * self.act_o.df(self.z_o)
+        """
+          elif self.nn_type=="regression": 
             error_output =  self.cost.df(self.tar,self.Ydata) * self.act_o.df(self.z_o)
         else: 
             raise ValueError("Please specify NN type [classification, regression]")
-
+        """
         self.output_weights_gradient    = np.matmul(self.a_h.T, error_output) 
         self.output_bias_gradient       = np.sum(error_output, axis=0)
 
@@ -132,12 +134,9 @@ class NeuralNetwork:
    
         for i in range(self.epochs):
             for j in range(self.iterations):
-                #if np.isnan(self.hidden_weights).any():
-                #    print("found nan in",i,j)
-                #    sys.exit()
 
                 # pick datapoints with replacement
-                chosen_datapoints = np.random.choice(
+                chosen_datapoints = np.random.choice( 
                     data_indices, size=self.batch_size, replace=False
                 )
 

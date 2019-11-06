@@ -275,7 +275,7 @@ class InitData: # Class for initializing different data sets
         else:
             return self.XTrain, self.yTrain, self.XTest, self.yTest, self.Y_train_onehot, self.Y_test_onehot, self.data_cols
 
-    def franke_data(self, N=20, noise=0.1, trainingShare = 0.5, degree=5):
+    def franke_data(self, N=100, noise=0.1, trainingShare = 0.5, degree=5):
         x = np.linspace(0, 1, N)
         y = np.linspace(0, 1, N)
         x_, y_ = np.meshgrid(x,y)
