@@ -17,7 +17,7 @@ class LogReg: # Logistic regression class
         self.cost = CostFunctions(cost)             # Init cross_entropy cost function
         self.initdata = InitData()                  # Init data set
         self.act = Activations("sigmoid")
-
+        
     def GD(self, X, y, lr = 1, tol=1e-2):           #Gradient descent method
         print("Doing GD for logreg")
         n = len(y) 
@@ -74,7 +74,8 @@ class LogReg: # Logistic regression class
         print("Stochastic gradient solver has converged after %d iterations" % i )
         return self.beta, costs
 
-    def SGD_batch(self, X, y, lr = 0.01, tol=1e-4, max_iter=1000, batch_size=100, n_epoch=100, rnd_seed=False, adj_lr=False,verbosity=0): # Stochastic gradient descent method
+    # Stochastic gradient descent method with batches
+    def SGD_batch(self, X, y, lr = 0.01, tol=1e-4, max_iter=1, batch_size=100, n_epoch=100, rnd_seed=False, adj_lr=False, rnd_batch=False, verbosity=0): 
         print("Doing SGD for logreg")
         n = len(y) 
         costs = []                                  # Initializing cost list
@@ -89,37 +90,52 @@ class LogReg: # Logistic regression class
         if (adj_lr):
             t0 = n
             lr0=lr
-            
-        i = 0; t = 1
-        for k in range(n_epoch):
+
+        # We do several SGD searches with new batches for each search, with new searches
+        # starting from the previous endpoint
+        
+        for i in range(max_iter):
             if (verbosity>0):
-                print('epoch %i of %i'%(k+1,n_epoch))
-            for j in range(max_iter):
-                #idx_arr=np.linspace(0,batch_size-1,batch_size, dtype='int')
-                #idx = np.random.randint(0,n) # Choose a random data row
-                #idx_arr = np.mod(idx_arr+idx,n)
-                ## take idx_arr to be indices from idx to idx+batch_size-1
-                #data is sorted on age after index ~15000, try to use completely random
-                #values instead
-                idx_arr = np.random.randint(0,n,batch_size) # Choose n random data rows
-                
-                X_ = X[idx_arr,:].reshape(batch_size,X.shape[1]) # Select batch data
-                y_ = y[idx_arr].reshape(batch_size,1)            # select corresponding prediction
-                b = X_@self.beta                # Calculate current prediction
-                gradient = ( X_.T @ (self.act.f(b)-y_)) # Calculate gradient
-                if (adj_lr):
-                    lr=(lr0*t0)/(t0+k*max_iter+j)
-                    #as iterations increase, the step size in beta is reduced
-                self.beta -= lr*gradient                # Calculate perturbation to beta
-            #after each epoch we compute the cost
-            tar = X@self.beta
-            cost = self.cost(tar,y) #calculate total cost (This takes a long time!!)
-            costs.append(cost)                      # Save cost of new beta
-            if (cost < min_cost):
-                min_cost=cost
-                best_beta=self.beta.copy()
-            i += 1
-        self.beta=best_beta.copy()
+
+                print('   search %i of %i'%(i+1,max_iter))
+            # Data is (semi) sorted on age after index ~15000,
+            # dividing into batches based on index is therefore potentially not random.
+            # We therefore have 2 options, (1) draw batch_size random values for each
+            # iteration 'j', or (2) split data into m batches before starting
+            m=int(n/batch_size)
+            if (rnd_batch):
+                nbatch=[]
+                nbatch.append(batch_size)
+                idx=0
+            else:
+                batch_idx,nbatch=self.split_batch(n,m)
+            for k in range(n_epoch):
+                if (verbosity>1):
+                    print('   epoch %i of %i'%(k+1,n_epoch))
+                for j in range(m):
+                    #values instead
+                    if (rnd_batch):
+                        idx_arr = np.random.randint(0,n,batch_size) # Choose n random data rows
+                    else:
+                        idx=np.random.randint(0,m)
+                        idx_arr = batch_idx[idx,:nbatch[idx]]
+                    X_ = X[idx_arr,:].reshape(nbatch[idx],X.shape[1]) # Select batch data
+                    y_ = y[idx_arr].reshape(nbatch[idx],1)            # select corresponding prediction
+                    b = X_@self.beta                # Calculate current prediction
+                    gradient = ( X_.T @ (self.act.f(b)-y_)) # Calculate gradient
+                    if (adj_lr):
+                        lr=(lr0*t0)/(t0+k*n+j*batch_size)
+                        #as iterations increase, the step size in beta is reduced
+                    self.beta = self.beta - lr*gradient                # Calculate perturbation to beta
+                #after each epoch we compute the cost (majority of runtime)
+                cost = self.cost(self.beta,X,y) #calculate total cost (This takes a long time!!)
+                costs.append(cost)                      # Save cost of new beta
+                if (cost < min_cost):
+                    min_cost=cost
+                    best_beta=self.beta.copy()
+        
+        self.beta=best_beta.copy() #finally return beta with the lowest total cost
+
         return best_beta, costs
 
     def predict(self,X):                           # Calculates probabilities and onehots for y
@@ -191,4 +207,49 @@ class LogReg: # Logistic regression class
         print("weighted avg      %5.3f      %5.3f        %5.3f        %8i"%((ppv[0]*cn+ppv[1]*cp)/(cn+cp),(trp[0]*cn+trp[1]*cp)/(cn+cp), (f1[0]*cn+f1[1]*cp)/(cn+cp),cn+cp))
         print()
 
+        return
+
+    def split_batch(self,n,m):
+
+        if (m>n):
+            print('m > n in split_batch')
+            exit()
+            
+        #maximum batch size
+        if (np.mod(n,m)==0):
+            n_m=n//m
+        else:
+            n_m=n//m+1
+
+        idx_arr=np.zeros(shape=(m,n_m),dtype='int')
+        n_ms=np.zeros(shape=(m),dtype='int')
+        
+        if (m==n): #n_m=1
+            idx_arr[:,0]=np.arange(0,m,dtypr='int')
+            n_ms += 1
+            return idx_arr,n_ms
+
+        arr=np.arange(0,n,dtype='int')
+        n_left=n
+        for i in range(n):
+            m_i = np.mod(i,m) #group number
+            nm_i = i//m       #index in group
+            n_ms[m_i]=nm_i+1 #update number of values in group
+            ind=np.random.randint(n_left) #draw random sample in data that is left
+            idx_arr[m_i,nm_i]=arr[ind].copy() #add index of data point to batch m_i 
+            arr[ind:n_left-1]=arr[ind+1:n_left].copy() #remove data point from what is left
+            n_left-=1
+
+        return idx_arr,n_ms
+
+    def print_beta(self, cols=[]):
+        print('------- Beta values -------')
+        print('      value   data label' )
+        print()
+        for i in range(len(self.beta)):
+            if i >= len(cols):
+                print('  %11.6f'%(self.beta[i,0]))
+            else:
+                print('  %11.6f   %s'%(self.beta[i,0],cols[i]))
+        print()
         return
