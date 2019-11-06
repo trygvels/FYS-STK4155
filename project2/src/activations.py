@@ -18,6 +18,12 @@ class Activations():
         elif name == 'elu' :
             self.f = self.elu
             self.df = self.delu
+        elif name == 'softmax' :
+            self.f = self.softmax
+            self.df = self.dsoftmax
+        elif name == 'identity' :
+            self.f = self.identity
+            self.df = self.didentity
         else :
             raise ValueError("Did not find activation: " + str(name))
 
@@ -53,6 +59,14 @@ class Activations():
     def softmax(self, z):
         exp_term = np.exp(z)
         return exp_term / np.sum(exp_term, axis=1, keepdims=True)
-    
 
+    def dsoftmax(self, z):
+        return self.softmax(z) * (1 - self.softmax(z)) 
+
+    # identity
+    def identity(self, z):
+        return z
+
+    def didentity(self, z):
+        return 1
 

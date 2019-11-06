@@ -292,7 +292,7 @@ class InitData: # Class for initializing different data sets
         X = poly.fit_transform(data) 
 
         XTrain, XTest, yTrain, yTest = train_test_split(X,y,test_size=1-trainingShare, shuffle=True)
-        return XTrain, yTrain, XTest, yTest
+        return XTrain, yTrain, XTest, yTest, X, y, b, x_, y_
         
     def FrankeFunction(self, x, y):
         term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))

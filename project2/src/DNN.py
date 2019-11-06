@@ -19,26 +19,34 @@ This class is a feed-forward dense neural network used to train an arbitrary dat
 class NeuralNetwork:
     def __init__(
             self,
-            X_data,
-            Y_data,
+            Xdata,
+            Ydata,
             n_hidden_neurons=5,
             n_categories=2,
             epochs=1000,
             batch_size=100,
             eta=0.01,
             lmbd=0.0,
-            activation="sigmoid", cost="cross_entropy"):
+            act_h="sigmoid", 
+            act_o="softmax",
+            cost="cross_entropy",
+            nn_type = "classification"):
 
-        self.X_data_full        = X_data
-        self.Y_data_full        = Y_data
+        print("Initializing", nn_type, "Neural Network")
+        
+        self.nn_type = nn_type
 
-        self.n_inputs           = X_data.shape[0]
-        self.n_features         = X_data.shape[1]
+        self.Xdata_full        = Xdata
+        self.Ydata_full        = Ydata
+
+        self.n_inputs           = Xdata.shape[0]
+        self.n_features         = Xdata.shape[1]
 
         self.n_hidden_neurons   = n_hidden_neurons
         self.n_categories       = n_categories
 
-        self.act = Activations(activation)
+        self.act_h = Activations(act_h)
+        self.act_o = Activations(act_o)
         self.cost = CostFunctions(cost)
 
         self.epochs             = epochs
@@ -61,36 +69,42 @@ class NeuralNetwork:
     def feed_forward(self): # Feed forward through full network
         ## feed-forward for training
         # calculate w*X + b
-        self.z_h = np.matmul(self.X_data, self.hidden_weights) + self.hidden_bias
+        self.z_h = np.matmul(self.Xdata, self.hidden_weights) + self.hidden_bias
         # Pass through non-linear sigmoid gate
-        self.a_h = self.act.f(self.z_h)
+        self.a_h = self.act_h.f(self.z_h)
 
         # Calculate output output layer
         self.z_o = np.matmul(self.a_h, self.output_weights) + self.output_bias
         # Calculate probabolities from output layer
-        self.probabilities = self.act.f(self.z_o)
+        self.tar = self.act_o.f(self.z_o)
 
 
     def feed_forward_out(self, X): # Run network without saving 
         # feed-forward for output
         z_h = np.matmul(X, self.hidden_weights) + self.hidden_bias
-        a_h = self.act.f(z_h) #Activation function gate 
+        a_h = self.act_h.f(z_h) #Activation function gate 
 
-        # Output layer
+        # Output layer - If reg different cost
         z_o = np.matmul(a_h, self.output_weights) + self.output_bias
-        probabilities = self.act.softmax(z_o)
+        tar = self.act_o.f(z_o)
 
-        return probabilities
+        return tar
 
     def backpropagation(self):
-        # Change cost function here for regression
-        error_output = self.probabilities - self.Y_data 
-        self.output_weights_gradient    = np.matmul(self.a_h.T, error_output)
+        # Calculate gradients for output layer
+        if self.nn_type=="classification":
+            error_output = self.tar - self.Ydata   
+        elif self.nn_type=="regression": 
+            error_output =  self.cost.df(self.tar,self.Ydata) * self.act_o.df(self.z_o)
+        else: 
+            raise ValueError("Please specify NN type [classification, regression]")
+
+        self.output_weights_gradient    = np.matmul(self.a_h.T, error_output) 
         self.output_bias_gradient       = np.sum(error_output, axis=0)
 
-        # Check if dsigmoid is correct
-        error_hidden = np.matmul(error_output, self.output_weights.T) * self.act.df(self.z_h) 
-        self.hidden_weights_gradient    = np.matmul(self.X_data.T, error_hidden)
+        # Calculate gradients for hidden layer        
+        error_hidden = np.matmul(error_output, self.output_weights.T) * self.act_h.df(self.z_h) 
+        self.hidden_weights_gradient    = np.matmul(self.Xdata.T, error_hidden)
         self.hidden_bias_gradient       = np.sum(error_hidden, axis=0)
 
         if self.lmbd > 0.0: # Add regularization if lmbd value is given
@@ -104,12 +118,14 @@ class NeuralNetwork:
         self.hidden_bias    -= self.eta * self.hidden_bias_gradient
 
     def predict(self, X):
-        probabilities = self.feed_forward_out(X)
-        return np.argmax(probabilities, axis=1)
+        # returns 1d array
+        tar = self.feed_forward_out(X)
+        return np.argmax(tar, axis=1)
 
-    def predict_probabilities(self, X):
-        probabilities = self.feed_forward_out(X)
-        return probabilities
+    def predict_tar(self, X):
+        # Returns both probabilities
+        tar = self.feed_forward_out(X)
+        return tar
 
     def train(self):
         data_indices = np.arange(self.n_inputs)
@@ -126,8 +142,8 @@ class NeuralNetwork:
                 )
 
                 # minibatch training data
-                self.X_data = self.X_data_full[chosen_datapoints]
-                self.Y_data = self.Y_data_full[chosen_datapoints]
+                self.Xdata = self.Xdata_full[chosen_datapoints]
+                self.Ydata = self.Ydata_full[chosen_datapoints]
 
                 self.feed_forward()
                 self.backpropagation()                

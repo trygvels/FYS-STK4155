@@ -38,11 +38,18 @@ Best activation      :  sigmoid
 Best hidden neurons  :  12
 Best accuracy        :  0.8260
 ---------------------------------------------------
+------------------ Best Results -------------------
+Best learning rate   :  0.1
+Best lambda          :  0.01
+Best activation      :  sigmoid
+Best hidden neurons  :  12
+Best rocauc          :  0.6987
+Best accuracy        :  0.8007
 """
 ## Params
-explore = True
+explore = False
 sklearn = False
-metric = "roc_auc"
+metric = "accuracy" #"roc_auc"
 
 
 ## Get data from InitData Class
@@ -54,24 +61,35 @@ logreg = LogReg() # init Logreg class
 
 
 if explore==True: # Explore parameter space for credit card data
+    # Try it all
     eta_vals = np.logspace(-5, 1, 7)
     lmbd_vals = np.logspace(-5, 1, 7)
-    activations = ["sigmoid", "tanh", "relu", "elu"]
+    acts_hidden = ["sigmoid", "tanh", "relu", "elu"]
     hidden_neurons = [4,8,12,16,50,100] 
     epochs = 20
+
+    # Faster
+    eta_vals = np.logspace(-3, 0, 4)
+    lmbd_vals = np.logspace(-3, 0, 4)
+    acts_hidden = ["sigmoid", "relu"]
+    hidden_neurons = [4,8,12,16,50] 
+    epochs = 20
+
 else: # Optimal setup for credit card using all data
+    # Best relu
     eta_vals = [0.0001]
     lmbd_vals = [0.1]
-    activations = ["relu"]
+    acts_hidden = ["relu"]
     hidden_neurons = [16] 
     epochs=20
-
+    
+    # GOAT
     lmbd_vals = [0.1]
     eta_vals = [0.01]
-    activations = ["sigmoid"]
+    acts_hidden = ["sigmoid"]
     hidden_neurons = [12] 
     epochs=20
-
+    
 
 if sklearn == False:
     # grid search
@@ -79,9 +97,9 @@ if sklearn == False:
     best_rocauc = 0
     for i, eta in enumerate(eta_vals):
         for j, lmbd in enumerate(lmbd_vals):
-            for k, act in enumerate(activations):
+            for k, act_h in enumerate(acts_hidden):
                 for l, hn in enumerate(hidden_neurons):
-                    dnn = NeuralNetwork(XTrain, Y_train_onehot.toarray(), eta=eta, lmbd=lmbd, n_hidden_neurons=hn, activation=act, epochs=epochs)
+                    dnn = NeuralNetwork(XTrain, Y_train_onehot.toarray(), eta=eta, lmbd=lmbd, n_hidden_neurons=hn, act_h=act_h, epochs=epochs)
                     dnn.train()
                     
                     
@@ -97,26 +115,27 @@ if sklearn == False:
                             best_eta = eta
                             best_lmbd = lmbd
                             best_hn = hn
-                            best_act = act
+                            best_act_h = act_h
+                            best_rocauc = rocauc
                     elif metric=="roc_auc":
                         if rocauc > best_rocauc:
                             best_accuracy = accuracy
                             best_eta = eta
                             best_lmbd = lmbd
                             best_hn = hn
-                            best_act = act
+                            best_act_h = act_h
                             best_rocauc = rocauc
                         
 
                     else: 
-                        print("No metric chosen, exiting.")
-                        sys.exit()
+                        raise ValueError("No metric chosen, exiting.")
+                        
 
 
                     print("---------------------------------------------------")
                     print("Learning rate : {:<8}".format(eta), " Current best : ", best_eta) 
                     print("Lambda        : {:<8}".format(lmbd), " Current best : ", best_lmbd)
-                    print("Activation    : {:<8}".format(act), " Current best : ", best_act)
+                    print("Activation    : {:<8}".format(act_h), " Current best : ", best_act_h)
                     print("Hidden neurons: {:<8}".format(hn), " Current best : ", best_hn)
                     print("roc auc       : {:.6}".format(rocauc), " Current best :  %.4f" % best_rocauc)
                     print("Accuracy      : {:.6}".format(accuracy), " Current best :  %.4f" % best_accuracy)
@@ -125,7 +144,7 @@ if sklearn == False:
     print("------------------ Best Results -------------------")
     print("Best learning rate   : ", best_eta)
     print("Best lambda          : ", best_lmbd)
-    print("Best activation      : ", best_act)
+    print("Best activation      : ", best_act_h)
     print("Best hidden neurons  : ", best_hn)
     print("Best rocauc          :  %.4f" % best_rocauc)
     print("Best accuracy        :  %.4f" % best_accuracy)
