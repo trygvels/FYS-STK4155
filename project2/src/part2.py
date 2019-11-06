@@ -40,8 +40,9 @@ Best accuracy        :  0.8260
 ---------------------------------------------------
 """
 ## Params
-explore = False
+explore = True
 sklearn = False
+metric = "roc_auc"
 
 
 ## Get data from InitData Class
@@ -57,7 +58,7 @@ if explore==True: # Explore parameter space for credit card data
     lmbd_vals = np.logspace(-5, 1, 7)
     activations = ["sigmoid", "tanh", "relu", "elu"]
     hidden_neurons = [4,8,12,16,50,100] 
-    epochs = 1000
+    epochs = 20
 else: # Optimal setup for credit card using all data
     eta_vals = [0.0001]
     lmbd_vals = [0.1]
@@ -71,9 +72,11 @@ else: # Optimal setup for credit card using all data
     hidden_neurons = [12] 
     epochs=20
 
+
 if sklearn == False:
     # grid search
     best_accuracy = 0
+    best_rocauc = 0
     for i, eta in enumerate(eta_vals):
         for j, lmbd in enumerate(lmbd_vals):
             for k, act in enumerate(activations):
@@ -82,22 +85,40 @@ if sklearn == False:
                     dnn.train()
                     
                     
-                    test_predict = dnn.predict(XTest)
+                    yPred = dnn.predict(XTest)
                     
-                    accuracy = accuracy_score(yTest, test_predict)
-                    logreg.own_classification_report(yTest,test_predict)
-                    if accuracy > best_accuracy:
-                        best_accuracy = accuracy
-                        best_eta = eta
-                        best_lmbd = lmbd
-                        best_hn = hn
-                        best_act = act
+                    accuracy = accuracy_score(yTest, yPred)
+                    rocauc = roc_auc_score(yTest, yPred)
+                    
+                    logreg.own_classification_report(yTest,yPred)
+                    if metric=="accuracy":
+                        if accuracy > best_accuracy:
+                            best_accuracy = accuracy
+                            best_eta = eta
+                            best_lmbd = lmbd
+                            best_hn = hn
+                            best_act = act
+                    elif metric=="roc_auc":
+                        if rocauc > best_rocauc:
+                            best_accuracy = accuracy
+                            best_eta = eta
+                            best_lmbd = lmbd
+                            best_hn = hn
+                            best_act = act
+                            best_rocauc = rocauc
+                        
+
+                    else: 
+                        print("No metric chosen, exiting.")
+                        sys.exit()
+
 
                     print("---------------------------------------------------")
                     print("Learning rate : {:<8}".format(eta), " Current best : ", best_eta) 
                     print("Lambda        : {:<8}".format(lmbd), " Current best : ", best_lmbd)
                     print("Activation    : {:<8}".format(act), " Current best : ", best_act)
                     print("Hidden neurons: {:<8}".format(hn), " Current best : ", best_hn)
+                    print("roc auc       : {:.6}".format(rocauc), " Current best :  %.4f" % best_rocauc)
                     print("Accuracy      : {:.6}".format(accuracy), " Current best :  %.4f" % best_accuracy)
                     print()
 
@@ -106,6 +127,7 @@ if sklearn == False:
     print("Best lambda          : ", best_lmbd)
     print("Best activation      : ", best_act)
     print("Best hidden neurons  : ", best_hn)
+    print("Best rocauc          :  %.4f" % best_rocauc)
     print("Best accuracy        :  %.4f" % best_accuracy)
     print("---------------------------------------------------")
 
@@ -114,4 +136,5 @@ else:
     clf = MLPClassifier(solver="lbfgs", alpha=1e-5,hidden_layer_sizes=(3))
     clf.fit(XTrain, yTrain)
     yTrue, yPred = yTest, clf.predict(XTest)
-    logreg.own_classification_report(yTrue,yPred)
+    print(classification_report(yTrue,yPred))
+    print("Roc auc: ", roc_auc_score(yTrue,yPred))
