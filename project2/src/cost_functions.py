@@ -11,14 +11,15 @@ class CostFunctions: # Class with different cost functions
             self.df   = self.d_mse
 
     def __call__(self,tar, y) :
-        return self.function(tar, y), self.dfunction(tar,y) # Returns chosen cost function
+        return self.f(tar, y), self.df(tar,y) # Returns chosen cost function
+
 
     # DERIVATIVES FOR BOTH CROSS ENTROPY AND MSE IS tar-y
 
     def cross_entropy(self, tar, y): # Cross entropy loss function
         reg = 0 # optional regularization term
         return -np.sum(y*tar - np.log(1+np.exp(tar))) + reg
-        
+
     def d_cross_entropy(self, tar, y) :
         #return -np.sum(target/y - (1-target)/(1-y))
         return tar - y #y - tar

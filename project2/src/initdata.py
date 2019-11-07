@@ -25,7 +25,7 @@ class InitData: # Class for initializing different data sets
         self.onehotencoder = OneHotEncoder(categories="auto")
 
     # Function for initializing credit card data
-    def credit_data(self, trainingShare, drop_zero=False,drop_neg2=False, per_col=False, exclude_col=['none'],plot_alldata=False, return_cols=False, onehot_encode_col=['SEX','EDUCATION','MARRIAGE']):
+    def credit_data(self, trainingShare, drop_zero=False,drop_neg2=False, per_col=False, exclude_col=['none'],plot_alldata=False, return_cols=False, onehot_encode_col=['SEX','EDUCATION','MARRIAGE'],plt_corr=False):
 
 
         print("loading Credit card data")
@@ -255,6 +255,9 @@ class InitData: # Class for initializing different data sets
                 remainder="passthrough"
             ).fit_transform(self.X)
 
+        if (plt_corr):
+            self.plot_correlation()
+            
         # Train-test split
         self.trainingShare = trainingShare
         self.XTrain, self.XTest, self.yTrain, self.yTest=train_test_split(self.X, self.y, train_size=self.trainingShare, test_size = 1-self.trainingShare, random_state=seed)
@@ -376,3 +379,25 @@ class InitData: # Class for initializing different data sets
             plt.savefig('plots/pay'+i+label+'.pdf',bbox_inches='tight',pad_inches=0.02)
             plt.clf()
 
+
+    def plot_correlation(self):
+
+        Xp=pd.DataFrame(data=self.X,columns=self.data_cols)
+        plt_cols=[]
+        for i in range(1,Xp.shape[1]+1):
+            plt_cols.append(str(i))
+        corr=Xp.corr(method='pearson')
+        fig, ax = plt.subplots(figsize=(16,13))
+
+        im = ax.imshow(corr, cmap=plt.cm.jet,)
+
+        cb=fig.colorbar(im, ax=ax)
+        plt.xticks(range(corr.shape[1]), plt_cols, fontsize=14, rotation=90)
+        plt.yticks(range(corr.shape[1]), plt_cols, fontsize=14)
+#        plt.colorbar(cmap='bwr')
+        cb.ax.tick_params(labelsize=14)
+#        plt.title('Correlation Matrix', fontsize=20)
+        plt.savefig('plots/corr_matrix.pdf',bbox_inches='tight',pad_inches=0.02)
+        plt.show()
+
+        return

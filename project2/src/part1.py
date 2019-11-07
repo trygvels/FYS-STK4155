@@ -22,7 +22,7 @@ data = InitData()
 #XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot = data.credit_data(trainingShare=0.5,per_col=True,drop_zero=True,drop_neg2=True)
 
 #testing out dropping specific columns of the data
-XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot, data_cols = data.credit_data(trainingShare=0.5,drop_zero=False,drop_neg2=False,per_col=True,return_cols=True,onehot_encode_col=['EDUCATION','MARRIAGE'])
+XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot, data_cols = data.credit_data(trainingShare=0.5,drop_zero=True,drop_neg2=True,per_col=True,return_cols=True,onehot_encode_col=['EDUCATION','MARRIAGE'],plt_corr=False)
 
 ## Initialize Logreg Class
 logreg = LogReg() # init Logreg class
@@ -36,18 +36,19 @@ print()
       
 # Optimize parameters
 #lrs = np.logspace(-5,7,13)
-lrs = [0.01]
+lrs = [0.01,1.0]
 for lr in lrs:
-      beta, costs = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lr,adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=20,verbosity=2,max_iter=10) # Fit using SGD. This can be looped over for best lambda.
-      plt.plot(costs)
+      beta, costs,betas = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lr,adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=50,verbosity=1,max_iter=10,new_per_iter=True) # Fit using SGD. This can be looped over for best lambda.
+      plt.plot(betas[XTrain.shape[1],:])
       print("---------—--------—--- Our Regression --------—--------—--------—")
-      logreg.print_beta(cols=data_cols)
+      logreg.print_beta(cols=data_cols,betas=betas)
       print("-—--------—--- Training data -------—--------—")
       yPred=logreg.predict(XTrain) #predict
       logreg.own_classification_report(yTrain,yPred)
       print("-—--------—--- Validation data -------—--------—")
       yPred=logreg.predict(XTest) #predict
       logreg.own_classification_report(yTest,yPred)
+
       
 plt.show()
 
