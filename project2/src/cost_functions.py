@@ -24,7 +24,7 @@ class CostFunctions: # Class with different cost functions
         return tar - y #y - tar
 
     def mse(self, tar, y) :         # Mean Squared error
-        return ((tar-y)**2).mean() * 0.5
+        return 0.5*np.mean((tar-y)**2) #+ (lmbd * w**2))
 
     def d_mse(self, tar, y) :
         return tar-y

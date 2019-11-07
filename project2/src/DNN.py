@@ -29,7 +29,7 @@ class NeuralNetwork:
             lmbd=0.0,
             act_h="sigmoid", 
             act_o="softmax",
-            cost="cross_entropy",
+            cost="mse",
             nn_type = "classification"):
 
         print("Initializing", nn_type, "Neural Network")
@@ -48,6 +48,7 @@ class NeuralNetwork:
         self.act_h = Activations(act_h)
         self.act_o = Activations(act_o)
         self.cost = CostFunctions(cost)
+
 
         self.epochs             = epochs
         self.batch_size         = batch_size
@@ -76,7 +77,7 @@ class NeuralNetwork:
         # Calculate output output layer
         self.z_o = np.matmul(self.a_h, self.output_weights) + self.output_bias
         # Calculate probabolities from output layer
-        self.tar = self.act_o.f(self.z_o)
+        self.a_o = self.act_o.f(self.z_o)
 
 
     def feed_forward_out(self, X): # Run network without saving 
@@ -86,21 +87,20 @@ class NeuralNetwork:
 
         # Output layer - If reg different cost
         z_o = np.matmul(a_h, self.output_weights) + self.output_bias
-        tar = self.act_o.f(z_o)
+        a_o = self.act_o.f(z_o)
 
-        return tar
+        return a_o
 
     def backpropagation(self):
+        """
+        TODO:
+        Implement multilayer
+        """
+
         # Calculate gradients for output layer
-    
-        error_output = self.tar - self.Ydata   
-        error_output =  self.cost.df(self.tar,self.Ydata) * self.act_o.df(self.z_o)
-        """
-          elif self.nn_type=="regression": 
-            error_output =  self.cost.df(self.tar,self.Ydata) * self.act_o.df(self.z_o)
-        else: 
-            raise ValueError("Please specify NN type [classification, regression]")
-        """
+        error_output = self.a_o - self.Ydata   
+        error_output =  self.cost.df(self.a_o,self.Ydata) * self.act_o.df(self.z_o)
+
         self.output_weights_gradient    = np.matmul(self.a_h.T, error_output) 
         self.output_bias_gradient       = np.sum(error_output, axis=0)
 
@@ -108,6 +108,7 @@ class NeuralNetwork:
         error_hidden = np.matmul(error_output, self.output_weights.T) * self.act_h.df(self.z_h) 
         self.hidden_weights_gradient    = np.matmul(self.Xdata.T, error_hidden)
         self.hidden_bias_gradient       = np.sum(error_hidden, axis=0)
+    
 
         if self.lmbd > 0.0: # Add regularization if lmbd value is given
             self.output_weights_gradient += self.lmbd * self.output_weights
@@ -121,20 +122,21 @@ class NeuralNetwork:
 
     def predict(self, X):
         # returns 1d array
-        tar = self.feed_forward_out(X)
-        return np.argmax(tar, axis=1)
+        a_o = self.feed_forward_out(X)
+        return np.argmax(a_o, axis=1)
 
-    def predict_tar(self, X):
+    def predict_a_o(self, X):
         # Returns both probabilities
-        tar = self.feed_forward_out(X)
-        return tar
+        a_o = self.feed_forward_out(X)
+        return a_o
 
     def train(self):
         data_indices = np.arange(self.n_inputs)
-   
+        costs = np.zeros(self.epochs)
+        
         for i in range(self.epochs):
             for j in range(self.iterations):
-
+                
                 # pick datapoints with replacement
                 chosen_datapoints = np.random.choice( 
                     data_indices, size=self.batch_size, replace=False
@@ -146,3 +148,13 @@ class NeuralNetwork:
 
                 self.feed_forward()
                 self.backpropagation()                
+                
+                costs[i] += self.cost.f(self.Ydata, self.predict_a_o(self.Xdata))
+
+            # Convergence test # Needs to be updated
+            if i > 10 and abs(costs[i]-costs[i-10])/costs[i-10] < 1:
+                print("Convergence after {} epochs".format(i))
+                costs[i:] = None
+                break
+
+        return costs
