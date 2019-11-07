@@ -75,7 +75,9 @@ class LogReg: # Logistic regression class
         return self.beta, costs
 
     # Stochastic gradient descent method with batches
-    def SGD_batch(self, X, y, lr = 0.01, tol=1e-4, max_iter=1, batch_size=100, n_epoch=100, rnd_seed=False, adj_lr=False, rnd_batch=False, verbosity=0): 
+    def SGD_batch(self, X, y, lr = 0.01, tol=1e-4, max_iter=1, batch_size=100, n_epoch=100, rnd_seed=False, adj_lr=False, rnd_batch=False, verbosity=0,lambda_r=0.0,new_per_iter=False):
+
+        # lambda_r = lambda value for ridge regulation term in cost function.
         print("Doing SGD for logreg")
         n = len(y) 
         costs = []                                  # Initializing cost list
@@ -84,17 +86,25 @@ class LogReg: # Logistic regression class
             np.random.seed(int(time.time()))
         self.beta = np.random.randn(X.shape[1],1)   # Drawing initial random beta values
         tar = X@self.beta
-        min_cost = self.cost(tar,y)  # Save cost of new beta
+        min_cost = self.cost.f(tar,y) + lambda_r*np.sum(self.beta**2)  # Save cost of new beta
+
         best_beta=self.beta.copy()
 
+        # adjustable learning rate
         if (adj_lr):
             t0 = n
             lr0=lr
 
         # We do several SGD searches with new batches for each search, with new searches
         # starting from the previous endpoint
-        
+        betas=np.zeros(shape=(X.shape[1]+1,max_iter)) #array to store the best betas with corresponding cost per iteration
         for i in range(max_iter):
+            if (new_per_iter):
+                self.beta = np.random.randn(X.shape[1],1)
+                tar = X@self.beta
+                min_cost = self.cost.f(tar,y) + lambda_r*np.sum(self.beta**2) 
+                best_beta=self.beta.copy()
+
             if (verbosity>0):
 
                 print('   search %i of %i'%(i+1,max_iter))
@@ -122,22 +132,33 @@ class LogReg: # Logistic regression class
                     X_ = X[idx_arr,:].reshape(nbatch[idx],X.shape[1]) # Select batch data
                     y_ = y[idx_arr].reshape(nbatch[idx],1)            # select corresponding prediction
                     b = X_@self.beta                # Calculate current prediction
-                    gradient = ( X_.T @ (self.act.f(b)-y_)) # Calculate gradient
+                    gradient = ( X_.T @ (self.act.f(b)-y_)) + 2.0*lambda_r*self.beta # Calculate gradient
                     if (adj_lr):
-                        lr=(lr0*t0)/(t0+k*n+j*batch_size)
                         #as iterations increase, the step size in beta is reduced
-                    self.beta = self.beta - lr*gradient                # Calculate perturbation to beta
+                        lr=(lr0*t0)/(t0+k*n+j*batch_size)
+
+                    self.beta = self.beta - lr*gradient    # Calculate perturbation to beta
+
                 #after each epoch we compute the cost (majority of runtime)
                 tar = X@self.beta
-                cost = self.cost(tar,y) #calculate total cost (This takes a long time!!)
+                #calculate total cost (This takes a long time!!). Has support for ridge
+                cost = self.cost.f(tar,y) + lambda_r*np.sum(self.beta**2)
                 costs.append(cost)                      # Save cost of new beta
                 if (cost < min_cost):
                     min_cost=cost
                     best_beta=self.beta.copy()
-        
-        self.beta=best_beta.copy() #finally return beta with the lowest total cost
+            betas[:X.shape[1],i]=best_beta[:,0].copy()
+            betas[X.shape[1],i]=min_cost.copy()
+        # if we draw new initial betas per iteration, we need to find the beta giving the
+        # smallest cost of all iterations. If not, then the final best_beta is the one
+        # we're after 
+        if (new_per_iter):
+            idx=np.argmin(betas[X.shape[1],:]) #find index with lowest cost
+            self.beta[:,0]=betas[:X.shape[1],idx].copy() #finally return beta with the lowest total cost
+        else:
+            self.beta=best_beta.copy() #finally return beta with the lowest total cost
 
-        return best_beta, costs
+        return best_beta, costs, betas
 
     def predict(self,X):                           # Calculates probabilities and onehots for y
         print("Predicting y using logreg")
@@ -243,14 +264,29 @@ class LogReg: # Logistic regression class
 
         return idx_arr,n_ms
 
-    def print_beta(self, cols=[]):
+    def print_beta(self, cols=[],betas=[]):
+        if (len(betas)>2):
+            std_b=np.std(betas,axis=1)
+            mean_b=np.mean(betas,axis=1)
+
         print('------- Beta values -------')
-        print('      value   data label' )
         print()
+        if (len(betas)>2):
+            print('     best fit      std         mean     data label' )
+        else:
+            print('      value   data label' )
+
         for i in range(len(self.beta)):
             if i >= len(cols):
-                print('  %11.6f'%(self.beta[i,0]))
+                if (len(betas)>2):
+                    print('  %11.6f %11.6f %11.6f'%(self.beta[i,0],std_b[i],mean_b[i]))
+                else:
+                    print('  %11.6f'%(self.beta[i,0]))
             else:
-                print('  %11.6f   %s'%(self.beta[i,0],cols[i]))
+                if (len(betas)>2):
+                    print('  %11.6f %11.6f %11.6f   %s'%(self.beta[i,0],std_b[i],mean_b[i],cols[i]))
+                else:
+                    print('  %11.6f   %s'%(self.beta[i,0],cols[i]))
         print()
+                    
         return
