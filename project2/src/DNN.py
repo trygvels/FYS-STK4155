@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, accuracy_score, roc_auc_score, classification_report
+from sklearn.preprocessing import OneHotEncoder
 
 from logreg         import LogReg
 from initdata       import InitData
@@ -29,11 +30,13 @@ class NeuralNetwork:
             lmbd=0.0,
             act_h="sigmoid", 
             act_o="softmax",
-            cost="mse",
+            cost="cross_entropy",
             nn_type = "classification"):
 
+        print("---------------------------------------------------")
         print("Initializing", nn_type, "Neural Network")
-        
+        print("Cost function :", cost)
+        print("---------------------------------------------------")
         self.nn_type = nn_type
 
         self.Xdata_full        = Xdata
@@ -45,6 +48,7 @@ class NeuralNetwork:
         self.n_hidden_neurons   = n_hidden_neurons
         self.n_categories       = n_categories
 
+        self.act_h_tag = act_h
         self.act_h = Activations(act_h)
         self.act_o = Activations(act_o)
         self.cost = CostFunctions(cost)
@@ -58,14 +62,30 @@ class NeuralNetwork:
 
         self.create_biases_and_weights() # Initialize random weights and biases for two layers
 
-    def create_biases_and_weights(self):
+    def init_weight(self,n_in,n_out):
+        # Weight initialization function
+        if self.act_h_tag == 'sigmoid':
+            x = np.sqrt(6.0 / (n_in + n_out))
+            return np.random.uniform(-x, x, size=(n_in, n_out))
+
+        elif self.act_h_tag == 'tanh':
+            x = 4.0 * np.sqrt(6.0 / (n_in + n_out))
+            return np.random.uniform(-x, x, size=(n_in, n_out))
+
+        elif self.act_h_tag == 'relu' or self.act_h_tag == 'elu':
+            return np.random.randn(n_in, n_out)*np.sqrt(2.0/n_in)
+
+        else:
+            return np.random.randn(n_in, n_out)
+
+    def create_biases_and_weights(self):  
         # Calculate inital weights and biases for hidden layer
-        self.hidden_weights = np.random.randn(self.n_features, self.n_hidden_neurons)
-        self.hidden_bias    = np.zeros(self.n_hidden_neurons) + 0.01
+        self.hidden_weights = self.init_weight(self.n_features, self.n_hidden_neurons) # np.random.randn(self.n_features, self.n_hidden_neurons)* np.sqrt(2.0 / self.n_features)
+        self.hidden_bias    = np.zeros(self.n_hidden_neurons)
 
         # Calculate initial weights and biases for output layer
-        self.output_weights = np.random.randn(self.n_hidden_neurons, self.n_categories)
-        self.output_bias    = np.zeros(self.n_categories) + 0.01
+        self.output_weights = self.init_weight(self.n_hidden_neurons, self.n_categories) #  np.random.randn(self.n_hidden_neurons, self.n_categories)* np.sqrt(2.0 / self.n_features)
+        self.output_bias    = np.zeros(self.n_categories)
 
     def feed_forward(self): # Feed forward through full network
         ## feed-forward for training
@@ -98,8 +118,8 @@ class NeuralNetwork:
         """
 
         # Calculate gradients for output layer
-        error_output = self.a_o - self.Ydata   
-        error_output =  self.cost.df(self.a_o,self.Ydata) * self.act_o.df(self.z_o)
+        error_output = (self.a_o - self.Ydata)
+        #error_output =  self.cost.df(self.a_o,self.Ydata, self.lmbd) * self.act_o.df(self.z_o)
 
         self.output_weights_gradient    = np.matmul(self.a_h.T, error_output) 
         self.output_bias_gradient       = np.sum(error_output, axis=0)
@@ -114,6 +134,11 @@ class NeuralNetwork:
             self.output_weights_gradient += self.lmbd * self.output_weights
             self.hidden_weights_gradient += self.lmbd * self.hidden_weights
 
+        # Checking for NaNs
+        if np.any(np.isnan(self.hidden_weights_gradient)) or np.any(np.isnan(self.output_weights_gradient)) \
+            or np.any(np.isnan(self.hidden_bias_gradient)) or np.any(np.isnan(self.output_bias_gradient)):
+            return True
+            
         # Update weights 
         self.output_weights -= self.eta * self.output_weights_gradient
         self.output_bias    -= self.eta * self.output_bias_gradient
@@ -130,10 +155,15 @@ class NeuralNetwork:
         a_o = self.feed_forward_out(X)
         return a_o
 
+    def score(self, ytrue, ypred):
+        l2 = ( (self.hidden_weights**2).sum() + (self.output_weights**2).sum() ) / (2*self.n_features)
+        cost = self.cost.f(ytrue, ypred, self.lmbd, l2)
+        return cost
+
     def train(self):
         data_indices = np.arange(self.n_inputs)
-        costs = np.zeros(self.epochs)
-        
+        self.costs = np.zeros(self.epochs)
+        nan = False
         for i in range(self.epochs):
             for j in range(self.iterations):
                 
@@ -142,19 +172,35 @@ class NeuralNetwork:
                     data_indices, size=self.batch_size, replace=False
                 )
 
-                # minibatch training data
+                # minibat ch training data
                 self.Xdata = self.Xdata_full[chosen_datapoints]
                 self.Ydata = self.Ydata_full[chosen_datapoints]
 
                 self.feed_forward()
-                self.backpropagation()                
-                
-                costs[i] += self.cost.f(self.Ydata, self.predict_a_o(self.Xdata))
+                nan = self.backpropagation()          
+                if nan: # Search in gradients, break if found
+                    print("---------------------------------------------------")
+                    print(f"NaN detected in gradients, epoch {i}.")
+                    break
 
-            # Convergence test # Needs to be updated
-            if i > 10 and abs(costs[i]-costs[i-10])/costs[i-10] < 1:
-                print("Convergence after {} epochs".format(i))
-                costs[i:] = None
+                self.costs[i] += self.score(self.predict_a_o(self.Xdata),self.Ydata)
+           
+            if nan:
                 break
 
-        return costs
+            # Convergence test - Average change over 5 epochs
+            if i > 10:
+                tolerance =   np.abs( np.mean( self.costs[i-10:i-5] ) - np.mean( self.costs[i-5:i] ) )/ np.mean(self.costs[i-5:i]) 
+                if tolerance < 0.001:
+                    print("---------------------------------------------------")
+                    print("Convergence after {} epochs".format(i))
+                    print("---------------------------------------------------")
+                    self.costs[i:] = None
+                    break
+
+        return self.costs
+
+    def plot_costs(self):
+        #plt.semilogy(self.costs)
+        plt.plot(self.costs)
+        plt.show()

@@ -1,4 +1,6 @@
 import numpy as np
+import scipy.special as sps
+import sys
 
 class CostFunctions: # Class with different cost functions
     def __init__(self, function = "cross_entropy"):
@@ -10,22 +12,18 @@ class CostFunctions: # Class with different cost functions
             self.f    = self.mse
             self.df   = self.d_mse
 
-    def __call__(self,tar, y) :
-        return self.f(tar, y), self.df(tar,y) # Returns chosen cost function
+    def __call__(self,tar, y, lmbd = 0, l2 = 0) :
+        return self.f(tar, y, lmbd, l2), self.df(tar,y) # Returns chosen cost function
 
+    def cross_entropy(self, tar, y,  lmbd = 0, l2 = 0): # Cross entropy loss function
+        ce = -np.sum(sps.xlogy(y, tar) + sps.xlogy(1 - y, 1 - tar)) / tar.shape[0] + lmbd * l2
+        return ce
 
-    # DERIVATIVES FOR BOTH CROSS ENTROPY AND MSE IS tar-y
+    def d_cross_entropy(self, tar, y,  lmbd = 0):
+        return tar - y
 
-    def cross_entropy(self, tar, y): # Cross entropy loss function
-        reg = 0 # optional regularization term
-        return -np.sum(y*tar - np.log(1+np.exp(tar))) + reg
+    def mse(self, tar, y,  lmbd = 0, l2 = 0) :         # Mean Squared error
+        return 0.5*np.mean((tar-y)**2) + lmbd * l2
 
-    def d_cross_entropy(self, tar, y) :
-        #return -np.sum(target/y - (1-target)/(1-y))
-        return tar - y #y - tar
-
-    def mse(self, tar, y) :         # Mean Squared error
-        return 0.5*np.mean((tar-y)**2) #+ (lmbd * w**2))
-
-    def d_mse(self, tar, y) :
+    def d_mse(self, tar, y,  lmbd = 0) :
         return tar-y
