@@ -20,7 +20,7 @@ from cost_functions import CostFunctions
 ## Get data from InitData Class
 data = InitData()
 noise = 0.1
-XTrain, yTrain, XTest, yTest, X, y, b, x_, y_ =  data.franke_data(noise=noise, N=20)
+XTrain, yTrain, XTest, yTest, X, y, b, x_, y_ =  data.franke_data(noise=noise, N=100)
 
 logreg = LogReg() # init Logreg class
 
@@ -96,7 +96,7 @@ if explore==True: # Explore parameter space for franke function
     #acts_hidden = ["logistic", "tanh", "relu"] # Supported by sklearn
     act_o = "identity" 
     hidden_neurons = [4,8,12,16,50,100] 
-    epochs=50
+    epochs=300
     batch_size = 1
     n_categories = 1
 
@@ -108,7 +108,7 @@ else: # Optimal setup for franke function
     hidden_neurons = [12]
     act_o = "identity" 
     epochs=600
-    batch_size = 20
+    batch_size = 1 #??? Error
     n_categories = 1
 
 
@@ -119,10 +119,10 @@ else: # Optimal setup for franke function
     #hidden_neurons = [4]
     
     # GOAT
-    #eta_vals = [0.1]
-    #lmbd_vals = [0.0001]
-    #acts_hidden = ["relu"]
-    #hidden_neurons = [50]
+    eta_vals = [0.1]
+    lmbd_vals = [0.0001]
+    acts_hidden = ["relu"]
+    hidden_neurons = [50]
 
 
 """
