@@ -290,3 +290,68 @@ class LogReg: # Logistic regression class
         print()
                     
         return
+
+    def plot_cumulative(self,X,y,p=[],beta=[],label='',plt_ar=True):
+        if (len(p)==0):
+            if(len(beta)==0):
+                beta=self.beta
+            p=self.act.f(X@beta)
+        if (not label==''):
+            label = '_'+label
+        else:
+            #make a date and time stamp
+            t=time.ctime()
+            ta=t.split()
+            hms=ta[3].split(':')
+            label='_'+ta[4]+'_'+ta[1]+ta[2]+'_'+hms[0]+hms[1]+hms[2]
+            
+        temp_p=p[:,0].copy()
+        nd=len(temp_p)
+        nt=np.sum(y)
+        model_pred=np.zeros(nd+1)
+        for i in range(len(temp_p)):
+            idx=np.argmax(temp_p)
+            model_pred[i+1]=model_pred[i]+y[idx,0]
+            temp_p[idx]=-1.0
+
+        x_plt=np.arange(nd+1)
+        best_y=np.arange(nd+1)
+        best_y[nt:]=nt
+        baseline=(1.0*nt)/nd*x_plt
+
+        ar=1.0*np.sum(model_pred-baseline)/np.sum(best_y-baseline)
+        
+        plt.figure(1)
+        plt.plot(x_plt,best_y,label='Best fit',color='b')
+        plt.plot(x_plt,model_pred,label='Model',color='r')
+        plt.plot(x_plt,baseline,label='Baseline',color='k')
+        plt.legend(loc='lower right',fontsize=14)
+        plt.xlabel('Number of total data',fontsize=14)
+        plt.ylabel('Cumulative number of target data',fontsize=14)
+        if (plt_ar):
+            plt.text(nd*0.65,nt*0.4,'area ratio = %5.3f'%(ar), fontsize=14)
+        plt.savefig('plots/cumulative_plot'+label+'.pdf',bbox_inches='tight',pad_inches=0.02)
+        plt.clf()
+
+        
+    def print_beta_to_file(self,beta=[],label='',d_label=[]):
+        if(len(beta)==0):
+            beta=self.beta
+            
+        if (not label==''):
+            label = '_'+label
+        else:
+            #make a date and time stamp
+            t=time.ctime()
+            ta=t.split()
+            hms=ta[3].split(':')
+            label='_'+ta[4]+'_'+ta[1]+ta[2]+'_'+hms[0]+hms[1]+hms[2]
+
+        filename='beta_values/beta'+label+'.txt'
+        f=open(filename,'w')
+        for i in range(len(beta)):
+            if i >= len(d_label):
+                f.write('  %11.6f\n'%(self.beta[i,0]))
+            else:
+                f.write('  %11.6f   %s\n'%(self.beta[i,0],d_label[i]))
+        f.close()

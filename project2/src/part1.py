@@ -25,7 +25,7 @@ data = InitData()
 XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot, data_cols = data.credit_data(trainingShare=0.5,drop_zero=True,drop_neg2=True,per_col=True,return_cols=True,onehot_encode_col=['EDUCATION','MARRIAGE'],plt_corr=False)
 
 ## Initialize Logreg Class
-logreg = LogReg() # init Logreg class
+logreg = LogReg(cost='cross_entropy_part1') # init Logreg class
 
 # Check results statistics
 print("---------—--------------- True data ----------—--------—--------—")
@@ -36,10 +36,11 @@ print()
       
 # Optimize parameters
 #lrs = np.logspace(-5,7,13)
-lrs = [0.01,1.0]
+lrs = [0.01]
 for lr in lrs:
-      beta, costs,betas = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lr,adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=50,verbosity=1,max_iter=10,new_per_iter=True) # Fit using SGD. This can be looped over for best lambda.
-      plt.plot(betas[XTrain.shape[1],:])
+      beta, costs,betas = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lr,adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=50,verbosity=1,max_iter=1,new_per_iter=False) # Fit using SGD. This can be looped over for best lambda.
+      plt.figure(2)
+      plt.plot(costs)
       print("---------—--------—--- Our Regression --------—--------—--------—")
       logreg.print_beta(cols=data_cols,betas=betas)
       print("-—--------—--- Training data -------—--------—")
@@ -48,9 +49,11 @@ for lr in lrs:
       print("-—--------—--- Validation data -------—--------—")
       yPred=logreg.predict(XTest) #predict
       logreg.own_classification_report(yTest,yPred)
+      plt.show()
+      plt.clf
+      logreg.plot_cumulative(XTest,yTest)
+      logreg.print_beta_to_file(d_label=data_cols)
 
-      
-plt.show()
 
 
 # Compare with sklearn
@@ -65,6 +68,7 @@ if True: # Simple sklearn
     print("-—--------—--- Validation data -------—--------—")
     yPred=logReg.predict(XTest) #predict
     logreg.own_classification_report(yTest,yPred)
+    logreg.plot_cumulative(XTest,yTest,beta=logReg.coef_.T,label='sklearn')
 else:   # Fancy optimal sklearn
     logreg.sklearn_alternative(XTrain, yTrain, XTest, yTest)
 

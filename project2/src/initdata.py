@@ -248,7 +248,7 @@ class InitData: # Class for initializing different data sets
                             onehot_col=np.where(onehot_col>excl_cols[j],onehot_col-1,onehot_col)
                             j+=1
                         
-        #Onehotencode column index 1,2 and 3 in data (gender, education and Marriage status)
+        #Onehotencode specific columns in data (gender, education and Marriage status by default)
         if len(onehot_col)>0:
             self.X = ColumnTransformer(
                 [("", self.onehotencoder, onehot_col),],
@@ -257,7 +257,7 @@ class InitData: # Class for initializing different data sets
 
         if (plt_corr):
             self.plot_correlation()
-            
+
         # Train-test split
         self.trainingShare = trainingShare
         self.XTrain, self.XTest, self.yTrain, self.yTest=train_test_split(self.X, self.y, train_size=self.trainingShare, test_size = 1-self.trainingShare, random_state=seed)
@@ -384,6 +384,7 @@ class InitData: # Class for initializing different data sets
 
         Xp=pd.DataFrame(data=self.X,columns=self.data_cols)
         plt_cols=[]
+                
         for i in range(1,Xp.shape[1]+1):
             plt_cols.append(str(i))
         corr=Xp.corr(method='pearson')
@@ -399,5 +400,4 @@ class InitData: # Class for initializing different data sets
 #        plt.title('Correlation Matrix', fontsize=20)
         plt.savefig('plots/corr_matrix.pdf',bbox_inches='tight',pad_inches=0.02)
         plt.show()
-
         return
