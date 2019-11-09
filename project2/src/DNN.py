@@ -25,6 +25,7 @@ class NeuralNetwork:
             n_hidden_neurons=5,
             n_categories=2,
             epochs=1000,
+            tol=0.001,
             batch_size=100,
             eta=0.01,
             lmbd=0.0,
@@ -55,6 +56,7 @@ class NeuralNetwork:
 
 
         self.epochs             = epochs
+        self.tol                = tol
         self.batch_size         = batch_size
         self.iterations         = self.n_inputs // self.batch_size
         self.eta                = eta
@@ -119,7 +121,8 @@ class NeuralNetwork:
 
         # Calculate gradients for output layer
         error_output = (self.a_o - self.Ydata)
-        #error_output =  self.cost.df(self.a_o,self.Ydata, self.lmbd) * self.act_o.df(self.z_o)
+        #print(self.a_o.shape, self.Ydata.shape, error_output.shape)
+        error_output =  self.cost.df(self.a_o,self.Ydata, self.lmbd) * self.act_o.df(self.z_o)
 
         self.output_weights_gradient    = np.matmul(self.a_h.T, error_output) 
         self.output_bias_gradient       = np.sum(error_output, axis=0)
@@ -159,8 +162,9 @@ class NeuralNetwork:
         l2 = ( (self.hidden_weights**2).sum() + (self.output_weights**2).sum() ) / (2*self.n_features)
         cost = self.cost.f(ytrue, ypred, self.lmbd, l2)
         return cost
-
+    
     def train(self):
+        print("Training")
         data_indices = np.arange(self.n_inputs)
         self.costs = np.zeros(self.epochs)
         nan = False
@@ -175,7 +179,7 @@ class NeuralNetwork:
                 # minibat ch training data
                 self.Xdata = self.Xdata_full[chosen_datapoints]
                 self.Ydata = self.Ydata_full[chosen_datapoints]
-
+                
                 self.feed_forward()
                 nan = self.backpropagation()          
                 if nan: # Search in gradients, break if found
@@ -191,7 +195,7 @@ class NeuralNetwork:
             # Convergence test - Average change over 5 epochs
             if i > 10:
                 tolerance =   np.abs( np.mean( self.costs[i-10:i-5] ) - np.mean( self.costs[i-5:i] ) )/ np.mean(self.costs[i-5:i]) 
-                if tolerance < 0.001:
+                if tolerance < self.tol:
                     print("---------------------------------------------------")
                     print("Convergence after {} epochs".format(i))
                     print("---------------------------------------------------")

@@ -34,13 +34,15 @@ if explore==True: # Explore parameter space for credit card data
     acts_hidden = ["sigmoid", "tanh", "relu", "elu"]
     hidden_neurons = [4,8,12,16,50,100] 
     epochs = 20
+    tol = 0.001
+    batch_size = 100
 
     # Faster
     eta_vals = np.logspace(-3, 0, 4)
     lmbd_vals = np.logspace(-3, 0, 4)
     acts_hidden = ["sigmoid", "relu"]
     hidden_neurons = [4,8,12,16,50] 
-    epochs = 20
+    epochs = 200
 
 else: # Optimal setup for credit card using all data
     # Best relu
@@ -49,6 +51,8 @@ else: # Optimal setup for credit card using all data
     acts_hidden = ["relu"]
     hidden_neurons = [16] 
     epochs=200
+    tol = 0.001
+    batch_size = 100
     
     # GOAT
     lmbd_vals = [0.1]
@@ -66,7 +70,7 @@ if sklearn == False:
         for j, lmbd in enumerate(lmbd_vals):
             for k, act_h in enumerate(acts_hidden):
                 for l, hn in enumerate(hidden_neurons):
-                    dnn = NeuralNetwork(XTrain, Y_train_onehot.toarray(), cost =cost,  eta=eta, lmbd=lmbd, n_hidden_neurons=hn, act_h=act_h, epochs=epochs)
+                    dnn = NeuralNetwork(XTrain, Y_train_onehot.toarray(), cost =cost, batch_size=batch_size, eta=eta, lmbd=lmbd, n_hidden_neurons=hn, act_h=act_h, epochs=epochs, tol = tol)
                     costs = dnn.train()
                     
                     # Probabilities for cost calculation
@@ -95,8 +99,6 @@ if sklearn == False:
                             best_hn = hn
                             best_act_h = act_h
                             best_rocauc = rocauc
-                        
-
                     else: 
                         raise ValueError("No metric chosen, exiting.")
                         
