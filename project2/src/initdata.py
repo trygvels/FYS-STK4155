@@ -43,7 +43,7 @@ class InitData: # Class for initializing different data sets
         if (plot_alldata):
             #plot data distributions of all the credit card data
             self.plot_credit_data('_alldata')
-            exit()
+
             
         excl_cols=[]
         # Check if we are to exclude any columns
@@ -258,9 +258,8 @@ class InitData: # Class for initializing different data sets
             ).fit_transform(self.X)
 
         if (plt_corr):
-            self.plot_correlation_matshow()
-            self.plot_correlation()
-            exit()
+            self.plot_correlation_matshow('_all')
+
 
         # Train-test split
         self.trainingShare = trainingShare
@@ -408,15 +407,16 @@ class InitData: # Class for initializing different data sets
         plt.show()
         return
 
-    def plot_correlation_matshow(self):
+    def plot_correlation_matshow(self,label=''):
 
         Xp=pd.DataFrame(data=self.X,columns=self.data_cols)
         plt_cols=[]
         for i in range(1,Xp.shape[1]+1):
             plt_cols.append(str(i))
         corr=Xp.corr(method='pearson')
-
-        fig = plt.figure(figsize=(20,13))
+        fig_scale=Xp.shape[1]/28.0
+        
+        fig = plt.figure(figsize=(fig_scale*20,fig_scale*13))
         plt_corr=corr.round(2)
         plt_corr.style.background_gradient(cmap='jet').set_precision(2)
         ax = sns.heatmap(plt_corr,annot=True,cmap='jet',vmax=1.0,vmin=-1.0,cbar_kws=dict(ticks=[-1.0,-0.75,-0.5,-0.25,0.0,0.25,0.5,0.75,1.0]))
@@ -432,6 +432,6 @@ class InitData: # Class for initializing different data sets
 #        plt.colorbar(cmap='bwr')
 #        cb.ax.tick_params(labelsize=14)
 #        plt.title('Correlation Matrix', fontsize=20)
-        plt.savefig('plots/corr_matrix_numbers.pdf',bbox_inches='tight',pad_inches=0.02)
+        plt.savefig('plots/corr_matrix_numbers'+label+'.pdf',bbox_inches='tight',pad_inches=0.02)
         plt.show()
         return

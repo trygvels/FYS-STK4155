@@ -107,7 +107,7 @@ class LogReg: # Logistic regression class
 
             if (verbosity>0):
 
-                print('   search %i of %i'%(i+1,max_iter))
+                print('  search %i of %i'%(i+1,max_iter))
             # Data is (semi) sorted on age after index ~15000,
             # dividing into batches based on index is therefore potentially not random.
             # We therefore have 2 options, (1) draw batch_size random values for each
@@ -121,7 +121,7 @@ class LogReg: # Logistic regression class
                 batch_idx,nbatch=self.split_batch(n,m)
             for k in range(n_epoch):
                 if (verbosity>1):
-                    print('   epoch %i of %i'%(k+1,n_epoch))
+                    print('    epoch %i of %i'%(k+1,n_epoch))
                 for j in range(m):
                     #values instead
                     if (rnd_batch):
