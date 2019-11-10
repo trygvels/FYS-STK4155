@@ -25,7 +25,7 @@ data = InitData()
 XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot, data_cols = data.credit_data(trainingShare=0.5,drop_zero=False,drop_neg2=False,per_col=True,return_cols=True,onehot_encode_col=['EDUCATION','MARRIAGE'],plt_corr=False,plot_alldata=False)
 
 ## Initialize Logreg Class
-logreg = LogReg(cost='cross_entropy_part1') # init Logreg class
+logreg = LogReg(cost='cross_entropy') # init Logreg class
 
 # Check results statistics
 print("---------—--------------- True data ----------—--------—--------—")

@@ -188,6 +188,7 @@ class NeuralNetwork:
                     break
 
                 self.costs[i] += self.score(self.predict_a_o(self.Xdata),self.Ydata)
+                
            
             if nan:
                 break

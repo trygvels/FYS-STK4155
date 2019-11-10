@@ -1,5 +1,6 @@
 import numpy as np
 import sys
+import scipy.special as sps
 
 class CostFunctions: # Class with different cost functions
     def __init__(self, function = "cross_entropy"):
@@ -7,9 +8,6 @@ class CostFunctions: # Class with different cost functions
             self.f   = self.cross_entropy
             self.df   = self.d_cross_entropy
 
-        if function == 'cross_entropy_part1' : # Suboptimal solution
-            self.f   = self.cross_entropy_part1
-            self.df   = self.d_cross_entropy
 
         if function == 'mse' : # Suboptimal solution
             self.f    = self.mse
@@ -18,11 +16,7 @@ class CostFunctions: # Class with different cost functions
     def __call__(self,tar, y, lmbd = 0, l2 = 0) :
         return self.f(tar, y, lmbd, l2), self.df(tar,y) # Returns chosen cost function
 
-    def cross_entropy(self, tar, y,  lmbd = 0, l2 = 0): # Cross entropy loss function
-        ce = -np.sum(y*tar) + np.sum(np.log(1.0 + np.exp(tar)))  + lmbd * l2
-        return ce
-
-    def cross_entropy_part1(self, tar, y,  lmbd = 0, l2 = 0): # Cross entropy loss function for part1
+    def cross_entropy(self, tar, y,  lmbd = 0, l2 = 0): # Cross entropy loss function for part1
         ce = -np.sum(y*tar) + np.sum(np.log(1+np.exp(tar))) + lmbd*l2
         return ce
 
