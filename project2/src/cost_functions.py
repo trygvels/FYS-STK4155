@@ -8,7 +8,7 @@ class CostFunctions: # Class with different cost functions
             self.df   = self.d_cross_entropy
 
         if function == 'cross_entropy_part1' : # Suboptimal solution
-            self.f   = self.cross_entropy
+            self.f   = self.cross_entropy_part1
             self.df   = self.d_cross_entropy
 
         if function == 'mse' : # Suboptimal solution
@@ -20,6 +20,10 @@ class CostFunctions: # Class with different cost functions
 
     def cross_entropy(self, tar, y,  lmbd = 0, l2 = 0): # Cross entropy loss function
         ce = -np.sum(y*tar) + np.sum(np.log(1.0 + np.exp(tar)))  + lmbd * l2
+        return ce
+
+    def cross_entropy_part1(self, tar, y,  lmbd = 0, l2 = 0): # Cross entropy loss function for part1
+        ce = -np.sum(y*tar) + np.sum(np.log(1+np.exp(tar))) + lmbd*l2
         return ce
 
     def d_cross_entropy(self, tar, y,  lmbd = 0):
