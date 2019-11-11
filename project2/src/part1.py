@@ -103,7 +103,11 @@ if True: # Simple sklearn
     print("-—--------—--- Validation data -------—--------—")
     yPred=logReg.predict(XTest) #predict
     logreg.own_classification_report(yTest,yPred)
-    logreg.plot_cumulative(XTest,yTest,beta=logReg.coef_.T,label='sklearn')
+    if (XTest.shape[0]>3000):
+          label='sklearn_all'
+    else:
+          label='sklearn'
+    logreg.plot_cumulative(XTest,yTest,beta=logReg.coef_.T,label=label)
 else:   # Fancy optimal sklearn
     logreg.sklearn_alternative(XTrain, yTrain, XTest, yTest)
 
