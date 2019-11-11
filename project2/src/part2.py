@@ -18,13 +18,14 @@ network on determining default based on credit card data.
 """
 ## Get data from InitData Class
 data = InitData()
-XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot =  data.credit_data(trainingShare=0.5, return_cols=False)#, drop_zero=True,drop_neg2=True)
+XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot =  data.credit_data(trainingShare=0.5)#, return_cols=False, drop_zero=True,drop_neg2=True)
 logreg = LogReg() # init Logreg class
+print(np.mean(yTest))
 
 ## Params
-explore = False
+explore = True
 sklearn = False
-metric = "accuracy" #"roc_auc"
+metric = "roc_auc"
 cost = "cross_entropy"
 
 if explore==True: # Explore parameter space for credit card data
@@ -33,16 +34,15 @@ if explore==True: # Explore parameter space for credit card data
     lmbd_vals = np.logspace(-5, 1, 7)
     acts_hidden = ["sigmoid", "tanh", "relu", "elu"]
     hidden_neurons = [4,8,12,16,50,100] 
-    epochs = 20
+    epochs = 200
     tol = 0.001
     batch_size = 100
 
     # Faster
-    eta_vals = np.logspace(-3, 0, 4)
-    lmbd_vals = np.logspace(-3, 0, 4)
+    hidden_neurons = [12] 
+    eta_vals = np.logspace(-3, -1, 3)
+    lmbd_vals =  np.logspace(-3, -1, 3)
     acts_hidden = ["sigmoid", "relu"]
-    hidden_neurons = [4,8,12,16,50] 
-    epochs = 200
 
 else: # Optimal setup for credit card using all data
     # Best relu
@@ -66,22 +66,20 @@ if sklearn == False:
     # grid search
     best_accuracy = 0
     best_rocauc = 0
+    color_iter = 0
     for i, eta in enumerate(eta_vals):
         for j, lmbd in enumerate(lmbd_vals):
             for k, act_h in enumerate(acts_hidden):
                 for l, hn in enumerate(hidden_neurons):
-                    dnn = NeuralNetwork(XTrain, Y_train_onehot.toarray(), cost =cost, batch_size=batch_size, eta=eta, lmbd=lmbd, n_hidden_neurons=hn, act_h=act_h, epochs=epochs, tol = tol)
-                    costs = dnn.train()
-                    
-                    # Probabilities for cost calculation
-                    print(dnn.score(dnn.predict_a_o(XTest),yTest), "Cost on test set")
-                    dnn.plot_costs()
-
+                    dnn = NeuralNetwork(XTrain, Y_train_onehot.toarray(), XTest, Y_test_onehot.toarray(), cost=cost, batch_size=batch_size, eta=eta, lmbd=lmbd, n_hidden_neurons=hn, act_h=act_h, epochs=epochs, tol = tol)
+                    costs, scores = dnn.train()
+                    accuracy = scores[-1,1,0]
+                    rocauc = scores[-1,1,1]
+                    #dnn.plot_costs(color_iter)
+                    dnn.plot_scores(color_iter)
+                    color_iter += 1
 
                     yTrue, yPred = yTest, dnn.predict(XTest)
-                    accuracy = accuracy_score(yTrue, yPred)
-                    rocauc = roc_auc_score(yTrue, yPred)
-                    
                     logreg.own_classification_report(yTest,yPred)
                     if metric=="accuracy":
                         if accuracy > best_accuracy:
@@ -112,6 +110,14 @@ if sklearn == False:
                     print("roc auc       : {:.6}".format(rocauc), " Current best :  %.4f" % best_rocauc)
                     print("Accuracy      : {:.6}".format(accuracy), " Current best :  %.4f" % best_accuracy)
                     print()
+
+
+    filename = "NNclassification_act_lmbd_eta.png"
+
+    plt.savefig("../figs/"+filename,bbox_inches = 'tight',pad_inches = 0)
+    plt.show()
+
+    sys.exit()
 
     print("------------------ Best Results -------------------")
     print("Best learning rate   : ", best_eta)

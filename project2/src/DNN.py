@@ -16,12 +16,13 @@ from cost_functions import CostFunctions
 This class is a feed-forward dense neural network used to train an arbitrary dataset.
 """
 
-
 class NeuralNetwork:
     def __init__(
             self,
-            Xdata,
-            Ydata,
+            Xtrain,
+            Ytrain,
+            Xtest = None,
+            Ytest = None, 
             n_hidden_neurons=5,
             n_categories=2,
             epochs=1000,
@@ -32,7 +33,8 @@ class NeuralNetwork:
             act_h="sigmoid", 
             act_o="softmax",
             cost="cross_entropy",
-            nn_type = "classification"):
+            nn_type = "classification",
+            length = 1):
 
         print("---------------------------------------------------")
         print("Initializing", nn_type, "Neural Network")
@@ -40,18 +42,22 @@ class NeuralNetwork:
         print("---------------------------------------------------")
         self.nn_type = nn_type
 
-        self.Xdata_full        = Xdata
-        self.Ydata_full        = Ydata
+        self.Xtrain        = Xtrain
+        self.Ytrain        = Ytrain
+        self.Xtest             = Xtest
+        self.Ytest             = Ytest
 
-        self.n_inputs           = Xdata.shape[0]
-        self.n_features         = Xdata.shape[1]
+        self.n_inputs           = Xtrain.shape[0]
+        self.n_features         = Xtrain.shape[1]
 
+        self.length = length #Number of free parameters
         self.n_hidden_neurons   = n_hidden_neurons
         self.n_categories       = n_categories
 
         self.act_h_tag = act_h
         self.act_h = Activations(act_h)
         self.act_o = Activations(act_o)
+        self.cost_tag = cost
         self.cost = CostFunctions(cost)
 
 
@@ -92,7 +98,7 @@ class NeuralNetwork:
     def feed_forward(self): # Feed forward through full network
         ## feed-forward for training
         # calculate w*X + b
-        self.z_h = np.matmul(self.Xdata, self.hidden_weights) + self.hidden_bias
+        self.z_h = np.matmul(self.Xtrain_batch, self.hidden_weights) + self.hidden_bias
         # Pass through non-linear sigmoid gate
         self.a_h = self.act_h.f(self.z_h)
 
@@ -120,16 +126,16 @@ class NeuralNetwork:
         """
 
         # Calculate gradients for output layer
-        error_output = (self.a_o - self.Ydata)
-        #print(self.a_o.shape, self.Ydata.shape, error_output.shape)
-        error_output =  self.cost.df(self.a_o,self.Ydata, self.lmbd) * self.act_o.df(self.z_o)
+        error_output = (self.a_o - self.Ytrain_batch)
+        #print(self.a_o.shape, self.Ytrain_batch.shape, error_output.shape)
+        error_output =  self.cost.df(self.a_o,self.Ytrain_batch, self.lmbd) * self.act_o.df(self.z_o)
 
         self.output_weights_gradient    = np.matmul(self.a_h.T, error_output) 
         self.output_bias_gradient       = np.sum(error_output, axis=0)
 
         # Calculate gradients for hidden layer        
         error_hidden = np.matmul(error_output, self.output_weights.T) * self.act_h.df(self.z_h) 
-        self.hidden_weights_gradient    = np.matmul(self.Xdata.T, error_hidden)
+        self.hidden_weights_gradient    = np.matmul(self.Xtrain_batch.T, error_hidden)
         self.hidden_bias_gradient       = np.sum(error_hidden, axis=0)
     
 
@@ -166,7 +172,8 @@ class NeuralNetwork:
     def train(self):
         print("Training")
         data_indices = np.arange(self.n_inputs)
-        self.costs = np.zeros(self.epochs)
+        self.costs = np.zeros((self.epochs,2))
+        self.scores = np.zeros((self.epochs,2,2))
         nan = False
         for i in range(self.epochs):
             for j in range(self.iterations):
@@ -177,8 +184,8 @@ class NeuralNetwork:
                 )
 
                 # minibat ch training data
-                self.Xdata = self.Xdata_full[chosen_datapoints]
-                self.Ydata = self.Ydata_full[chosen_datapoints]
+                self.Xtrain_batch = self.Xtrain[chosen_datapoints]
+                self.Ytrain_batch = self.Ytrain[chosen_datapoints]
                 
                 self.feed_forward()
                 nan = self.backpropagation()          
@@ -187,25 +194,189 @@ class NeuralNetwork:
                     print(f"NaN detected in gradients, epoch {i}.")
                     break
 
-                self.costs[i] += self.score(self.predict_a_o(self.Xdata),self.Ydata)
+                self.costs[i,0] += self.score(self.predict_a_o(self.Xtrain),self.Ytrain)/(self.iterations*self.batch_size)
+                self.costs[i,1] += self.score(self.predict_a_o(self.Xtest),self.Ytest)/(self.iterations*self.batch_size)
                 
-           
+                if self.nn_type=="classification":
+                    self.scores[i,0,0] += accuracy_score(self.Ytrain[:,1], self.predict(self.Xtrain))/self.iterations
+                    self.scores[i,0,1] += roc_auc_score( self.Ytrain[:,1], self.predict(self.Xtrain))/self.iterations
+                    self.scores[i,1,0] += accuracy_score(self.Ytest[:,1], self.predict(self.Xtest))/self.iterations
+                    self.scores[i,1,1] += roc_auc_score( self.Ytest[:,1], self.predict(self.Xtest))/self.iterations
+            
+                if self.nn_type=="regression":
+                    self.scores[i,0,0] += self.costs[i,0]/self.iterations
+                    self.scores[i,0,1] += self.cost.R2(self.predict_a_o(self.Xtrain), self.Ytrain)/self.iterations
+                    self.scores[i,1,0] += self.costs[i,1]/self.iterations
+                    self.scores[i,1,1] += self.cost.R2(self.predict_a_o(self.Xtest), self.Ytest)/self.iterations
+            
             if nan:
                 break
 
             # Convergence test - Average change over 5 epochs
             if i > 10:
-                tolerance =   np.abs( np.mean( self.costs[i-10:i-5] ) - np.mean( self.costs[i-5:i] ) )/ np.mean(self.costs[i-5:i]) 
+                tolerance =   np.abs( np.mean( self.costs[i-10:i-5,0] ) - np.mean( self.costs[i-5:i,0] ) )/ np.mean(self.costs[i-5:i,0]) 
                 if tolerance < self.tol:
                     print("---------------------------------------------------")
                     print("Convergence after {} epochs".format(i))
                     print("---------------------------------------------------")
-                    self.costs[i:] = None
+                    self.costs = self.costs[:i+1,:]
+                    self.scores = self.scores[:i+1,:]
+                    
                     break
 
-        return self.costs
+        return self.costs, self.scores
 
-    def plot_costs(self):
-        #plt.semilogy(self.costs)
-        plt.plot(self.costs)
-        plt.show()
+    def plot_costs(self,k=0):
+        if k == 0:
+            fig = plt.figure(figsize=(12,6))
+        ax = plt.subplot(111)
+
+        cmap = plt.get_cmap('tab20')
+        c = cmap(np.linspace(0, 1, 20)) #self.length))
+
+        if self.costs[-1,1] > 0.7:
+            a = 0.5
+            ax.loglog(self.costs[:,1], label=r"{:8s} LR: {:6}   $\lambda$: {:6}   Cost: {:.3f}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))), self.costs[-1,1]), color=c[k], alpha = a)
+        else:
+            a = 1
+            ax.loglog(self.costs[:,1], label=  r"{:8s} LR: {:6}   $\lambda$: {:8}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))))\
+                                                    + r"$\bf{Cost}$: " + r"{:.3f}    ".format( self.costs[-1,1]),
+                                                    color=c[k], alpha = a)
+
+        #ax.loglog(self.costs[:,0], color=c[k], linestyle="--")
+
+        plt.grid(True,linestyle=':')
+        plt.gca().xaxis.grid(False)
+
+        plt.xlabel("Epoch")
+        plt.ylabel("{}".format(self.cost_tag))
+        #plt.ylim(0,1)
+        plt.xlim(1,100)
+    
+        chartBox = ax.get_position()
+        if k == 0:
+            ax.set_position([chartBox.x0, chartBox.y0, chartBox.width*0.5, chartBox.height])
+        else:
+            ax.set_position([chartBox.x0, chartBox.y0, chartBox.width, chartBox.height])
+        plt.legend(loc='upper center', bbox_to_anchor=(1.6, 1.0),prop={'family': 'monospace'})
+        #plt.legend()
+        #plt.show()
+
+    def plot_scores(self, k=0):
+        if self.nn_type=="classification":
+            if k == 0:
+                fig = plt.figure(figsize=(12,6))
+            ax1 = plt.subplot(211)
+
+            cmap = plt.get_cmap('tab20')
+            c = cmap(np.linspace(0, 1, 20))[::-1] #self.length))
+
+        
+            # accuracy ----------
+            #ax1.plot(self.scores[:,0,0], color=c[k], linestyle="--")
+            legend_properties = { 'family': 'monospace'}
+
+            #ax1.set_ylim((0.01,0.1))
+
+            ax1.grid(True,linestyle=':')
+            plt.gca().xaxis.grid(False)
+            chartBox = ax1.get_position()
+            if k == 0:
+                ax1.set_position([chartBox.x0, chartBox.y0, chartBox.width*0.5, chartBox.height])
+            else:
+                ax1.set_position([chartBox.x0, chartBox.y0, chartBox.width, chartBox.height])
+            ax1.legend(loc='upper center', bbox_to_anchor=(1.6, 1.0),prop=legend_properties)
+            plt.ylabel("Accuracy")
+            ax1.set_ylim((0.80,0.825))
+            ax1.set_xlim((1,13))
+            # rocauc -----------
+            ax2 = plt.subplot(212)
+            chartBox = ax2.get_position()
+            if k == 0:
+                ax2.set_position([chartBox.x0, chartBox.y0, chartBox.width*0.5, chartBox.height])
+            else:
+                ax2.set_position([chartBox.x0, chartBox.y0, chartBox.width, chartBox.height])
+            
+               # Make less visible if bad result
+            if self.scores[-1,1,0] < 0.82:
+                a = 1
+                ax1.semilogx(self.scores[:,1,0], label=r"{:8s} LR: {:6}   $\lambda$: {:6}   Accuracy: {:.3f}    auc: {:.3f}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))), self.scores[-1,1,0], self.scores[-1,1,1]), color=c[k], alpha = a, linewidth=3)
+                ax2.semilogx(self.scores[:,1,1], label="Test    ", color=c[k], alpha = a, linewidth=1)
+            else:
+                a = 1
+                ax1.semilogx(self.scores[:,1,0], label=  r"{:8s} LR: {:6}   $\lambda$: {:8}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))))\
+                                                        + r"$\bf{Accuracy}$: " + r"{:.3f}    ".format(self.scores[-1,1,0]) \
+                                                        + r"$\bf{auc} $: " + r"{:.3f}".format(self.scores[-1,1,1]),
+                                                       color=c[k], alpha = a, linewidth=3)
+                ax2.semilogx(self.scores[:,1,1], label="Test    ", color=c[k], alpha = a, linewidth=3)
+
+            
+            #ax2.plot(self.scores[:,0,1], label="Training ", color=c[k], linestyle="--")
+            ax2.set_ylim((0.60,0.66))
+            ax2.set_xlim((1,13))
+
+            ax2.grid(True,linestyle=':')    
+            plt.gca().xaxis.grid(False)
+
+            plt.xlabel("Epoch")
+            plt.ylabel("roc auc")
+        else:
+            if k == 0:
+                fig = plt.figure(figsize=(12,6))
+            ax1 = plt.subplot(211)
+
+            cmap = plt.get_cmap('tab20')
+            c = cmap(np.linspace(0, 1, 20)) #self.length))
+
+            # MSE ----------
+            # Make less visible if bad result
+            #ax1.plot(self.scores[:,0,0], color=c[k], linestyle="--")
+
+            
+            ax1.set_xlim((1,100))
+
+            ax1.grid(True,linestyle=':')
+            ax1.grid(b=True, which='minor', linestyle=':', alpha=0.2)
+            plt.gca().xaxis.grid(False, which='both')
+            
+            chartBox = ax1.get_position()
+            if k == 0:
+                ax1.set_position([chartBox.x0, chartBox.y0, chartBox.width*0.5, chartBox.height])
+            else:
+                ax1.set_position([chartBox.x0, chartBox.y0, chartBox.width, chartBox.height])
+
+            legend_properties = { 'family': 'monospace'}
+            ax1.legend(loc='upper center', bbox_to_anchor=(1.6, 1.0),prop=legend_properties)
+            plt.ylabel("MSE")
+
+            # R2 -----------
+            ax2 = plt.subplot(212)
+            chartBox = ax2.get_position()
+            if k == 0:
+                ax2.set_position([chartBox.x0, chartBox.y0, chartBox.width*0.5, chartBox.height])
+            else:
+                ax2.set_position([chartBox.x0, chartBox.y0, chartBox.width, chartBox.height])
+
+            if self.scores[-1,1,1] < 0.7:
+                a = 1
+                ax1.loglog(self.scores[:,1,0], label=r"{:8s} LR: {:6}   $\lambda$: {:6}   MSE: {:.3f}    R2: {:.3f}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))), self.scores[-1,1,0], self.scores[-1,1,1]), color=c[k-1], alpha = a, linewidth=1)
+                ax2.semilogx(self.scores[:,1,1], label="Test    ", color=c[k-1], alpha = a, linewidth=1)
+            else:
+                a = 1
+                ax1.loglog(self.scores[:,1,0], label=  r"{:8s} LR: {:6}   $\lambda$: {:8}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))))\
+                                                        + r"$\bf{MSE}$: " + r"{:.3f}    ".format(self.scores[-1,1,0]) \
+                                                        + r"$\bf{R2} $:" + r"{:.3f}".format(self.scores[-1,1,1]),
+                                                       color=c[k-1], alpha = a, linewidth=3)
+                ax2.semilogx(self.scores[:,1,1], label="Test    ", color=c[k-1], alpha = a, linewidth=3)
+
+            #ax2.plot(self.scores[:,0,1], label="Training ", color=c[k], linestyle="--")
+            ax2.set_ylim((0.1,1))
+            ax2.set_xlim((1,100))
+            
+            ax2.grid(True,linestyle=':')    
+            ax2.grid(b=True, which='minor', linestyle=':', alpha=0.4)
+            plt.gca().xaxis.grid(False, which='both')
+            
+
+            plt.xlabel("Epoch")
+            plt.ylabel("R2")
