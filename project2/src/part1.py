@@ -37,8 +37,9 @@ print()
 # Optimize parameters
 #lrs = np.logspace(-5,7,13)
 lrs = [0.01]
-for i in range(100):
-      print('%i of %i'%(i+1,100))
+niter=50
+for i in range(niter):
+      print('%i of %i'%(i+1,niter))
       beta, costs,betas = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lrs[0],adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=50,verbosity=1,max_iter=10,new_per_iter=False) # Fit using SGD. This can be looped over for best lambda (i.e. learning rate 'lr').
       plt.figure(2)
       plt.plot(costs)
