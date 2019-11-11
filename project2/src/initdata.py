@@ -43,7 +43,7 @@ class InitData: # Class for initializing different data sets
         if (plot_alldata):
             #plot data distributions of all the credit card data
             self.plot_credit_data('_alldata')
-
+            exit()
             
         excl_cols=[]
         # Check if we are to exclude any columns
@@ -258,9 +258,15 @@ class InitData: # Class for initializing different data sets
             ).fit_transform(self.X)
 
         if (plt_corr):
-            self.plot_correlation_matshow('_all')
-
-
+            if ((drop_zero==False) and (drop_neg2==False)):
+                lab='_all'
+                fs=10.0/7.0
+            else:
+                lab=''
+                fs=1.0
+            self.plot_correlation_matshow(label=lab,plt_cbar=False,fig_scale=fs,split_plt=True)
+            exit()
+            
         # Train-test split
         self.trainingShare = trainingShare
         self.XTrain, self.XTest, self.yTrain, self.yTest=train_test_split(self.X, self.y, train_size=self.trainingShare, test_size = 1-self.trainingShare, random_state=seed)
@@ -312,8 +318,8 @@ class InitData: # Class for initializing different data sets
         Xtemp = self.df.loc[:, self.df.columns == 'SEX'].values
         ticks=['male','female']
         xval=[1,2]
-        tick_size=14
-        axis_size=16
+        tick_size=18
+        axis_size=22
         plt.figure(1)
         plt.hist(Xtemp,range=(0.5,2.5),bins=2,rwidth=0.8,align='mid', color='b')
         plt.yticks(fontsize=tick_size)
@@ -332,7 +338,7 @@ class InitData: # Class for initializing different data sets
         plt.hist(Xtemp,range=(-0.5,3.5),bins=4,rwidth=0.8,align='mid', color='b')
         plt.yticks(fontsize=tick_size)
         plt.xticks(xval,labels=ticks,fontsize=tick_size)
-        plt.xlabel('Marriage status',fontsize=axis_size)
+        plt.xlabel('Marital status',fontsize=axis_size)
         plt.ylabel('Observations count',fontsize=axis_size)
         plt.savefig('plots/marriage'+label+'.pdf',bbox_inches='tight',pad_inches=0.02)
         plt.xticks(xval,labels=xval_str,fontsize=tick_size)
@@ -365,23 +371,27 @@ class InitData: # Class for initializing different data sets
         plt.hist(Xtemp,range=(minage-0.5,maxage+0.5),bins=(maxage-minage+1),rwidth=1.0,align='mid', color='k')
         plt.yticks(fontsize=tick_size)
         plt.xticks(xval,labels=xval_str,fontsize=tick_size)
-        plt.xlabel('Age',fontsize=axis_size)
+        plt.xlabel('Age [years]',fontsize=axis_size)
         plt.ylabel('Observations count',fontsize=axis_size)
         plt.savefig('plots/age'+label+'.pdf',bbox_inches='tight',pad_inches=0.02)
         plt.clf()
 
         #plot pay history
-        for i in ['0','2','3','4','5','6']:
-            Xtemp = self.df.loc[:, self.df.columns == 'PAY_'+i].values
+        for i in range(6):
+            month=['September','August','July','June','May','April']
+            if (i==0):
+                Xtemp = self.df.loc[:, self.df.columns == 'PAY_0'].values
+            else:
+                Xtemp = self.df.loc[:, self.df.columns == 'PAY_'+str(i+1)].values
             xval=[-2,-1,0,1,2,3,4,5,6,7,8,9]
             xval_str=['-2','-1','0','1','2','3','4','5','6','7','8','9']
             plt.figure(1)
             plt.hist(Xtemp,range=(-2.5,9.5),bins=12,rwidth=0.8,align='mid', color='k')
             plt.yticks(fontsize=tick_size)
             plt.xticks(xval,labels=xval_str,fontsize=tick_size)
-            plt.xlabel('Payment history (PAY_'+i+')',fontsize=axis_size)
+            plt.xlabel('Payment history '+month[i],fontsize=axis_size)
             plt.ylabel('Observations count',fontsize=axis_size)
-            plt.savefig('plots/pay'+i+label+'.pdf',bbox_inches='tight',pad_inches=0.02)
+            plt.savefig('plots/pay'+str(i+1)+label+'.pdf',bbox_inches='tight',pad_inches=0.02)
             plt.clf()
 
 
@@ -407,31 +417,55 @@ class InitData: # Class for initializing different data sets
         plt.show()
         return
 
-    def plot_correlation_matshow(self,label=''):
+    def plot_correlation_matshow(self,label='',plt_cbar=True,split_plt=False,figsize=[16,10.4],fig_scale=1.0):
 
         Xp=pd.DataFrame(data=self.X,columns=self.data_cols)
         plt_cols=[]
         for i in range(1,Xp.shape[1]+1):
             plt_cols.append(str(i))
         corr=Xp.corr(method='pearson')
-        fig_scale=Xp.shape[1]/28.0
-        
-        fig = plt.figure(figsize=(fig_scale*20,fig_scale*13))
-        plt_corr=corr.round(2)
-        plt_corr.style.background_gradient(cmap='jet').set_precision(2)
-        ax = sns.heatmap(plt_corr,annot=True,cmap='jet',vmax=1.0,vmin=-1.0,cbar_kws=dict(ticks=[-1.0,-0.75,-0.5,-0.25,0.0,0.25,0.5,0.75,1.0]))
-        cbar = ax.collections[0].colorbar
-        cbar.ax.tick_params(labelsize=14)
-#        cbar.ax.set_ticks([-1,-0.75,-0.5,-0.25,0.0,0.25,0.5,0.75,1.0] )
-#        cbar.ax.set_yticklabels(['-1','-0.75','-0.5','-0.25','0','0.25','0.5','0.75','1'] )
-#        plt.matshow(corr, cmap=plt.cm.jet, fignum=fig.number)
-#        cb=fig.colorbar(ax=ax)
-        plt_x=np.arange(0,Xp.shape[1])+0.5
-        plt.xticks(plt_x, plt_cols, fontsize=14)#, rotation=90)
-        plt.yticks(plt_x, plt_cols, fontsize=14)
-#        plt.colorbar(cmap='bwr')
-#        cb.ax.tick_params(labelsize=14)
-#        plt.title('Correlation Matrix', fontsize=20)
-        plt.savefig('plots/corr_matrix_numbers'+label+'.pdf',bbox_inches='tight',pad_inches=0.02)
-        plt.show()
+
+        if (split_plt):
+            nf=2
+        else:
+            nf=1
+        for i in range(nf):
+            fig = plt.figure(figsize=(fig_scale*figsize[0]/nf,(1.0+0.5*(fig_scale-1.0))*figsize[1]))
+            plt_ticks=np.arange(0,Xp.shape[1])+0.5
+            if (split_plt):
+                ind=int(Xp.shape[1]//2)
+                if (i==0):
+                    plt_corr=corr.iloc[:,:ind]
+                    plt_x=plt_ticks[:ind]
+                    plt_lab=plt_cols[:ind]
+                else:
+                    plt_corr=corr.iloc[:,ind:]
+                    plt_x=plt_ticks[ind:]-ind #adjust so that first tick is at 0.5
+                    plt_lab=plt_cols[ind:]
+                plt_corr=plt_corr.round(2)
+                plt_corr.style.background_gradient(cmap='jet').set_precision(2)
+            else:
+                plt_corr=corr.round(2)
+                plt_corr.style.background_gradient(cmap='jet').set_precision(2)
+                plt_x=plt_ticks
+                plt_lab=plt_cols
+            
+            plt_y=plt_ticks
+            plt_laby=plt_cols
+            if (plt_cbar):
+                ax = sns.heatmap(plt_corr,annot=True,cmap='jet',vmax=1.0,vmin=-1.0,cbar_kws=dict(ticks=[-1.0,-0.75,-0.5,-0.25,0.0,0.25,0.5,0.75,1.0]))
+                cbar = ax.collections[0].colorbar
+                cbar.ax.tick_params(labelsize=14)
+            else:
+                ax = sns.heatmap(plt_corr,annot=True,cmap='jet',vmax=1.0,vmin=-1.0,cbar=False)
+            plt.xticks(plt_x, plt_lab, fontsize=14, rotation=0)
+            plt.yticks(plt_y, plt_laby, fontsize=14, rotation=0)
+
+            if (split_plt):
+                figname='corr_matrix_numbers'+label+'_'+str(i)+'.pdf'
+            else:
+                figname='corr_matrix_numbers'+label+'.pdf'
+            plt.savefig('plots/'+figname,bbox_inches='tight',pad_inches=0.02)
+#            plt.show()
+            plt.clf()
         return

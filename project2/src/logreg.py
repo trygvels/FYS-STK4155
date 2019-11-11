@@ -160,10 +160,14 @@ class LogReg: # Logistic regression class
 
         return best_beta, costs, betas
 
-    def predict(self,X):                           # Calculates probabilities and onehots for y
+    def predict(self,X,betas=[]):                           # Calculates probabilities and onehots for y
+        if (len(betas)>0):
+            beta=betas.copy()
+        else:
+            beta=self.beta.copy()
         print("Predicting y using logreg")
         # Returns probabilities
-        self.yprobs = self.act.f(X@self.beta)
+        self.yprobs = self.act.f(X@beta)
         self.yPred = (self.yprobs > 0.5).astype(int)
         self.y_pred_onehot = self.initdata.onehotencoder.fit_transform(self.yPred.reshape(-1,1)) # Converts to onehot
         return self.yPred
@@ -197,7 +201,7 @@ class LogReg: # Logistic regression class
         logreg_df.plot(x='param_C', y='mean_test_roc_auc', yerr='std_test_roc_auc', logx=True)
         plt.show()
 
-    def own_classification_report(self,ytrue,pred,threshold=0.5):
+    def own_classification_report(self,ytrue,pred,threshold=0.5,return_f1=False):
         tp=0
         tn=0
         fp=0
@@ -229,7 +233,10 @@ class LogReg: # Logistic regression class
         print("weighted avg      %5.3f      %5.3f        %5.3f        %8i"%((ppv[0]*cn+ppv[1]*cp)/(cn+cp),(trp[0]*cn+trp[1]*cp)/(cn+cp), (f1[0]*cn+f1[1]*cp)/(cn+cp),cn+cp))
         print()
 
-        return
+        if return_f1:
+            return (f1[0]*cn+f1[1]*cp)/(cn+cp)
+        else:
+            return
 
     def split_batch(self,n,m):
 
@@ -291,20 +298,20 @@ class LogReg: # Logistic regression class
                     
         return
 
-    def plot_cumulative(self,X,y,p=[],beta=[],label='',plt_ar=True):
+    def plot_cumulative(self,X,y,p=[],beta=[],label='',plt_ar=True,return_ar=False):
         if (len(p)==0):
             if(len(beta)==0):
                 beta=self.beta
             p=self.act.f(X@beta)
         if (not label==''):
-            label = '_'+label
+            lab = '_'+label
         else:
             #make a date and time stamp
             t=time.ctime()
             ta=t.split()
             hms=ta[3].split(':')
-            label='_'+ta[4]+'_'+ta[1]+ta[2]+'_'+hms[0]+hms[1]+hms[2]
-            
+            label=ta[4]+'_'+ta[1]+ta[2]+'_'+hms[0]+hms[1]+hms[2]
+            lab='_'+label
         temp_p=p[:,0].copy()
         nd=len(temp_p)
         nt=np.sum(y)
@@ -320,19 +327,36 @@ class LogReg: # Logistic regression class
         baseline=(1.0*nt)/nd*x_plt
 
         ar=1.0*np.sum(model_pred-baseline)/np.sum(best_y-baseline)
-        
-        plt.figure(1)
+        if return_ar:
+            return ar
+
+        xtick=[]
+        if (nd<2000):
+            j=500
+            nm=2001
+        else:
+            j=4000
+            nm=16000
+        for k in range(0,nm,j):
+            xtick.append(k)
+            if (k>nd):
+                break
+
+        plt.figure(1,figsize=(7,7))
         plt.plot(x_plt,best_y,label='Best fit',color='b')
         plt.plot(x_plt,model_pred,label='Model',color='r')
         plt.plot(x_plt,baseline,label='Baseline',color='k')
-        plt.legend(loc='lower right',fontsize=14)
-        plt.xlabel('Number of total data',fontsize=14)
-        plt.ylabel('Cumulative number of target data',fontsize=14)
+        plt.legend(loc='lower right',fontsize=22)
+        plt.xlabel('Number of total data',fontsize=22)
+        plt.xticks(xtick,fontsize=18)
+        plt.yticks(fontsize=18)
+        plt.ylabel('Cumulative number of target data',fontsize=22)
         if (plt_ar):
-            plt.text(nd*0.65,nt*0.4,'area ratio = %5.3f'%(ar), fontsize=14)
-        plt.savefig('plots/cumulative_plot'+label+'.pdf',bbox_inches='tight',pad_inches=0.02)
+            plt.text(nd*0.55,nt*0.4,'area ratio = %5.3f'%(ar), fontsize=20)
+        plt.savefig('plots/cumulative_plot'+lab+'.pdf',bbox_inches='tight',pad_inches=0.02)
         plt.clf()
 
+        return
         
     def print_beta_to_file(self,beta=[],label='',d_label=[]):
         if(len(beta)==0):

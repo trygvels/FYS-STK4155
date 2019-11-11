@@ -22,7 +22,7 @@ data = InitData()
 #XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot = data.credit_data(trainingShare=0.5,per_col=True,drop_zero=True,drop_neg2=True)
 
 #testing out dropping specific columns of the data
-XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot, data_cols = data.credit_data(trainingShare=0.5,drop_zero=False,drop_neg2=False,per_col=True,return_cols=True,onehot_encode_col=['EDUCATION','MARRIAGE'],plt_corr=False,plot_alldata=False)
+XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot, data_cols = data.credit_data(trainingShare=0.5,drop_zero=True,drop_neg2=True,per_col=True,return_cols=True,onehot_encode_col=['EDUCATION','MARRIAGE'],plt_corr=False,plot_alldata=False)
 
 ## Initialize Logreg Class
 logreg = LogReg(cost='cross_entropy') # init Logreg class
@@ -37,8 +37,9 @@ print()
 # Optimize parameters
 #lrs = np.logspace(-5,7,13)
 lrs = [0.01]
-for lr in lrs:
-      beta, costs,betas = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lr,adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=50,verbosity=2,max_iter=10,new_per_iter=False) # Fit using SGD. This can be looped over for best lambda.
+for i in range(100):
+      print('%i of %i'%(i+1,100))
+      beta, costs,betas = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lrs[0],adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=50,verbosity=1,max_iter=20,new_per_iter=False) # Fit using SGD. This can be looped over for best lambda (i.e. learning rate 'lr').
       plt.figure(2)
       plt.plot(costs)
       print("---------—--------—--- Our Regression --------—--------—--------—")
@@ -48,12 +49,46 @@ for lr in lrs:
       logreg.own_classification_report(yTrain,yPred)
       print("-—--------—--- Validation data -------—--------—")
       yPred=logreg.predict(XTest) #predict
-      logreg.own_classification_report(yTest,yPred)
-      plt.show()
-      plt.clf
-      logreg.plot_cumulative(XTest,yTest)
-      logreg.print_beta_to_file(d_label=data_cols)
+      f1=logreg.own_classification_report(yTest,yPred,return_f1=True)
+      #plt.show()
+      plt.clf()
+      return_ar=True
+      if (return_ar):
+            ar=logreg.plot_cumulative(XTest,yTest,return_ar=return_ar)
+      else:
+            logreg.plot_cumulative(XTest,yTest,return_ar=return_ar)
+            logreg.print_beta_to_file(d_label=data_cols)
+            ar=0
+      if (i==0):
+            ar_best=ar
+            f1_best=f1
+            f1_beta=beta.copy()
+            ar_beta=beta.copy()
+      else:
+            if (ar>ar_best):
+                  ar_best=ar
+                  ar_beta=beta.copy()
+            if (f1>f1_best):
+                  f1_best=f1
+                  f1_beta=beta.copy()
 
+if (return_ar):
+      logreg.plot_cumulative(XTest,yTest,beta=ar_beta,label='SGD_best_ar_%5.3f'%(ar_best))
+      logreg.print_beta_to_file(d_label=data_cols,beta=ar_beta,label='SGD_best_ar_%5.3f'%(ar_best))
+      print()
+      print('Best beta, given area ratio value')
+      logreg.print_beta(cols=data_cols,betas=ar_beta)
+      yPred=logreg.predict(XTest,betas=ar_beta) #predict
+      logreg.own_classification_report(yTest,yPred)
+
+print(f1_best)
+logreg.plot_cumulative(XTest,yTest,beta=f1_beta,label='SGD_best_f1_%5.3f'%(f1_best))
+logreg.print_beta_to_file(d_label=data_cols,beta=f1_beta,label='SGD_best_f1_%5.3f'%(f1_best))
+print()
+print('Best beta, given F1 value')
+logreg.print_beta(cols=data_cols,betas=f1_beta)
+yPred=logreg.predict(XTest,betas=f1_beta) #predict
+logreg.own_classification_report(yTest,yPred)
 
 
 # Compare with sklearn
