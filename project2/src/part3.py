@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from sklearn.metrics import confusion_matrix, accuracy_score, roc_auc_score, classification_report
+from sklearn.metrics import confusion_matrix, accuracy_score, roc_auc_score, classification_report, r2_score
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.model_selection import GridSearchCV
 from sklearn.linear_model import LinearRegression
@@ -20,20 +20,19 @@ from cost_functions import CostFunctions
 ## Get data from InitData Class
 data = InitData()
 noise = 0.05
-XTrain, yTrain, XTest, yTest, X, y, b, x_, y_ =  data.franke_data(noise=noise, N=5) #N=20)
+XTrain, yTrain, XTest, yTest, X, y, b, x_, y_ =  data.franke_data(noise=noise, N=20)
 
 logreg = LogReg() # init Logreg class
 cf = CostFunctions()
 
 # ------ Run network ------
 def run_network(sklearn, NN, lmbd, eta, act_h, act_o, hn, epochs, tol, batch_size, n_categories, color_iter=0, length=1):
-    
     costs = None
     if sklearn:
         if NN: # NN Regress using sklearn - Somewhat reasonable, needs tuning.
             mlpr= MLPRegressor(hidden_layer_sizes=hn,
                                 activation=act_h, 
-                                solver="sgd", 
+                                solver="adam", 
                                 alpha = lmbd, 
                                 learning_rate_init=eta
                                 )
@@ -42,16 +41,19 @@ def run_network(sklearn, NN, lmbd, eta, act_h, act_o, hn, epochs, tol, batch_siz
             yTrue, yPred = yTest, mlpr.predict(XTest)
             ypred = mlpr.predict(X)
             
-            plt.plot(mlpr.loss_curve_)
-            plt.show()
+            #plt.plot(mlpr.loss_curve_)
+            #plt.show()
+            R2 = mlpr.score(XTest,yTrue.ravel())
+            #R2 = r2_score(yTrue.ravel(),yPred.ravel())
+            MSE = 1.0
 
-            MSE = mlpr.score(XTest,yTrue.ravel())
         else: # Linear regression using Sklearn  - Initial results prefer this
             mlpr = LinearRegression()
             mlpr.fit(XTrain,yTrain) 
 
             yTrue, yPred = yTest, linreg.predict(XTest)
             MSE = mlpr.score(XTest,yTrue.ravel())
+
             ypred = mlpr.predict(X)
     else:
         if NN: # My regression NN - Outputs 50 :)
@@ -72,8 +74,8 @@ def run_network(sklearn, NN, lmbd, eta, act_h, act_o, hn, epochs, tol, batch_siz
             costs, scores = mlpr.train()
                                 
             # Find full data prediction
-            mlpr.plot_costs(color_iter)
-            # mlpr.plot_scores(color_iter)
+            #mlpr.plot_costs(color_iter)
+            mlpr.plot_scores(color_iter)
             MSE = scores[-1,1,0]
             R2 = scores[-1,1,1]
 
@@ -94,29 +96,30 @@ def run_network(sklearn, NN, lmbd, eta, act_h, act_o, hn, epochs, tol, batch_siz
 # ----- PARAMETERS ------
 
 # Faster
-sklearn = False
+sklearn = True
 NN = True
-explore = True
+explore = False
 metric = "R2" 
 
 if explore==True: # Explore parameter space for franke function
     eta_vals = np.logspace(-5, 1, 7)
     lmbd_vals =  np.logspace(-5, 1, 7)
-    acts_hidden = ["sigmoid", "tanh", "relu", "elu"]
-    #acts_hidden = ["logistic", "tanh", "relu"] # Supported by sklearn
+    #acts_hidden = ["sigmoid", "tanh", "relu", "elu"]
+    acts_hidden = ["logistic", "tanh", "relu"] # Supported by sklearn
+    acts_hidden = ["relu"] # Supported by sklearn
     act_o = "identity" 
     hidden_neurons = [4,8,12,16,50,100] 
-    epochs= 100
+    epochs= 600
     tol = 0.001
     batch_size = 1
     n_categories = 1
     
-    eta_vals = [0.1]
-    lmbd_vals = [1.001]
-    hidden_neurons = [12] 
-    eta_vals = np.logspace(-3, -1, 3)
-    lmbd_vals =  np.logspace(-3, -1, 3)
-    acts_hidden = ["sigmoid", "relu"]
+    #eta_vals = [0.1]
+    #lmbd_vals = [0.001]
+    #hidden_neurons = [12] 
+    #eta_vals = np.logspace(-3, -1, 3)
+    #lmbd_vals =  np.logspace(-3, -1, 3)
+    #acts_hidden = ["sigmoid", "relu"]
 
 else: # Optimal setup for franke function
     act_o = "identity" 
@@ -124,16 +127,23 @@ else: # Optimal setup for franke function
     batch_size = 1
     n_categories = 1
     tol = 0.001
-    
     # GOAT - Higer MSE, good fit
-    eta_vals = [0.1]
+    eta_vals = [1e-1]
     lmbd_vals = [1e-5]
     acts_hidden = ["relu"]
-    hidden_neurons = [16]
     
-length = len(eta_vals)*len(lmbd_vals)*len(acts_hidden)*len(hidden_neurons)
+    hidden_neurons = [12]
+    hidden_neurons = [4,8,12,16,50,100] 
+    #hidden_neurons = [100] 
 
-# Does ypred become so small that 
+    # Best sklearn
+    hidden_neurons = [50]
+    acts_hidden = ["relu"]
+    eta_vals = [1e-1]
+    lmbd_vals = [1e-1]
+
+# Number of free parameters
+length = len(eta_vals)*len(lmbd_vals)*len(acts_hidden)*len(hidden_neurons)
 
 """
 OPTIMIZE NN REGRESSION
@@ -170,6 +180,7 @@ for i, eta in enumerate(eta_vals):
                         best_hn = hn
                         best_act_h = act_h
                         best_ypred = ypred
+                        best_mlpr = mlpr
                         best_costs = costs
                         best_R2    = R2
                 elif metric=="R2":
@@ -181,6 +192,7 @@ for i, eta in enumerate(eta_vals):
                         best_act_h = act_h
                         best_ypred = ypred
                         best_costs = costs
+                        best_mlpr = mlpr
                         best_R2    = R2
                 else: 
                     raise ValueError("No metric chosen, exiting.")
@@ -194,12 +206,17 @@ for i, eta in enumerate(eta_vals):
                 print("R2            : {:.6}".format(R2), " Current best :  %.4f" % best_R2)
                 print()
 
-filename = "NNregression_act_lmbd_eta_cost.png"
-
-plt.savefig("../figs/"+filename,bbox_inches = 'tight',pad_inches = 0)
+plt.loglog(best_mlpr.loss_curve_, label=r"{:8s} LR: {:6}   $\lambda$: {:6}   R2: {:.3f}".format(best_act_h, "1e"+str(int(np.log10(best_eta))), "1e"+str(int(np.log10(best_lmbd))), best_R2))
+plt.legend()
+plt.xlabel("Epoch")
+plt.ylabel("MSE loss")
+plt.show()
+sys.exit()
+#filename = "NNregression_sklearn.png"
+#plt.savefig("../figs/"+filename,bbox_inches = 'tight',pad_inches = 0)
 plt.show()
 
-sys.exit()
+
 print("------------------ Best Results -------------------")
 print("Best learning rate   : ", best_eta)
 print("Best lambda          : ", best_lmbd)
@@ -230,5 +247,8 @@ surf._facecolors2d=surf._facecolors3d # Bugfix for legend
 surf._edgecolors2d=surf._edgecolors3d
 
 ax1.scatter(x_,y_,best_ypred.reshape(b.shape),alpha=1, s=1, color="C1")
+#filename = "NNreg_frankefit.png"
+#plt.savefig("../figs/"+filename,bbox_inches = 'tight',pad_inches = 0)
+
 plt.show()
 

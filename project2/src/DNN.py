@@ -232,26 +232,30 @@ class NeuralNetwork:
         ax = plt.subplot(111)
 
         cmap = plt.get_cmap('tab20')
-        c = cmap(np.linspace(0, 1, 20)) #self.length))
+        c = cmap(np.linspace(0, 1, 20))[::-1] #self.length))
 
-        if self.costs[-1,1] > 0.7:
-            a = 0.5
-            ax.loglog(self.costs[:,1], label=r"{:8s} LR: {:6}   $\lambda$: {:6}   Cost: {:.3f}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))), self.costs[-1,1]), color=c[k], alpha = a)
+        if self.costs[-1,1] > 25.0: #0.7:
+            a = 1
+            ax.plot(self.costs[:,1], label=r"{:8s} LR: {:6}   $\lambda$: {:6}   Cost: {:.3f}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))), self.costs[-1,1]), color=c[k], alpha = a, linewidth=1)
         else:
             a = 1
-            ax.loglog(self.costs[:,1], label=  r"{:8s} LR: {:6}   $\lambda$: {:8}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))))\
+            ax.plot(self.costs[:,1], label=  r"{:8s} LR: {:6}   $\lambda$: {:8}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))))\
                                                     + r"$\bf{Cost}$: " + r"{:.3f}    ".format( self.costs[-1,1]),
-                                                    color=c[k], alpha = a)
+                                                    color=c[k], alpha = a, linewidth=3)
 
         #ax.loglog(self.costs[:,0], color=c[k], linestyle="--")
 
-        plt.grid(True,linestyle=':')
+        
+        ax.grid(True,linestyle=':')
         plt.gca().xaxis.grid(False)
+        ax.grid(b=True, which='minor', linestyle=':', alpha=0.2)
 
+        plt.xscale('symlog')
+    
         plt.xlabel("Epoch")
         plt.ylabel("{}".format(self.cost_tag))
-        #plt.ylim(0,1)
-        plt.xlim(1,100)
+        #plt.xlim(1,100)
+        plt.ylim(24.5,27)
     
         chartBox = ax.get_position()
         if k == 0:
@@ -259,36 +263,41 @@ class NeuralNetwork:
         else:
             ax.set_position([chartBox.x0, chartBox.y0, chartBox.width, chartBox.height])
         plt.legend(loc='upper center', bbox_to_anchor=(1.6, 1.0),prop={'family': 'monospace'})
-        #plt.legend()
-        #plt.show()
+        
 
     def plot_scores(self, k=0):
         if self.nn_type=="classification":
-            if k == 0:
-                fig = plt.figure(figsize=(12,6))
-            ax1 = plt.subplot(211)
-
+            # Color
             cmap = plt.get_cmap('tab20')
-            c = cmap(np.linspace(0, 1, 20))[::-1] #self.length))
-
-        
-            # accuracy ----------
-            #ax1.plot(self.scores[:,0,0], color=c[k], linestyle="--")
+            c = cmap(np.linspace(0, 1, 20)) #self.length))
+            cmap = plt.get_cmap('tab10')
+            c = cmap(np.linspace(0, 1, 10)) #self.length))
             legend_properties = { 'family': 'monospace'}
 
-            #ax1.set_ylim((0.01,0.1))
+            # Make fig
+            if k == 0:
+                fig = plt.figure(figsize=(12,6))
+        
+            # accuracy ----------
+            ax1 = plt.subplot(211)
+            plt.xscale('symlog')
+
 
             ax1.grid(True,linestyle=':')
             plt.gca().xaxis.grid(False)
+
             chartBox = ax1.get_position()
             if k == 0:
                 ax1.set_position([chartBox.x0, chartBox.y0, chartBox.width*0.5, chartBox.height])
             else:
                 ax1.set_position([chartBox.x0, chartBox.y0, chartBox.width, chartBox.height])
-            ax1.legend(loc='upper center', bbox_to_anchor=(1.6, 1.0),prop=legend_properties)
+            
             plt.ylabel("Accuracy")
-            ax1.set_ylim((0.80,0.825))
-            ax1.set_xlim((1,13))
+            
+            #ax1.set_ylim((0.80,0.825))
+            #ax1.set_ylim((0.7,0.78))
+            #ax1.set_xlim((1,13))
+
             # rocauc -----------
             ax2 = plt.subplot(212)
             chartBox = ax2.get_position()
@@ -298,22 +307,33 @@ class NeuralNetwork:
                 ax2.set_position([chartBox.x0, chartBox.y0, chartBox.width, chartBox.height])
             
                # Make less visible if bad result
-            if self.scores[-1,1,0] < 0.82:
+            if self.scores[-1,1,1] < 0.735: # 0.82:
                 a = 1
-                ax1.semilogx(self.scores[:,1,0], label=r"{:8s} LR: {:6}   $\lambda$: {:6}   Accuracy: {:.3f}    auc: {:.3f}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))), self.scores[-1,1,0], self.scores[-1,1,1]), color=c[k], alpha = a, linewidth=3)
-                ax2.semilogx(self.scores[:,1,1], label="Test    ", color=c[k], alpha = a, linewidth=1)
+                #ax1.plot(self.scores[:,1,0], label=r"{:8s} LR: {:6}   $\lambda$: {:6}   Accuracy: {:.3f}    auc: {:.3f}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))), self.scores[-1,1,0], self.scores[-1,1,1]), color=c[k], alpha = a, linewidth=1)
+                ax1.plot(self.scores[:,1,0], label=r"{:8s} LR: {:6}   $N_h$: {:3d}   Accuracy: {:.3f}    auc: {:.3f}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), self.n_hidden_neurons, self.scores[-1,1,0], self.scores[-1,1,1]), color=c[k], alpha = a, linewidth=1)
+                ax2.plot(self.scores[:,1,1], label="Test    ", color=c[k], alpha = a, linewidth=1)
             else:
                 a = 1
-                ax1.semilogx(self.scores[:,1,0], label=  r"{:8s} LR: {:6}   $\lambda$: {:8}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))))\
+                #ax1.plot(self.scores[:,1,0], label=  r"{:8s} LR: {:6}   $\lambda$: {:8}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))))\
+                #                                        + r"$\bf{Accuracy}$: " + r"{:.3f}    ".format(self.scores[-1,1,0]) \
+                #                                        + r"$\bf{auc} $: " + r"{:.3f}".format(self.scores[-1,1,1]),
+                #                                       color=c[k], alpha = a, linewidth=3)
+                ax1.plot(self.scores[:,1,0], label=  r"{:8s} LR: {:6} ".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))))\
+                                                        + r"  $N_h$: " + r"{:3d}   ".format(self.n_hidden_neurons) \
                                                         + r"$\bf{Accuracy}$: " + r"{:.3f}    ".format(self.scores[-1,1,0]) \
                                                         + r"$\bf{auc} $: " + r"{:.3f}".format(self.scores[-1,1,1]),
                                                        color=c[k], alpha = a, linewidth=3)
-                ax2.semilogx(self.scores[:,1,1], label="Test    ", color=c[k], alpha = a, linewidth=3)
+                ax2.plot(self.scores[:,1,1], label="Test    ", color=c[k], alpha = a, linewidth=3)
 
-            
+
+
+            ax1.legend(loc='upper center', bbox_to_anchor=(1.6, 1.0),prop=legend_properties)
             #ax2.plot(self.scores[:,0,1], label="Training ", color=c[k], linestyle="--")
-            ax2.set_ylim((0.60,0.66))
-            ax2.set_xlim((1,13))
+            #ax2.set_ylim((0.7,0.74))#Class small
+            #ax2.set_ylim((0.6,0.67))#Class big
+            #xax2.set_xlim((1,13))
+            plt.xscale('symlog')
+            
 
             ax2.grid(True,linestyle=':')    
             plt.gca().xaxis.grid(False)
@@ -321,20 +341,20 @@ class NeuralNetwork:
             plt.xlabel("Epoch")
             plt.ylabel("roc auc")
         else:
-            if k == 0:
-                fig = plt.figure(figsize=(12,6))
-            ax1 = plt.subplot(211)
 
+            # Color
             cmap = plt.get_cmap('tab20')
             c = cmap(np.linspace(0, 1, 20)) #self.length))
+            legend_properties = { 'family': 'monospace'}
+
+            # Make fig
+            if k == 0:
+                fig = plt.figure(figsize=(12,6))
+
+
 
             # MSE ----------
-            # Make less visible if bad result
-            #ax1.plot(self.scores[:,0,0], color=c[k], linestyle="--")
-
-            
-            ax1.set_xlim((1,100))
-
+            ax1 = plt.subplot(211)
             ax1.grid(True,linestyle=':')
             ax1.grid(b=True, which='minor', linestyle=':', alpha=0.2)
             plt.gca().xaxis.grid(False, which='both')
@@ -345,9 +365,12 @@ class NeuralNetwork:
             else:
                 ax1.set_position([chartBox.x0, chartBox.y0, chartBox.width, chartBox.height])
 
-            legend_properties = { 'family': 'monospace'}
-            ax1.legend(loc='upper center', bbox_to_anchor=(1.6, 1.0),prop=legend_properties)
+            
+            
             plt.ylabel("MSE")
+            plt.xscale('symlog')
+            ax1.set_ylim((0,0.02))
+
 
             # R2 -----------
             ax2 = plt.subplot(212)
@@ -357,22 +380,29 @@ class NeuralNetwork:
             else:
                 ax2.set_position([chartBox.x0, chartBox.y0, chartBox.width, chartBox.height])
 
-            if self.scores[-1,1,1] < 0.7:
+            if self.scores[-1,1,1] <= 0.89:
                 a = 1
-                ax1.loglog(self.scores[:,1,0], label=r"{:8s} LR: {:6}   $\lambda$: {:6}   MSE: {:.3f}    R2: {:.3f}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))), self.scores[-1,1,0], self.scores[-1,1,1]), color=c[k-1], alpha = a, linewidth=1)
-                ax2.semilogx(self.scores[:,1,1], label="Test    ", color=c[k-1], alpha = a, linewidth=1)
+                #ax1.plot(self.scores[:,1,0], label=r"{:8s} LR: {:6}   $\lambda$: {:6}   MSE: {:.3f}    R2: {:.3f}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))), self.scores[-1,1,0], self.scores[-1,1,1]), color=c[k-1], alpha = a, linewidth=1)
+                ax1.plot(self.scores[:,1,0], label=r"{:8s} LR: {:6}   $N_h$: {:3d}   MSE: {:.3f}    R2: {:.3f}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), self.n_hidden_neurons, self.scores[-1,1,0], self.scores[-1,1,1]), color=c[k-1], alpha = a, linewidth=1)
+                ax2.plot(self.scores[:,1,1], label="Test    ", color=c[k-1], alpha = a, linewidth=1)
             else:
                 a = 1
-                ax1.loglog(self.scores[:,1,0], label=  r"{:8s} LR: {:6}   $\lambda$: {:8}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))))\
-                                                        + r"$\bf{MSE}$: " + r"{:.3f}    ".format(self.scores[-1,1,0]) \
-                                                        + r"$\bf{R2} $:" + r"{:.3f}".format(self.scores[-1,1,1]),
+                #ax1.plot(self.scores[:,1,0], label=  r"{:8s} LR: {:6}   $\lambda$: {:8}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))))\
+                #                                        + r"$\bf{MSE}$: " + r"{:.3f}    ".format(self.scores[-1,1,0]) \
+                #                                        + r"$\bf{R2} $:" + r"{:.3f}".format(self.scores[-1,1,1]),
+                #                                       color=c[k-1], alpha = a, linewidth=3)
+                ax1.plot(self.scores[:,1,0], label=  r"{:8s} LR: {:6} ".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))))\
+                                                        + r"  $N_h$: " + r"{:3d}   ".format(self.n_hidden_neurons) \
+                                                        + r"$\bf{MSE}$:" + r"{:.3f}   ".format(self.scores[-1,1,0]) \
+                                                        + r" $\bf{R2}$: " + r"{:.3f}".format(self.scores[-1,1,1]),
                                                        color=c[k-1], alpha = a, linewidth=3)
-                ax2.semilogx(self.scores[:,1,1], label="Test    ", color=c[k-1], alpha = a, linewidth=3)
+                ax2.plot(self.scores[:,1,1], label="Test    ", color=c[k-1], alpha = a, linewidth=3)
 
+            ax1.legend(loc='upper center', bbox_to_anchor=(1.6, 1.0),prop=legend_properties)
             #ax2.plot(self.scores[:,0,1], label="Training ", color=c[k], linestyle="--")
-            ax2.set_ylim((0.1,1))
-            ax2.set_xlim((1,100))
-            
+            ax2.set_ylim((0.2,1))
+            plt.xscale('symlog')
+
             ax2.grid(True,linestyle=':')    
             ax2.grid(b=True, which='minor', linestyle=':', alpha=0.4)
             plt.gca().xaxis.grid(False, which='both')

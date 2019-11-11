@@ -18,14 +18,13 @@ network on determining default based on credit card data.
 """
 ## Get data from InitData Class
 data = InitData()
-XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot =  data.credit_data(trainingShare=0.5)#, return_cols=False, drop_zero=True,drop_neg2=True)
+XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot =  data.credit_data(trainingShare=0.5, return_cols=False, drop_zero=True,drop_neg2=True)
 logreg = LogReg() # init Logreg class
-print(np.mean(yTest))
 
 ## Params
-explore = True
+explore = False
 sklearn = False
-metric = "roc_auc"
+metric = "accuracy"
 cost = "cross_entropy"
 
 if explore==True: # Explore parameter space for credit card data
@@ -55,10 +54,11 @@ else: # Optimal setup for credit card using all data
     batch_size = 100
     
     # GOAT
-    lmbd_vals = [0.1]
-    eta_vals = [0.01]
+    eta_vals = [1e-3]
+    lmbd_vals = [1e-1]
     acts_hidden = ["sigmoid"]
     hidden_neurons = [12] 
+    hidden_neurons = [4,8,12,16,50,100] 
     epochs=200
     
 
@@ -112,7 +112,7 @@ if sklearn == False:
                     print()
 
 
-    filename = "NNclassification_act_lmbd_eta.png"
+    filename = "NNclassification_nhidden_small.png"
 
     plt.savefig("../figs/"+filename,bbox_inches = 'tight',pad_inches = 0)
     plt.show()
