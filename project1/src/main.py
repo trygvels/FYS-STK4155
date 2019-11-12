@@ -88,28 +88,31 @@ def error(errors, degrees, lamb, p,alpha): # Print errors and plot bias-variance
     
     method_name = str(method.__name__)
 
-    if method_name=="OLS":
-        lambd=""
-        plt.plot(degrees, errors[0,1,:],label=lambd+"OLS",color="C0") # Test data
-    elif method_name=="ridge":
-        lambd = r"$\lambda$="+str(lamb)+" "
-        plt.plot(degrees, errors[0,1,:],label="Ridge "+lambd,color="C1") # Test data
-    elif method_name=="lasso":
-        lambd = r"$\lambda$="+str(lamb)+" "
-        plt.plot(degrees, errors[0,1,:],label="Lasso "+lambd,color="C2") # Test data
-
-
+    MSE = False
+    if MSE:
+        if method_name=="OLS":
+            lambd=""
+            plt.plot(degrees, errors[0,1,:],label=lambd+"OLS",color="C0") # Test data
+        elif method_name=="ridge":
+            lambd = r"$\lambda$="+str(lamb)+" "
+            plt.plot(degrees, errors[0,1,:],label="Ridge "+lambd,color="C1") # Test data
+        elif method_name=="lasso":
+            lambd = r"$\lambda$="+str(lamb)+" "
+            plt.plot(degrees, errors[0,1,:],label="Lasso "+lambd,color="C2") # Test data
+    else:
+            lambd = r"$\lambda$="+str(lamb)+" "
+            plt.plot(degrees, errors[1,1,:],label="Ridge "+lambd,color="C1") # Test data
     # Error
     #plt.plot(degrees, errors[0,0,:],label=lambd+"MSE    -    Training data",color="C"+str(p),alpha=alpha) # Test data
     #plt.plot(degrees, errors[0,1,:],label=lambd+"MSE    -    Test data",color="C"+str(p),linestyle="--",alpha=alpha) # Test data
     
     ## Bias
     #plt.plot(degrees, errors[2,0,:],label=lambd+"Training data - bias",color="C"+str(p+1), linestyle=":") # Training data
-    plt.plot(degrees, errors[2,1,:],label=lambd+"Bias     -    Test data",color="C"+str(p+1), alpha=alpha) # Training data
+    #plt.plot(degrees, errors[2,1,:],label=lambd+"Bias     -    Test data",color="C"+str(p+1), alpha=alpha) # Training data
     #
     ## Variance
     #plt.plot(degrees, errors[3,0,:],label=lambd+"Training data - variance",linestyle="--",color="C"+str(p+2))
-    plt.plot(degrees, errors[3,1,:],label=lambd+"Variance - Test data",color="C"+str(p+2),alpha=alpha) # Test data
+    #plt.plot(degrees, errors[3,1,:],label=lambd+"Variance - Test data",color="C"+str(p+2),alpha=alpha) # Test data
    
     p += 1 #Color cycle for each lambda
     #plt.title("MSE for training and test data")
@@ -117,7 +120,7 @@ def error(errors, degrees, lamb, p,alpha): # Print errors and plot bias-variance
     plt.ylabel("Prediction error")
     #plt.title(method_name)
     plt.xlim([0,len(degrees)-1])
-    plt.ylim([0,errors[0,0,0]*1.5])
+    #plt.ylim([0,errors[0,0,0]*1.5])
     plt.legend()
     #if alpha==1:
     #    plt.legend()

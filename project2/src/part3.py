@@ -51,9 +51,9 @@ def run_network(sklearn, NN, lmbd, eta, act_h, act_o, hn, epochs, tol, batch_siz
             mlpr = LinearRegression()
             mlpr.fit(XTrain,yTrain) 
 
-            yTrue, yPred = yTest, linreg.predict(XTest)
-            MSE = mlpr.score(XTest,yTrue.ravel())
-
+            yTrue, yPred = yTest, mlpr.predict(XTest)
+            R2 = mlpr.score(XTest,yTrue.ravel())
+            MSE = 1.0
             ypred = mlpr.predict(X)
     else:
         if NN: # My regression NN - Outputs 50 :)
@@ -133,14 +133,14 @@ else: # Optimal setup for franke function
     acts_hidden = ["relu"]
     
     hidden_neurons = [12]
-    hidden_neurons = [4,8,12,16,50,100] 
     #hidden_neurons = [100] 
 
     # Best sklearn
     hidden_neurons = [50]
+    hidden_neurons = [4,8,12,16,50,100] 
     acts_hidden = ["relu"]
     eta_vals = [1e-1]
-    lmbd_vals = [1e-1]
+    lmbd_vals = [1e-5]
 
 # Number of free parameters
 length = len(eta_vals)*len(lmbd_vals)*len(acts_hidden)*len(hidden_neurons)
@@ -156,8 +156,8 @@ for i, eta in enumerate(eta_vals):
         for k, act_h in enumerate(acts_hidden):
             for l, hn in enumerate(hidden_neurons[:]):
                 # If multiple layers (NO SIGNIFICANT IMPROVEMENT)
-                #hn = (hidden_neurons[l+1], hidden_neurons[l]) 
-
+                hn = (hidden_neurons[l], hidden_neurons[l]) 
+                #hn = hidden_neurons[l]
                 mse, R2, ypred, costs, mlpr = run_network(sklearn, NN, 
                                         lmbd=lmbd, 
                                         eta=eta,
@@ -171,7 +171,8 @@ for i, eta in enumerate(eta_vals):
                                         color_iter=color_iter,
                                         length=length)
                 color_iter += 1
-
+                plt.loglog(mlpr.loss_curve_, label=r"{:8s} LR: {:6}   $\lambda$: {:6}  $N_h$: ({},{})  R2: {:.3f}".format(act_h, "1e"+str(int(np.log10(eta))), "1e"+str(int(np.log10(lmbd))), hn[0], hn[1], R2))
+                #plt.loglog(mlpr.loss_curve_, label=r"{:8s} LR: {:6}   $\lambda$: {:6}  $N_h$: ({})  R2: {:.3f}".format(act_h, "1e"+str(int(np.log10(eta))), "1e"+str(int(np.log10(lmbd))), hn, R2))
                 if metric=="mse":
                     if mse < best_mse:
                         best_mse = mse
@@ -206,16 +207,14 @@ for i, eta in enumerate(eta_vals):
                 print("R2            : {:.6}".format(R2), " Current best :  %.4f" % best_R2)
                 print()
 
-plt.loglog(best_mlpr.loss_curve_, label=r"{:8s} LR: {:6}   $\lambda$: {:6}   R2: {:.3f}".format(best_act_h, "1e"+str(int(np.log10(best_eta))), "1e"+str(int(np.log10(best_lmbd))), best_R2))
+#plt.loglog(best_mlpr.loss_curve_, label=r"{:8s} LR: {:6}   $\lambda$: {:6}   R2: {:.3f}".format(best_act_h, "1e"+str(int(np.log10(best_eta))), "1e"+str(int(np.log10(best_lmbd))), best_R2))
 plt.legend()
 plt.xlabel("Epoch")
 plt.ylabel("MSE loss")
+filename = "NNregression_sklearn_mlp.png"
+plt.savefig("../figs/"+filename,bbox_inches = 'tight',pad_inches = 0)
 plt.show()
 sys.exit()
-#filename = "NNregression_sklearn.png"
-#plt.savefig("../figs/"+filename,bbox_inches = 'tight',pad_inches = 0)
-plt.show()
-
 
 print("------------------ Best Results -------------------")
 print("Best learning rate   : ", best_eta)
