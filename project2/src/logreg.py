@@ -18,16 +18,18 @@ class LogReg: # Logistic regression class
         self.initdata = InitData()                  # Init data set
         self.act = Activations("sigmoid")
         
-    def GD(self, X, y, lr = 1, tol=1e-2):           #Gradient descent method
+    def GD(self, X, y, lr = 1, tol=1e-2,rnd_seed=False):           #Gradient descent method
         print("Doing GD for logreg")
         n = len(y) 
         costs = []                                  # Initializing cost list
+        if (rnd_seed): 
+            np.random.seed(int(time.time()))      # seed numpy RNG with the time stamp 
         self.beta = np.random.randn(X.shape[1])   # Drawing initial random beta values
 
         i = 0; t = 1
         while t > tol:                              # Do gradient descent while below threshold
             b = X@self.beta                         # Calculate current prediction
-            gradient = 1/n*( X.T @ (self.act.f(b)-y) ) # Calculate gradient
+            gradient = 1.0/n*( X.T @ (self.act.f(b)-y) ) # Calculate gradient
             self.beta -= lr*gradient                # Calculate perturbation to beta
             tar = X@self.beta
             costs.append(self.cost(tar,y))  # Save cost of new beta
@@ -271,26 +273,26 @@ class LogReg: # Logistic regression class
 
         return idx_arr,n_ms
 
-    def print_beta(self, cols=[],betas=[]):
-        if (len(betas)>2):
+    def print_beta(self, cols=[],betas=np.zeros([[]])):
+        if (betas.shape[1]>2):
             std_b=np.std(betas,axis=1)
             mean_b=np.mean(betas,axis=1)
 
         print('------- Beta values -------')
         print()
-        if (len(betas)>2):
+        if (betas.shape[1]>2):
             print('     best fit      std         mean     data label' )
         else:
             print('      value   data label' )
 
         for i in range(len(self.beta)):
             if i >= len(cols):
-                if (len(betas)>2):
+                if (betas.shape[1]>2):
                     print('  %11.6f %11.6f %11.6f'%(self.beta[i,0],std_b[i],mean_b[i]))
                 else:
                     print('  %11.6f'%(self.beta[i,0]))
             else:
-                if (len(betas)>2):
+                if (betas.shape[1]>2):
                     print('  %11.6f %11.6f %11.6f   %s'%(self.beta[i,0],std_b[i],mean_b[i],cols[i]))
                 else:
                     print('  %11.6f   %s'%(self.beta[i,0],cols[i]))

@@ -257,6 +257,7 @@ class InitData: # Class for initializing different data sets
                 remainder="passthrough"
             ).fit_transform(self.X)
 
+
         if (plt_corr):
             if ((drop_zero==False) and (drop_neg2==False)):
                 lab='_all'
@@ -264,7 +265,7 @@ class InitData: # Class for initializing different data sets
             else:
                 lab=''
                 fs=1.0
-            self.plot_correlation_matshow(label=lab,plt_cbar=False,fig_scale=fs,split_plt=True)
+            self.plot_correlation_matshow(label=lab,plt_cbar=False,fig_scale=fs,split_plt=True,own_labels=True,incl_default=True)
             exit()
             
         # Train-test split
@@ -417,12 +418,29 @@ class InitData: # Class for initializing different data sets
         plt.show()
         return
 
-    def plot_correlation_matshow(self,label='',plt_cbar=True,split_plt=False,figsize=[16,10.4],fig_scale=1.0):
-
-        Xp=pd.DataFrame(data=self.X,columns=self.data_cols)
+    def plot_correlation_matshow(self,label='',plt_cbar=True,split_plt=False,figsize=[16,10.4],fig_scale=1.0,own_labels=False,incl_default=False):
+        if (incl_default):
+            cols=[]
+            for i in range(len(self.data_cols)):
+                cols.append(self.data_cols[i])
+            cols.append('default')
+            Xp=pd.DataFrame(data=np.concatenate((self.X,self.y),axis=1),columns=cols)
+        else:
+            Xp=pd.DataFrame(data=self.X,columns=self.data_cols)
+                        
         plt_cols=[]
         for i in range(1,Xp.shape[1]+1):
             plt_cols.append(str(i))
+        if (own_labels):
+            plt_cols=['edu_gs','edu_uni','edu_hs','edu_o','marital_m','marital_s',\
+                      'marital_o','credit','gender','age','pay_1','pay_2','pay_3','pay_4',\
+                      'pay_5','pay_6','bill_amt1','bill_amt2','bill_amt3','bill_amt4',\
+                      'bill_amt5','bill_amt6','pay_amt1','pay_amt2','pay_amt3','pay_amt4',\
+                      'pay_amt5','pay_amt6','pay_1_zero','pay_2_zero','pay_3_zero',\
+                      'pay_4_zero','pay_5_zero','pay_6_zero','pay_1_n2','pay_2_n2',\
+                      'pay_3_n2','pay_4_n2','pay_5_n2','pay_6_n2']
+            if (incl_default):
+                plt_cols.append('default')
         corr=Xp.corr(method='pearson')
 
         if (split_plt):
@@ -441,14 +459,14 @@ class InitData: # Class for initializing different data sets
                 else:
                     plt_corr=corr.iloc[:,ind:]
                     plt_x=plt_ticks[ind:]-ind #adjust so that first tick is at 0.5
-                    plt_lab=plt_cols[ind:]
+                    plt_lab=plt_cols[ind:Xp.shape[1]]
                 plt_corr=plt_corr.round(2)
                 plt_corr.style.background_gradient(cmap='jet').set_precision(2)
             else:
                 plt_corr=corr.round(2)
                 plt_corr.style.background_gradient(cmap='jet').set_precision(2)
                 plt_x=plt_ticks
-                plt_lab=plt_cols
+                plt_lab=plt_cols[:Xp.shape[1]]
             
             plt_y=plt_ticks
             plt_laby=plt_cols
@@ -458,11 +476,19 @@ class InitData: # Class for initializing different data sets
                 cbar.ax.tick_params(labelsize=14)
             else:
                 ax = sns.heatmap(plt_corr,annot=True,cmap='jet',vmax=1.0,vmin=-1.0,cbar=False)
-            plt.xticks(plt_x, plt_lab, fontsize=14, rotation=0)
+            if (own_labels):
+                plt.xticks(plt_x, plt_lab, fontsize=14, rotation=270)
+            else:
+                plt.xticks(plt_x, plt_lab, fontsize=14, rotation=0)
             plt.yticks(plt_y, plt_laby, fontsize=14, rotation=0)
 
             if (split_plt):
-                figname='corr_matrix_numbers'+label+'_'+str(i)+'.pdf'
+                figname='corr_matrix_numbers'+label+'_'+str(i)
+                if (own_labels):
+                    figname+='_lab'
+                if (incl_default):
+                    figname+='_default'
+                figname+='.pdf'
             else:
                 figname='corr_matrix_numbers'+label+'.pdf'
             plt.savefig('plots/'+figname,bbox_inches='tight',pad_inches=0.02)

@@ -21,8 +21,11 @@ solver and compared with Scikit-Learns Logistic regression method.
 data = InitData()
 #XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot = data.credit_data(trainingShare=0.5,per_col=True,drop_zero=True,drop_neg2=True)
 
-#testing out dropping specific columns of the data
+#Initialize only data without '0' and '-2' in payment history
 XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot, data_cols = data.credit_data(trainingShare=0.5,drop_zero=False,drop_neg2=False,per_col=True,return_cols=True,onehot_encode_col=['EDUCATION','MARRIAGE'],plt_corr=False,plot_alldata=False)
+
+#initialize all data (with some bill_amt and pay_amt)
+#XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot, data_cols = data.credit_data(trainingShare=0.5,drop_zero=True,drop_neg2=True,per_col=True,return_cols=True,onehot_encode_col=['EDUCATION','MARRIAGE'],plt_corr=False,plot_alldata=False)
 
 ## Initialize Logreg Class
 logreg = LogReg(cost='cross_entropy') # init Logreg class
@@ -33,14 +36,19 @@ print(" total test data: %i"%(len(yTest)))
 print("               0: %i"%(len(yTest)-np.sum(yTest[:,-1])))
 print("               1: %i"%(np.sum(yTest[:,-1])))
 print()
-      
+
 # Optimize parameters
 #lrs = np.logspace(-5,7,13)
 lrs = [0.01]
 niter=50
+sgd=False
 for i in range(niter):
       print('%i of %i'%(i+1,niter))
-      beta, costs,betas = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lrs[0],adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=50,verbosity=1,max_iter=10,new_per_iter=False) # Fit using SGD. This can be looped over for best lambda (i.e. learning rate 'lr').
+      if (sgd):
+            beta, costs,betas = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lrs[0],adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=50,verbosity=1,max_iter=10,new_per_iter=False) # Fit using SGD. This can be looped over for best lambda (i.e. learning rate 'lr').
+      else:
+            beta, costs = logreg.GD(XTrain,yTrain.ravel(),lr=lrs[0], rnd_seed=True,tol=1e-2) # Fit using GD. This can be looped over for best lambda (i.e. learning rate 'lr').
+            betas=beta.copy()
       plt.figure(2)
       plt.plot(costs)
       print("---------—--------—--- Our Regression --------—--------—--------—")
