@@ -40,44 +40,44 @@ class NeuralNetwork:
         print("Initializing", nn_type, "Neural Network")
         print("Cost function :", cost)
         print("---------------------------------------------------")
-        self.nn_type = nn_type
+        self.nn_type = nn_type                      # Type of network
 
-        self.Xtrain        = Xtrain
-        self.Ytrain        = Ytrain
+        self.Xtrain            = Xtrain
+        self.Ytrain            = Ytrain
         self.Xtest             = Xtest
         self.Ytest             = Ytest
 
-        self.n_inputs           = Xtrain.shape[0]
-        self.n_features         = Xtrain.shape[1]
+        self.n_inputs           = Xtrain.shape[0]   # Number of input data
+        self.n_features         = Xtrain.shape[1]   # Number of features
 
-        self.length = length #Number of free parameters
-        self.n_hidden_neurons   = n_hidden_neurons
-        self.n_categories       = n_categories
+        self.length = length                        # Number of free parameters
+        self.n_hidden_neurons   = n_hidden_neurons  # Number of neurons in the hidden layer
+        self.n_categories       = n_categories      # Number of outcome labels
 
-        self.act_h_tag = act_h
-        self.act_h = Activations(act_h)
-        self.act_o = Activations(act_o)
-        self.cost_tag = cost
-        self.cost = CostFunctions(cost)
+        self.act_h_tag = act_h                      # Name of hidden layer activation function
+        self.act_h = Activations(act_h)             # activation function of hidden layer
+        self.act_o = Activations(act_o)             # activation function of output layer
+        self.cost_tag = cost                        # Name of cost function
+        self.cost = CostFunctions(cost)             # Cost function
 
 
-        self.epochs             = epochs
-        self.tol                = tol
-        self.batch_size         = batch_size
-        self.iterations         = self.n_inputs // self.batch_size
-        self.eta                = eta
-        self.lmbd               = lmbd
+        self.epochs             = epochs            # Number of epochs
+        self.tol                = tol               # Convergence criteria
+        self.batch_size         = batch_size        # Size of batch for SGD
+        self.iterations         = self.n_inputs // self.batch_size # Number of iterations for SGD
+        self.eta                = eta               # Learning rate
+        self.lmbd               = lmbd              # Regularization parameter
 
         self.create_biases_and_weights() # Initialize random weights and biases for two layers
 
-    def init_weight(self,n_in,n_out):
-        # Weight initialization function
+    def init_weight(self, n_in, n_out):
+        # Weight initialization function using optimized weights
         if self.act_h_tag == 'sigmoid':
-            x = np.sqrt(6.0 / (n_in + n_out))
+            x = np.sqrt(6.0 / (n_in + n_out)) 
             return np.random.uniform(-x, x, size=(n_in, n_out))
 
         elif self.act_h_tag == 'tanh':
-            x = 4.0 * np.sqrt(6.0 / (n_in + n_out))
+            x = 4.0 * np.sqrt(6.0 / (n_in + n_out)) 
             return np.random.uniform(-x, x, size=(n_in, n_out))
 
         elif self.act_h_tag == 'relu' or self.act_h_tag == 'elu':
@@ -88,11 +88,11 @@ class NeuralNetwork:
 
     def create_biases_and_weights(self):  
         # Calculate inital weights and biases for hidden layer
-        self.hidden_weights = self.init_weight(self.n_features, self.n_hidden_neurons) # np.random.randn(self.n_features, self.n_hidden_neurons)* np.sqrt(2.0 / self.n_features)
+        self.hidden_weights = self.init_weight(self.n_features, self.n_hidden_neurons)
         self.hidden_bias    = np.zeros(self.n_hidden_neurons)
 
         # Calculate initial weights and biases for output layer
-        self.output_weights = self.init_weight(self.n_hidden_neurons, self.n_categories) #  np.random.randn(self.n_hidden_neurons, self.n_categories)* np.sqrt(2.0 / self.n_features)
+        self.output_weights = self.init_weight(self.n_hidden_neurons, self.n_categories)
         self.output_bias    = np.zeros(self.n_categories)
 
     def feed_forward(self): # Feed forward through full network
@@ -120,14 +120,9 @@ class NeuralNetwork:
         return a_o
 
     def backpropagation(self):
-        """
-        TODO:
-        Implement multilayer
-        """
 
         # Calculate gradients for output layer
         error_output = (self.a_o - self.Ytrain_batch)
-        #print(self.a_o.shape, self.Ytrain_batch.shape, error_output.shape)
         error_output =  self.cost.df(self.a_o,self.Ytrain_batch, self.lmbd) * self.act_o.df(self.z_o)
 
         self.output_weights_gradient    = np.matmul(self.a_h.T, error_output) 
@@ -155,7 +150,7 @@ class NeuralNetwork:
         self.hidden_bias    -= self.eta * self.hidden_bias_gradient
 
     def predict(self, X):
-        # returns 1d array
+        # returns 1d array of binary values
         a_o = self.feed_forward_out(X)
         return np.argmax(a_o, axis=1)
 
@@ -165,15 +160,18 @@ class NeuralNetwork:
         return a_o
 
     def score(self, ytrue, ypred):
+        # Calculate score
         l2 = ( (self.hidden_weights**2).sum() + (self.output_weights**2).sum() ) / (2*self.n_features)
         cost = self.cost.f(ytrue, ypred, self.lmbd, l2)
         return cost
     
     def train(self):
         print("Training")
+
         data_indices = np.arange(self.n_inputs)
         self.costs = np.zeros((self.epochs,2))
         self.scores = np.zeros((self.epochs,2,2))
+        
         nan = False
         for i in range(self.epochs):
             for j in range(self.iterations):
@@ -187,8 +185,11 @@ class NeuralNetwork:
                 self.Xtrain_batch = self.Xtrain[chosen_datapoints]
                 self.Ytrain_batch = self.Ytrain[chosen_datapoints]
                 
+                # Run network once for this batch
                 self.feed_forward()
                 nan = self.backpropagation()          
+                
+                
                 if nan: # Search in gradients, break if found
                     print("---------------------------------------------------")
                     print(f"NaN detected in gradients, epoch {i}.")
@@ -198,12 +199,14 @@ class NeuralNetwork:
                 self.costs[i,1] += self.score(self.predict_a_o(self.Xtest),self.Ytest)/(self.iterations*self.batch_size)
                 
                 if self.nn_type=="classification":
+                    # Save accuracy and roc_auc scores
                     self.scores[i,0,0] += accuracy_score(self.Ytrain[:,1], self.predict(self.Xtrain))/self.iterations
                     self.scores[i,0,1] += roc_auc_score( self.Ytrain[:,1], self.predict(self.Xtrain))/self.iterations
                     self.scores[i,1,0] += accuracy_score(self.Ytest[:,1], self.predict(self.Xtest))/self.iterations
                     self.scores[i,1,1] += roc_auc_score( self.Ytest[:,1], self.predict(self.Xtest))/self.iterations
             
                 if self.nn_type=="regression":
+                    # Save MSE and R2
                     self.scores[i,0,0] += self.costs[i,0]/self.iterations
                     self.scores[i,0,1] += self.cost.R2(self.predict_a_o(self.Xtrain), self.Ytrain)/self.iterations
                     self.scores[i,1,0] += self.costs[i,1]/self.iterations
@@ -305,8 +308,7 @@ class NeuralNetwork:
                 ax2.set_position([chartBox.x0, chartBox.y0, chartBox.width*0.5, chartBox.height])
             else:
                 ax2.set_position([chartBox.x0, chartBox.y0, chartBox.width, chartBox.height])
-            
-               # Make less visible if bad result
+                           
             if self.scores[-1,1,1] < 0.735: # 0.82:
                 a = 1
                 #ax1.plot(self.scores[:,1,0], label=r"{:8s} LR: {:6}   $\lambda$: {:6}   Accuracy: {:.3f}    auc: {:.3f}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))), self.scores[-1,1,0], self.scores[-1,1,1]), color=c[k], alpha = a, linewidth=1)
