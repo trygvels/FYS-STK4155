@@ -12,20 +12,30 @@ plt.style.use(u"~/.matplotlib/stylelib/trygveplot_astro.mplstyle")
 from logreg     import LogReg
 from initdata   import InitData
 from DNN        import NeuralNetwork
+
 """
 In this part of the project, we assess the predictive ability of a feed-forward Neural 
 network on determining default based on credit card data. 
-"""
-## Get data from InitData Class
-data = InitData()
-XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot =  data.credit_data(trainingShare=0.5, return_cols=False, drop_zero=True,drop_neg2=True)
-logreg = LogReg() # init Logreg class
 
-## Params
+To explore hyperparameter-space, chose explore = True
+To run self-written NN network, chose sklearn = False
+Chose metric for saving best score with metric (accuracy/rocauc)
+For credit card data, cost=cross_entropy is chosen
+"""
+## Get data from InitData Class ---------------------------------------
+logreg = LogReg() # init Logreg class
+data = InitData()
+
+## Params -------------------------------------------------------------
 explore = False
 sklearn = False
-metric = "accuracy"
+metric = "accuracy" #"rocauc"
 cost = "cross_entropy"
+
+if data_size == "full":
+    XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot =  data.credit_data(trainingShare=0.5)
+else:
+    XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot =  data.credit_data(trainingShare=0.5, return_cols=False, drop_zero=True,drop_neg2=True)
 
 if explore==True: # Explore parameter space for credit card data
     # Try it all
@@ -44,21 +54,13 @@ if explore==True: # Explore parameter space for credit card data
     acts_hidden = ["sigmoid", "relu"]
 
 else: # Optimal setup for credit card using all data
-    # Best relu
-    eta_vals = [0.0001]
-    lmbd_vals = [0.1]
-    acts_hidden = ["relu"]
-    hidden_neurons = [16] 
     epochs=200
     tol = 0.001
     batch_size = 100
-    
-    # GOAT
     eta_vals = [1e-3]
     lmbd_vals = [1e-1]
     acts_hidden = ["sigmoid"]
     hidden_neurons = [12] 
-    hidden_neurons = [4,8,12,16,50,100] 
     epochs=200
     
 
@@ -112,12 +114,10 @@ if sklearn == False:
                     print()
 
 
-    filename = "NNclassification_nhidden_small.png"
 
-    plt.savefig("../figs/"+filename,bbox_inches = 'tight',pad_inches = 0)
+    #filename = "NNclassification_nhidden_small.png"
+    #plt.savefig("../figs/"+filename,bbox_inches = 'tight',pad_inches = 0)
     plt.show()
-
-    sys.exit()
 
     print("------------------ Best Results -------------------")
     print("Best learning rate   : ", best_eta)
