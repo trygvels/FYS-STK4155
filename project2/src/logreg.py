@@ -24,15 +24,17 @@ class LogReg: # Logistic regression class
         costs = []                                  # Initializing cost list
         if (rnd_seed): 
             np.random.seed(int(time.time()))      # seed numpy RNG with the time stamp 
-        self.beta = np.random.randn(X.shape[1])   # Drawing initial random beta values
-
+        self.beta = np.random.randn(X.shape[1],1)   # Drawing initial random beta values
+        y=y.reshape(X.shape[0],1)
         i = 0; t = 1
         while t > tol:                              # Do gradient descent while below threshold
-            b = X@self.beta                         # Calculate current prediction
-            gradient = 1.0/n*( X.T @ (self.act.f(b)-y) ) # Calculate gradient
+            if (i==0):
+                tar = X@self.beta            # Calculate current prediction
+                #no need in calculating again for each iteration
+            gradient = 1.0/n*( X.T @ (self.act.f(tar)-y) ) # Calculate gradient
             self.beta -= lr*gradient                # Calculate perturbation to beta
             tar = X@self.beta
-            costs.append(self.cost(tar,y))  # Save cost of new beta
+            costs.append(self.cost.f(tar,y))  # Save cost of new beta
             t = np.linalg.norm(gradient)            # Calculate norm of gradient
             i += 1  
             if i > 1e5:                             # If descent takes too long, break.
@@ -135,6 +137,9 @@ class LogReg: # Logistic regression class
                     y_ = y[idx_arr].reshape(nbatch[idx],1)            # select corresponding prediction
                     b = X_@self.beta                # Calculate current prediction
                     gradient = ( X_.T @ (self.act.f(b)-y_)) + 2.0*lambda_r*self.beta # Calculate gradient
+                    if(k==0 and j==0):
+                        print(gradient.shape)
+
                     if (adj_lr):
                         #as iterations increase, the step size in beta is reduced
                         lr=(lr0*t0)/(t0+k*n+j*batch_size)
@@ -225,6 +230,8 @@ class LogReg: # Logistic regression class
         ppv=[tn*1.0/pcn, tp*1.0/pcp]
         trp=[tn*1.0/cn, tp*1.0/cp]
         f1=[2.0*ppv[0]*trp[0]/(ppv[0]+trp[0]), 2.0*ppv[1]*trp[1]/(ppv[1]+trp[1])]
+        if return_f1:
+            return (f1[0]*cn+f1[1]*cp)/(cn+cp)
         print("              precision     recall     f1-score     true number    predicted number")
         print()
         print("           0      %5.3f      %5.3f        %5.3f        %8i    %16i"%(ppv[0],trp[0],f1[0],cn,pcn))
@@ -235,10 +242,7 @@ class LogReg: # Logistic regression class
         print("weighted avg      %5.3f      %5.3f        %5.3f        %8i"%((ppv[0]*cn+ppv[1]*cp)/(cn+cp),(trp[0]*cn+trp[1]*cp)/(cn+cp), (f1[0]*cn+f1[1]*cp)/(cn+cp),cn+cp))
         print()
 
-        if return_f1:
-            return (f1[0]*cn+f1[1]*cp)/(cn+cp)
-        else:
-            return
+        return
 
     def split_batch(self,n,m):
 
@@ -273,7 +277,7 @@ class LogReg: # Logistic regression class
 
         return idx_arr,n_ms
 
-    def print_beta(self, cols=[],betas=np.zeros([[]])):
+    def print_beta(self, cols=[],betas=np.zeros(shape=(1,1))):
         if (betas.shape[1]>2):
             std_b=np.std(betas,axis=1)
             mean_b=np.mean(betas,axis=1)

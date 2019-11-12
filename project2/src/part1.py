@@ -22,10 +22,10 @@ data = InitData()
 #XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot = data.credit_data(trainingShare=0.5,per_col=True,drop_zero=True,drop_neg2=True)
 
 #Initialize only data without '0' and '-2' in payment history
-XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot, data_cols = data.credit_data(trainingShare=0.5,drop_zero=False,drop_neg2=False,per_col=True,return_cols=True,onehot_encode_col=['EDUCATION','MARRIAGE'],plt_corr=False,plot_alldata=False)
+#XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot, data_cols = data.credit_data(trainingShare=0.5,drop_zero=False,drop_neg2=False,per_col=True,return_cols=True,onehot_encode_col=['EDUCATION','MARRIAGE'],plt_corr=False,plot_alldata=False)
 
 #initialize all data (with some bill_amt and pay_amt)
-#XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot, data_cols = data.credit_data(trainingShare=0.5,drop_zero=True,drop_neg2=True,per_col=True,return_cols=True,onehot_encode_col=['EDUCATION','MARRIAGE'],plt_corr=False,plot_alldata=False)
+XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot, data_cols = data.credit_data(trainingShare=0.5,drop_zero=True,drop_neg2=True,per_col=True,return_cols=True,onehot_encode_col=['EDUCATION','MARRIAGE'],plt_corr=False,plot_alldata=False)
 
 ## Initialize Logreg Class
 logreg = LogReg(cost='cross_entropy') # init Logreg class
@@ -42,6 +42,7 @@ print()
 lrs = [0.01]
 niter=50
 sgd=False
+return_ar=True
 for i in range(niter):
       print('%i of %i'%(i+1,niter))
       if (sgd):
@@ -51,17 +52,13 @@ for i in range(niter):
             betas=beta.copy()
       plt.figure(2)
       plt.plot(costs)
-      print("---------—--------—--- Our Regression --------—--------—--------—")
-      logreg.print_beta(cols=data_cols,betas=betas)
-      print("-—--------—--- Training data -------—--------—")
-      yPred=logreg.predict(XTrain) #predict
-      logreg.own_classification_report(yTrain,yPred)
-      print("-—--------—--- Validation data -------—--------—")
       yPred=logreg.predict(XTest) #predict
       f1=logreg.own_classification_report(yTest,yPred,return_f1=True)
+      yPred=logreg.predict(XTrain) #predict
+      f2=logreg.own_classification_report(yTrain,yPred,return_f1=True)
+      f3=(f1+f2)/2.0
       #plt.show()
       plt.clf()
-      return_ar=True
       if (return_ar):
             ar=logreg.plot_cumulative(XTest,yTest,return_ar=return_ar)
       else:
@@ -71,7 +68,9 @@ for i in range(niter):
       if (i==0):
             ar_best=ar
             f1_best=f1
+            f3_best=f3
             f1_beta=beta.copy()
+            f3_beta=beta.copy()
             ar_beta=beta.copy()
       else:
             if (ar>ar_best):
@@ -80,31 +79,86 @@ for i in range(niter):
             if (f1>f1_best):
                   f1_best=f1
                   f1_beta=beta.copy()
+            if (f3>f3_best):
+                  f3_best=f3
+                  f3_beta=beta.copy()
+
+print("---------—--------—--- Our Regression --------—--------—--------—")
 
 if (return_ar):
+      yPred=logreg.predict(XTest,betas=ar_beta)
+      f1=logreg.own_classification_report(yTest,yPred,return_f1=True)
+      yPred=logreg.predict(XTrain,betas=ar_beta) #predict
+      f2=logreg.own_classification_report(yTrain,yPred,return_f1=True)
+      f3=(f1+f2)/2.0
       if (XTest.shape[0]>3000):
-            label='SGD_best_ar_%5.3f_all'%(ar_best)
+            label='_best_ar_%5.3f_f1_%5.3f_f3_%5.3f_all'%(ar_best,f1,f3)
       else:
-            label='SGD_best_ar_%5.3f'%(ar_best)
+            label='_best_ar_%5.3f_f1_%5.3f_f3_%5.3f'%(ar_best,f1,f3)
+      if (sgd):
+            label = 'SGD'+label
+      else:
+            label = 'GD'+label
       logreg.plot_cumulative(XTest,yTest,beta=ar_beta,label=label)
       logreg.print_beta_to_file(d_label=data_cols,beta=ar_beta,label=label)
       print()
       print('Best beta, given area ratio value')
       logreg.print_beta(cols=data_cols,betas=ar_beta)
+      print("-—--------—--- Training data -------—--------—")
+      yPred=logreg.predict(XTrain,betas=ar_beta) #predict
+      logreg.own_classification_report(yTrain,yPred)
+      print("-—--------—--- Validation data -------—--------—")
       yPred=logreg.predict(XTest,betas=ar_beta) #predict
       logreg.own_classification_report(yTest,yPred)
 
-print(f1_best)
+ar=logreg.plot_cumulative(XTest,yTest,beta=f1_beta,return_ar=True)
+yPred=logreg.predict(XTrain,betas=f1_beta) #predict
+f2=logreg.own_classification_report(yTrain,yPred,return_f1=True)
+f3=(f1_best+f2)/2.0
 if (XTest.shape[0]>3000):
-      label='SGD_best_f1_%5.3f_all'%(f1_best)
+      label='_best_f1_%5.3f_f3_%5.3f_ar_%5.3f_all'%(f1_best,f3,ar)
 else:
-      label='SGD_best_f1_%5.3f'%(f1_best)
+      label='_best_f1_%5.3f_f3_%5.3f_ar_%5.3f'%(f1_best,f3,ar)
+if (sgd):
+      label = 'SGD'+label
+else:
+      label = 'GD'+label
 logreg.plot_cumulative(XTest,yTest,beta=f1_beta,label=label)
 logreg.print_beta_to_file(d_label=data_cols,beta=f1_beta,label=label)
 print()
-print('Best beta, given F1 value')
+print('Best beta, given F1 value of Test data')
 logreg.print_beta(cols=data_cols,betas=f1_beta)
+print("-—--------—--- Training data -------—--------—")
+yPred=logreg.predict(XTrain,betas=f1_beta) #predict
+logreg.own_classification_report(yTrain,yPred)
+print("-—--------—--- Validation data -------—--------—")
 yPred=logreg.predict(XTest,betas=f1_beta) #predict
+logreg.own_classification_report(yTest,yPred)
+
+ar=logreg.plot_cumulative(XTest,yTest,beta=f3_beta,return_ar=True)
+yPred=logreg.predict(XTest,betas=f3_beta) #predict
+f1=logreg.own_classification_report(yTest,yPred,return_f1=True)
+yPred=logreg.predict(XTrain,betas=f3_beta) #predict
+f2=logreg.own_classification_report(yTrain,yPred,return_f1=True)
+f3=(f1+f2)/2.0
+if (XTest.shape[0]>3000):
+      label='_best_f3_%5.3f_f1_%5.3f_f2_%5.3f_ar_%5.3f_all'%(f3,f1,f2,ar)
+else:
+      label='_best_f3_%5.3f_f1_%5.3f_f2_%5.3f_ar_%5.3f'%(f3,f1,f2,ar)
+if (sgd):
+      label = 'SGD'+label
+else:
+      label = 'GD'+label
+logreg.plot_cumulative(XTest,yTest,beta=f1_beta,label=label)
+logreg.print_beta_to_file(d_label=data_cols,beta=f1_beta,label=label)
+print()
+print('Best beta, given avg F1 value Train/Test')
+logreg.print_beta(cols=data_cols,betas=f3_beta)
+print("-—--------—--- Training data -------—--------—")
+yPred=logreg.predict(XTrain,betas=f3_beta) #predict
+logreg.own_classification_report(yTrain,yPred)
+print("-—--------—--- Validation data -------—--------—")
+yPred=logreg.predict(XTest,betas=f3_beta) #predict
 logreg.own_classification_report(yTest,yPred)
 
 
