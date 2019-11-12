@@ -26,6 +26,7 @@ To run self-written NN network, chose sklearn = False
 Chose metric for saving best score (R2/mse)
 For credit card data, cost=mse is chosen
 """
+
 ## Get data from InitData Class ---------------------------------------
 data = InitData()
 noise = 0.05

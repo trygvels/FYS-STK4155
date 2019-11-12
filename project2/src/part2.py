@@ -22,6 +22,7 @@ To run self-written NN network, chose sklearn = False
 Chose metric for saving best score with metric (accuracy/rocauc)
 For credit card data, cost=cross_entropy is chosen
 """
+
 ## Get data from InitData Class ---------------------------------------
 logreg = LogReg() # init Logreg class
 data = InitData()
@@ -31,6 +32,7 @@ explore = False
 sklearn = False
 metric = "accuracy" #"rocauc"
 cost = "cross_entropy"
+data_size = "full"
 
 if data_size == "full":
     XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot =  data.credit_data(trainingShare=0.5)
