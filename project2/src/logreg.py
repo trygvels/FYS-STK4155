@@ -137,9 +137,6 @@ class LogReg: # Logistic regression class
                     y_ = y[idx_arr].reshape(nbatch[idx],1)            # select corresponding prediction
                     b = X_@self.beta                # Calculate current prediction
                     gradient = ( X_.T @ (self.act.f(b)-y_)) + 2.0*lambda_r*self.beta # Calculate gradient
-                    if(k==0 and j==0):
-                        print(gradient.shape)
-
                     if (adj_lr):
                         #as iterations increase, the step size in beta is reduced
                         lr=(lr0*t0)/(t0+k*n+j*batch_size)

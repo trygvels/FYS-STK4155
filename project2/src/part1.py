@@ -39,9 +39,9 @@ print()
 
 # Optimize parameters
 #lrs = np.logspace(-5,7,13)
-lrs = [0.01]
+lrs = [0.02]
 niter=50
-sgd=False
+sgd=True
 return_ar=True
 for i in range(niter):
       print('%i of %i'%(i+1,niter))
@@ -50,15 +50,12 @@ for i in range(niter):
       else:
             beta, costs = logreg.GD(XTrain,yTrain.ravel(),lr=lrs[0], rnd_seed=True,tol=1e-2) # Fit using GD. This can be looped over for best lambda (i.e. learning rate 'lr').
             betas=beta.copy()
-      plt.figure(2)
-      plt.plot(costs)
       yPred=logreg.predict(XTest) #predict
       f1=logreg.own_classification_report(yTest,yPred,return_f1=True)
       yPred=logreg.predict(XTrain) #predict
       f2=logreg.own_classification_report(yTrain,yPred,return_f1=True)
       f3=(f1+f2)/2.0
-      #plt.show()
-      plt.clf()
+
       if (return_ar):
             ar=logreg.plot_cumulative(XTest,yTest,return_ar=return_ar)
       else:

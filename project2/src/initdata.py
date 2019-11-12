@@ -470,6 +470,8 @@ class InitData: # Class for initializing different data sets
             
             plt_y=plt_ticks
             plt_laby=plt_cols
+            if (len(plt_y)<len(plt_cols)):
+                plt_laby[len(plt_y)-1]='default'
             if (plt_cbar):
                 ax = sns.heatmap(plt_corr,annot=True,cmap='jet',vmax=1.0,vmin=-1.0,cbar_kws=dict(ticks=[-1.0,-0.75,-0.5,-0.25,0.0,0.25,0.5,0.75,1.0]))
                 cbar = ax.collections[0].colorbar
