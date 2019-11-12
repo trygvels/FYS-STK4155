@@ -8,5 +8,7 @@ Also included are parameter-settings for testing the predictions agianst SKLEARN
 ## Project 2:
 In this project we attempt to predict the probability of default from credit card data.
 We apply both logistic regression and neural networks for this. Run code using "python part#.py".
-Part1.py - Running the logistic regression method and comparing to sklearn
-Part2.py - Running the feed-forward neural network.
+  
+Part1.py - Running the logistic regression method and comparing to sklearn.  
+Part2.py - Running the feed-forward neural network on credit card data.  
+Part3.py - Running the feed-forward neural network on the franke function data.  
