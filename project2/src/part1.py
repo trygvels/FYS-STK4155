@@ -48,6 +48,10 @@ lrs = [0.02]
 niter=50
 sgd=True
 return_ar=True
+f1_log=[]
+f3_log=[]
+ar_log=[]
+
 for i in range(niter):
       print('%i of %i'%(i+1,niter))
       if (sgd):
@@ -60,9 +64,11 @@ for i in range(niter):
       yPred=logreg.predict(XTrain) #predict
       f2=logreg.own_classification_report(yTrain,yPred,return_f1=True)
       f3=(f1+f2)/2.0
-
+      f1_log.append(f1)
+      f3_log.append(f3)
       if (return_ar):
             ar=logreg.plot_cumulative(XTest,yTest,return_ar=return_ar)
+            ar_log.append(ar)
       else:
             logreg.plot_cumulative(XTest,yTest,return_ar=return_ar)
             logreg.print_beta_to_file(d_label=data_cols)
@@ -112,7 +118,10 @@ if (return_ar):
       print("-—--------—--- Validation data -------—--------—")
       yPred=logreg.predict(XTest,betas=ar_beta) #predict
       logreg.own_classification_report(yTest,yPred)
+      ar_log=np.array(ar_log)
 
+f1_log=np.array(f1_log)
+f3_log=np.array(f3_log)
 ar=logreg.plot_cumulative(XTest,yTest,beta=f1_beta,return_ar=True)
 yPred=logreg.predict(XTrain,betas=f1_beta) #predict
 f2=logreg.own_classification_report(yTrain,yPred,return_f1=True)
@@ -163,7 +172,11 @@ print("-—--------—--- Validation data -------—--------—")
 yPred=logreg.predict(XTest,betas=f3_beta) #predict
 logreg.own_classification_report(yTest,yPred)
 
-
+print('label    mean    std')
+print('%5s   %6.4f  %6.4f'%('ar',ar_log.mean(),ar_log.std()))
+print('%5s   %6.4f  %6.4f'%('f1',f1_log.mean(),f1_log.std()))
+print('%5s   %6.4f  %6.4f'%('f3',f3_log.mean(),f3_log.std()))
+print()
 # Compare with sklearn
 if True: # Simple sklearn
     from sklearn.linear_model import LogisticRegression
