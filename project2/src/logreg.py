@@ -350,15 +350,23 @@ class LogReg: # Logistic regression class
             xtick.append(k)
             if (k>nd):
                 break
-
+        if (label=='lift'):
+            xtick = [0,nt,nd]
+            xtick_lab=['0',r'$N_t$',r'$N_d$']
+            ytick = [0,nt]
+            ytick_lab=['0',r'$N_t$']
         plt.figure(1,figsize=(7,7))
         plt.plot(x_plt,best_y,label='Best fit',color=plt.cm.tab10(0))
         plt.plot(x_plt,model_pred,label='Model',color=plt.cm.tab10(1))
         plt.plot(x_plt,baseline,label='Baseline',color=plt.cm.tab10(7))
         plt.legend(loc='lower right',fontsize=22)
         plt.xlabel('Number of total data',fontsize=22)
-        plt.xticks(xtick,fontsize=18)
-        plt.yticks(fontsize=18)
+        if (label=='lift'):
+            plt.xticks(xtick,xtick_lab,fontsize=18)
+            plt.yticks(ytick,ytick_lab,fontsize=18)
+        else:
+            plt.xticks(xtick,fontsize=18)
+            plt.yticks(fontsize=18)
         plt.ylabel('Cumulative number of target data',fontsize=22)
         if (plt_ar):
             plt.text(nd*0.55,nt*0.4,'area ratio = %5.3f'%(ar), fontsize=20)

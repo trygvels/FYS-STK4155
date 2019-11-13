@@ -29,10 +29,10 @@ data = InitData()
 #XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot = data.credit_data(trainingShare=0.5,per_col=True,drop_zero=True,drop_neg2=True)
 
 ##initialize all data (with some bill_amt and pay_amt), split education and marital status
-#XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot, data_cols = data.credit_data(trainingShare=0.5,drop_zero=False,drop_neg2=False,per_col=True,return_cols=True,onehot_encode_col=['EDUCATION','MARRIAGE'],plt_corr=False,plot_alldata=False)
+XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot, data_cols = data.credit_data(trainingShare=0.5,drop_zero=False,drop_neg2=False,per_col=True,return_cols=True,onehot_encode_col=['EDUCATION','MARRIAGE'],plt_corr=False,plot_alldata=False)
 
 ##Initialize only data without '0' and '-2' in payment history
-XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot, data_cols = data.credit_data(trainingShare=0.5,drop_zero=True,drop_neg2=True,per_col=True,return_cols=True,onehot_encode_col=['EDUCATION','MARRIAGE'],plt_corr=False,plot_alldata=False)
+#XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot, data_cols = data.credit_data(trainingShare=0.5,drop_zero=True,drop_neg2=True,per_col=True,return_cols=True,onehot_encode_col=['EDUCATION','MARRIAGE'],plt_corr=False,plot_alldata=False)
 
 ## Initialize Logreg Class
 logreg = LogReg(cost='cross_entropy') # init Logreg class
@@ -47,8 +47,8 @@ print()
 # Optimize parameters
 #lrs = np.logspace(-5,7,13)
 lrs = [0.02]
-niter=50
-sgd=True
+niter=1
+sgd=False
 return_ar=True
 f1_log=[]
 f3_log=[]
@@ -200,15 +200,27 @@ if True: # Simple sklearn
     print("---------—--------—-- Sklearn Regression --------------—--------—")
     print("-—--------—--- Training data -------—--------—")
     yPred=logReg.predict(XTrain) #predict
+    f2,ac2=logreg.own_classification_report(yTrain,yPred,return_f1=True,return_ac=True)
     logreg.own_classification_report(yTrain,yPred)
     print("-—--------—--- Validation data -------—--------—")
     yPred=logReg.predict(XTest) #predict
+    f1,ac1=logreg.own_classification_report(yTest,yPred,return_f1=True,return_ac=True)
     logreg.own_classification_report(yTest,yPred)
+    print(f1,f2,ac1,ac2)
+    f3=(f1+f2)/2
+    ac3=(ac1+ac2)/2
     if (XTest.shape[0]>3000):
           label='sklearn_all'
     else:
           label='sklearn'
-    logreg.plot_cumulative(XTest,yTest,beta=logReg.coef_.T,label=label)
+    ar=logreg.plot_cumulative(XTest,yTest,beta=logReg.coef_.T,label=label,return_ar=True)
+    print('ar',ar)
+    print('f1',f1)
+    print('f3',f3)
+    print('ac1',ac1)
+    print('ac3',ac3)
+    print()
+    logreg.plot_cumulative(XTest,yTest,beta=logReg.coef_.T,label='lift',plt_ar=False)
 else:   # Fancy optimal sklearn
     logreg.sklearn_alternative(XTrain, yTrain, XTest, yTest)
 
