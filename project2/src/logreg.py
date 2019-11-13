@@ -352,9 +352,9 @@ class LogReg: # Logistic regression class
                 break
 
         plt.figure(1,figsize=(7,7))
-        plt.plot(x_plt,best_y,label='Best fit',color='b')
-        plt.plot(x_plt,model_pred,label='Model',color='r')
-        plt.plot(x_plt,baseline,label='Baseline',color='k')
+        plt.plot(x_plt,best_y,label='Best fit',color=plt.cm.tab10(0))
+        plt.plot(x_plt,model_pred,label='Model',color=plt.cm.tab10(1))
+        plt.plot(x_plt,baseline,label='Baseline',color=plt.cm.tab10(7))
         plt.legend(loc='lower right',fontsize=22)
         plt.xlabel('Number of total data',fontsize=22)
         plt.xticks(xtick,fontsize=18)

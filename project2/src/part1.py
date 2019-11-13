@@ -25,14 +25,14 @@ if (False):
 ## Get data from InitData Class
 data = InitData()
 
-#initialize all data, splitting gender, education and marital status
+##initialize all data, splitting gender, education and marital status
 #XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot = data.credit_data(trainingShare=0.5,per_col=True,drop_zero=True,drop_neg2=True)
 
-#initialize all data (with some bill_amt and pay_amt), split education and marital status
-XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot, data_cols = data.credit_data(trainingShare=0.5,drop_zero=False,drop_neg2=False,per_col=True,return_cols=True,onehot_encode_col=['EDUCATION','MARRIAGE'],plt_corr=False,plot_alldata=False)
+##initialize all data (with some bill_amt and pay_amt), split education and marital status
+#XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot, data_cols = data.credit_data(trainingShare=0.5,drop_zero=False,drop_neg2=False,per_col=True,return_cols=True,onehot_encode_col=['EDUCATION','MARRIAGE'],plt_corr=False,plot_alldata=False)
 
-#Initialize only data without '0' and '-2' in payment history
-#XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot, data_cols = data.credit_data(trainingShare=0.5,drop_zero=True,drop_neg2=True,per_col=True,return_cols=True,onehot_encode_col=['EDUCATION','MARRIAGE'],plt_corr=False,plot_alldata=False)
+##Initialize only data without '0' and '-2' in payment history
+XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot, data_cols = data.credit_data(trainingShare=0.5,drop_zero=True,drop_neg2=True,per_col=True,return_cols=True,onehot_encode_col=['EDUCATION','MARRIAGE'],plt_corr=False,plot_alldata=False)
 
 ## Initialize Logreg Class
 logreg = LogReg(cost='cross_entropy') # init Logreg class
@@ -58,7 +58,7 @@ ac1_log=[]
 for i in range(niter):
       print('%i of %i'%(i+1,niter))
       if (sgd):
-            beta, costs,betas = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lrs[0],adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=50,verbosity=1,max_iter=10,new_per_iter=False) # Fit using SGD. This can be looped over for best lambda (i.e. learning rate 'lr').
+            beta, costs,betas = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lrs[0],adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=50,verbosity=0,max_iter=10,new_per_iter=False) # Fit using SGD. This can be looped over for best lambda (i.e. learning rate 'lr').
       else:
             beta, costs = logreg.GD(XTrain,yTrain.ravel(),lr=lrs[0], rnd_seed=True,tol=1e-2) # Fit using GD. This can be looped over for best lambda (i.e. learning rate 'lr').
             betas=beta.copy()
@@ -104,7 +104,9 @@ f3_log=np.array(f3_log)
 ac_log=np.array(ac_log)
 ac1_log=np.array(ac1_log)
 print('label    mean    std')
-print('%5s   %6.4f  %6.4f'%('ar',ar_log.mean(),ar_log.std()))
+if (return_ar):
+      ar_log=np.array(ar_log)
+      print('%5s   %6.4f  %6.4f'%('ar',ar_log.mean(),ar_log.std()))
 print('%5s   %6.4f  %6.4f'%('f1',f1_log.mean(),f1_log.std()))
 print('%5s   %6.4f  %6.4f'%('f3',f3_log.mean(),f3_log.std()))
 print('%5s   %6.4f  %6.4f'%('ac1',ac1_log.mean(),ac1_log.std()))
@@ -210,6 +212,14 @@ if True: # Simple sklearn
 else:   # Fancy optimal sklearn
     logreg.sklearn_alternative(XTrain, yTrain, XTest, yTest)
 
+print('label    mean    std')
+if (return_ar):
+      print('%5s   %6.4f  %6.4f'%('ar',ar_log.mean(),ar_log.std()))
+print('%5s   %6.4f  %6.4f'%('f1',f1_log.mean(),f1_log.std()))
+print('%5s   %6.4f  %6.4f'%('f3',f3_log.mean(),f3_log.std()))
+print('%5s   %6.4f  %6.4f'%('ac1',ac1_log.mean(),ac1_log.std()))
+print('%5s   %6.4f  %6.4f'%('ac',ac_log.mean(),ac_log.std()))
+print()
 
 
 
