@@ -205,7 +205,7 @@ class LogReg: # Logistic regression class
         logreg_df.plot(x='param_C', y='mean_test_roc_auc', yerr='std_test_roc_auc', logx=True)
         plt.show()
 
-    def own_classification_report(self,ytrue,pred,threshold=0.5,return_f1=False):
+    def own_classification_report(self,ytrue,pred,threshold=0.5,return_f1=False,return_ac=False):
         tp=0
         tn=0
         fp=0
@@ -226,9 +226,15 @@ class LogReg: # Logistic regression class
         cn=np.sum(np.where(ytrue==0,1,0))
         ppv=[tn*1.0/pcn, tp*1.0/pcp]
         trp=[tn*1.0/cn, tp*1.0/cp]
+        ac=(tp+tn)*1.0/(cp+cn)
         f1=[2.0*ppv[0]*trp[0]/(ppv[0]+trp[0]), 2.0*ppv[1]*trp[1]/(ppv[1]+trp[1])]
         if return_f1:
-            return (f1[0]*cn+f1[1]*cp)/(cn+cp)
+            if return_ac:
+                return (f1[0]*cn+f1[1]*cp)/(cn+cp),ac
+            else:
+                return (f1[0]*cn+f1[1]*cp)/(cn+cp)
+        if return_ac:
+            return ac
         print("              precision     recall     f1-score     true number    predicted number")
         print()
         print("           0      %5.3f      %5.3f        %5.3f        %8i    %16i"%(ppv[0],trp[0],f1[0],cn,pcn))

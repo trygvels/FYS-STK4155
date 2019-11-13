@@ -53,7 +53,8 @@ return_ar=True
 f1_log=[]
 f3_log=[]
 ar_log=[]
-
+ac_log=[]
+ac1_log=[]
 for i in range(niter):
       print('%i of %i'%(i+1,niter))
       if (sgd):
@@ -62,12 +63,15 @@ for i in range(niter):
             beta, costs = logreg.GD(XTrain,yTrain.ravel(),lr=lrs[0], rnd_seed=True,tol=1e-2) # Fit using GD. This can be looped over for best lambda (i.e. learning rate 'lr').
             betas=beta.copy()
       yPred=logreg.predict(XTest) #predict
-      f1=logreg.own_classification_report(yTest,yPred,return_f1=True)
+      f1,ac1=logreg.own_classification_report(yTest,yPred,return_f1=True,return_ac=True)
       yPred=logreg.predict(XTrain) #predict
-      f2=logreg.own_classification_report(yTrain,yPred,return_f1=True)
+      f2,ac2=logreg.own_classification_report(yTrain,yPred,return_f1=True,return_ac=True)
       f3=(f1+f2)/2.0
+      ac=(ac1+ac2)/2.0
       f1_log.append(f1)
       f3_log.append(f3)
+      ac_log.append(ac)
+      ac1_log.append(ac1)
       if (return_ar):
             ar=logreg.plot_cumulative(XTest,yTest,return_ar=return_ar)
             ar_log.append(ar)
@@ -94,6 +98,19 @@ for i in range(niter):
                   f3_beta=beta.copy()
 
 print("---------—--------—--- Our Regression --------—--------—--------—")
+
+f1_log=np.array(f1_log)
+f3_log=np.array(f3_log)
+ac_log=np.array(ac_log)
+ac1_log=np.array(ac1_log)
+print('label    mean    std')
+print('%5s   %6.4f  %6.4f'%('ar',ar_log.mean(),ar_log.std()))
+print('%5s   %6.4f  %6.4f'%('f1',f1_log.mean(),f1_log.std()))
+print('%5s   %6.4f  %6.4f'%('f3',f3_log.mean(),f3_log.std()))
+print('%5s   %6.4f  %6.4f'%('ac1',ac1_log.mean(),ac1_log.std()))
+print('%5s   %6.4f  %6.4f'%('ac',ac_log.mean(),ac_log.std()))
+print()
+
 
 if (return_ar):
       yPred=logreg.predict(XTest,betas=ar_beta)
@@ -122,8 +139,7 @@ if (return_ar):
       logreg.own_classification_report(yTest,yPred)
       ar_log=np.array(ar_log)
 
-f1_log=np.array(f1_log)
-f3_log=np.array(f3_log)
+
 ar=logreg.plot_cumulative(XTest,yTest,beta=f1_beta,return_ar=True)
 yPred=logreg.predict(XTrain,betas=f1_beta) #predict
 f2=logreg.own_classification_report(yTrain,yPred,return_f1=True)
@@ -174,11 +190,6 @@ print("-—--------—--- Validation data -------—--------—")
 yPred=logreg.predict(XTest,betas=f3_beta) #predict
 logreg.own_classification_report(yTest,yPred)
 
-print('label    mean    std')
-print('%5s   %6.4f  %6.4f'%('ar',ar_log.mean(),ar_log.std()))
-print('%5s   %6.4f  %6.4f'%('f1',f1_log.mean(),f1_log.std()))
-print('%5s   %6.4f  %6.4f'%('f3',f3_log.mean(),f3_log.std()))
-print()
 # Compare with sklearn
 if True: # Simple sklearn
     from sklearn.linear_model import LogisticRegression
