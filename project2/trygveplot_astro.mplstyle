@@ -98,15 +98,15 @@ axes.titlesize: x-large
 axes.labelsize: large
 
 
-#axes.prop_cycle: cycler('color', ['E24A33', '348ABD',  'FBC15E', '8EBA42', 'FFB5B8', '988ED5', '777777'])
-#                   # E24A33 : red
-#                   # 348ABD : blue
-#                   # 988ED5 : purple
-#                   # 777777 : gray
-#                   # FBC15E : yellow
-#                   # 8EBA42 : green
-#                   # FFB5B8 : pink
-axes.prop_cycle    : cycler('color', 'tab20')
+axes.prop_cycle: cycler('color', ['E24A33', '348ABD',  'FBC15E', '8EBA42', 'FFB5B8', '988ED5', '777777'])
+                   # E24A33 : red
+                   # 348ABD : blue
+                   # 988ED5 : purple
+                   # 777777 : gray
+                   # FBC15E : yellow
+                   # 8EBA42 : green
+                   # FFB5B8 : pink
+
 xtick.major.width : 0.8
 ytick.major.width : 0.8
 xtick.minor.width : 0.6
