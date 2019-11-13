@@ -32,5 +32,5 @@ class CostFunctions: # Class with different cost functions
     def R2(self, tar, y):
         ypred = tar.ravel()
         ytrue = y.ravel()
-        R2 = 1. - np.sum((ytrue - ypred)**2)/np.sum((ytrue - np.mean(ypred))**2)
+        R2 = 1. - np.sum((ytrue - ypred)**2)/np.sum((ytrue - np.mean(ytrue))**2)
         return R2
