@@ -17,6 +17,11 @@ determining default based on credit card data. The weights are trained using a g
 solver and compared with Scikit-Learns Logistic regression method.
 """
 
+# unit test (exits afterwards)
+if (False):
+      logreg = LogReg(cost='cross_entropy') # init Logreg class
+      logreg.unit_test() # see logreg for expected output
+
 ## Get data from InitData Class
 data = InitData()
 #XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot = data.credit_data(trainingShare=0.5,per_col=True,drop_zero=True,drop_neg2=True)

@@ -382,3 +382,77 @@ class LogReg: # Logistic regression class
             else:
                 f.write('  %11.6f   %s\n'%(self.beta[i,0],d_label[i]))
         f.close()
+
+        
+    def unit_test(self):
+        XTrain=np.zeros(shape=(100,3))
+        XTest=XTrain.copy()
+        yTrain=np.zeros(shape=(100,1))
+        yTest=yTrain.copy()
+
+        XTrain[:50,0]=1.0
+        XTrain[50:,0]=-1.0
+        XTrain[:,0]*=1.0/np.std(XTrain[:,0]) #unit variance
+        XTrain[:,1:]=np.random.normal(0,1,size=(100,2))
+        yTrain[:50,0]=1.0
+        yTrain[50:,0]=0.0
+        yTrain[0,0]=0.0 #to not get infinities
+        yTrain[-1,0]=1.0
+        yTest=yTrain.copy()
+        XTest[:,0]=XTrain[:,0].copy()
+        XTest[:,1:]=np.random.normal(0,1,size=(100,2))
+
+        lrs=[0.01]
+        beta, costs = self.GD(XTrain,yTrain.ravel(),lr=lrs[0], rnd_seed=True,tol=1e-2) # Fit using GD. This can be looped over for best lambda (i.e. learning rate 'lr').
+
+        print('Unit test with GD')
+        print('Beta values')
+        self.print_beta(betas=beta)
+        print('Training data')
+        yPred=self.predict(XTrain,betas=beta) #predict
+        self.own_classification_report(yTrain,yPred)
+        print('Test data')
+        yPred=self.predict(XTest,betas=beta) #predict
+        self.own_classification_report(yTest,yPred)
+
+        beta, costs, betas = self.SGD_batch(XTrain,yTrain.ravel(),lr=lrs[0],adj_lr=True, rnd_seed=True, batch_size=10,n_epoch=50,verbosity=1,max_iter=10,new_per_iter=False) # Fit using SGD. This can be looped over for best lambda (i.e. learning rate 'lr').
+
+        print('Unit test with SGD')
+        print('Beta values')
+        self.print_beta(betas=beta)
+        print('Training data')
+        yPred=self.predict(XTrain,betas=beta) #predict
+        self.own_classification_report(yTrain,yPred)
+        print('Test data')
+        yPred=self.predict(XTest,betas=beta) #predict
+        self.own_classification_report(yTest,yPred)
+        exit()
+
+        # we expect to miss with one classification in both the training and test data,
+        # as the value in the (almost 100% correlated) first column is flipped for the
+        # first and last index in both the training and test target.
+
+        #We expect this
+"""
+        Training data
+Predicting y using logreg
+              precision     recall     f1-score     true number    predicted number
+
+           0      0.980      0.980        0.980              50                  50
+           1      0.980      0.980        0.980              50                  50
+
+    accuracy                              0.980             100
+   macro avg      0.980      0.980        0.980             100
+weighted avg      0.980      0.980        0.980             100
+
+Test data
+Predicting y using logreg
+              precision     recall     f1-score     true number    predicted number
+
+           0      0.980      0.980        0.980              50                  50
+           1      0.980      0.980        0.980              50                  50
+
+    accuracy                              0.980             100
+   macro avg      0.980      0.980        0.980             100
+weighted avg      0.980      0.980        0.980             100
+"""
