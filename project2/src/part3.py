@@ -37,20 +37,26 @@ cf = CostFunctions()
 # ----- PARAMETERS ------
 sklearn = False
 NN = True
-explore = False
+explore = True
 metric = "R2" # "mse"
 
 if explore==True: # Explore parameter space for franke function
-    eta_vals = np.logspace(-5, 1, 7)
-    lmbd_vals =  np.logspace(-5, 1, 7)
-    #acts_hidden = ["sigmoid", "tanh", "relu", "elu"]
-    acts_hidden = ["logistic", "tanh", "relu"] # Supported by sklearn
+    eta_vals = np.logspace(-3, -1, 3)
+    lmbd_vals =  np.logspace(-3, -1, 3)
+    acts_hidden = ["sigmoid", "tanh", "relu", "elu"]
+    #acts_hidden = ["logistic", "tanh", "relu"] # Supported by sklearn
     act_o = "identity" 
     hidden_neurons = [4,8,12,16,50,100] 
     epochs= 100
-    tol = 0.001
+    tol = 0.0001
     batch_size = 1
     n_categories = 1
+
+    hidden_neurons = [12] 
+    acts_hidden = ["sigmoid", "relu"]
+    eta_vals = np.logspace(-3, -1, 3)
+    lmbd_vals =  np.logspace(-3, -1, 3)
+    #acts_hidden = ["sigmoid", "relu"]
 
 else: # Optimal setup for franke function
     act_o = "identity" 
@@ -192,9 +198,9 @@ for i, eta in enumerate(eta_vals):
                 print()
 
 #plt.loglog(best_mlpr.loss_curve_, label=r"{:8s} LR: {:6}   $\lambda$: {:6}   R2: {:.3f}".format(best_act_h, "1e"+str(int(np.log10(best_eta))), "1e"+str(int(np.log10(best_lmbd))), best_R2))
-plt.legend()
-plt.xlabel("Epoch")
-plt.ylabel("MSE loss")
+#plt.legend()
+#plt.xlabel("Epoch")
+#plt.ylabel("MSE loss")
 #filename = "NNregression_sklearn_mlp.png"
 #plt.savefig("../figs/"+filename,bbox_inches = 'tight',pad_inches = 0)
 plt.show()

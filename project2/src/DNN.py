@@ -55,6 +55,7 @@ class NeuralNetwork:
         self.n_categories       = n_categories      # Number of outcome labels
 
         self.act_h_tag = act_h                      # Name of hidden layer activation function
+        self.act_o_tag = act_o
         self.act_h = Activations(act_h)             # activation function of hidden layer
         self.act_o = Activations(act_o)             # activation function of output layer
         self.cost_tag = cost                        # Name of cost function
@@ -70,29 +71,28 @@ class NeuralNetwork:
 
         self.create_biases_and_weights() # Initialize random weights and biases for two layers
 
-    def init_weight(self, n_in, n_out):
+    def init_weight(self, n_in, n_out, tag):
         # Weight initialization function using optimized weights
-        if self.act_h_tag == 'sigmoid':
+        if tag == 'sigmoid':
             x = np.sqrt(6.0 / (n_in + n_out)) 
             return np.random.uniform(-x, x, size=(n_in, n_out))
 
-        elif self.act_h_tag == 'tanh':
+        elif tag == 'tanh':
             x = 4.0 * np.sqrt(6.0 / (n_in + n_out)) 
             return np.random.uniform(-x, x, size=(n_in, n_out))
 
-        elif self.act_h_tag == 'relu' or self.act_h_tag == 'elu':
+        elif tag == 'relu' or self.act_h_tag == 'elu':
             return np.random.randn(n_in, n_out)*np.sqrt(2.0/n_in)
-
         else:
             return np.random.randn(n_in, n_out)
 
     def create_biases_and_weights(self):  
         # Calculate inital weights and biases for hidden layer
-        self.hidden_weights = self.init_weight(self.n_features, self.n_hidden_neurons)
+        self.hidden_weights = self.init_weight(self.n_features, self.n_hidden_neurons, self.act_h_tag)
         self.hidden_bias    = np.zeros(self.n_hidden_neurons)
 
         # Calculate initial weights and biases for output layer
-        self.output_weights = self.init_weight(self.n_hidden_neurons, self.n_categories)
+        self.output_weights = self.init_weight(self.n_hidden_neurons, self.n_categories,self.act_o_tag)
         self.output_bias    = np.zeros(self.n_categories)
 
     def feed_forward(self): # Feed forward through full network
@@ -119,13 +119,23 @@ class NeuralNetwork:
 
         return a_o
 
+    def nantest(self,x):
+        if np.any(np.isnan(x)):
+            print("Yep, its nan.")
+            sys.exit()
+        else:
+            print("not nan")
+
     def backpropagation(self):
         # Calculate gradients for output layer
         if self.nn_type=="classification":
             error_output =  self.a_o - self.Ytrain_batch # For softmax we avoid divide by zero
         elif self.nn_type=="regression":               # In practice there is no difference here
             error_output =  self.cost.df(self.a_o, self.Ytrain_batch, self.lmbd) * self.act_o.df(self.z_o) 
+        
 
+        self.nantest(error_output)
+            
         self.output_weights_gradient    = np.matmul(self.a_h.T, error_output) 
         self.output_bias_gradient       = np.sum(error_output, axis=0)
 
@@ -313,7 +323,7 @@ class NeuralNetwork:
                 a = 1
                 #ax1.plot(self.scores[:,1,0], label=r"{:8s} LR: {:6}   $\lambda$: {:6}   Accuracy: {:.3f}    auc: {:.3f}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))), self.scores[-1,1,0], self.scores[-1,1,1]), color=c[k], alpha = a, linewidth=1)
                 ax1.plot(self.scores[:,1,0], label=r"{:8s} LR: {:6}   $N_h$: {:3d}   Accuracy: {:.3f}    auc: {:.3f}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), self.n_hidden_neurons, self.scores[-1,1,0], self.scores[-1,1,1]), color=c[k], alpha = a, linewidth=1)
-                ax2.plot(self.scores[:,1,1], label="Test    ", color=c[k], alpha = a, linewidth=1)
+                ax2.plot(self.scores[:,1,1], color=c[k], alpha = a, linewidth=1)
             else:
                 a = 1
                 #ax1.plot(self.scores[:,1,0], label=  r"{:8s} LR: {:6}   $\lambda$: {:8}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))))\
@@ -325,7 +335,7 @@ class NeuralNetwork:
                                                         + r"$\bf{Accuracy}$: " + r"{:.3f}    ".format(self.scores[-1,1,0]) \
                                                         + r"$\bf{auc} $: " + r"{:.3f}".format(self.scores[-1,1,1]),
                                                        color=c[k], alpha = a, linewidth=3)
-                ax2.plot(self.scores[:,1,1], label="Test    ", color=c[k], alpha = a, linewidth=3)
+                ax2.plot(self.scores[:,1,1], color=c[k], alpha = a, linewidth=3)
 
 
 
@@ -386,7 +396,7 @@ class NeuralNetwork:
                 a = 1
                 #ax1.plot(self.scores[:,1,0], label=r"{:8s} LR: {:6}   $\lambda$: {:6}   MSE: {:.3f}    R2: {:.3f}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))), self.scores[-1,1,0], self.scores[-1,1,1]), color=c[k-1], alpha = a, linewidth=1)
                 ax1.plot(self.scores[:,1,0], label=r"{:8s} LR: {:6}   $N_h$: {:3d}   MSE: {:.3f}    R2: {:.3f}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), self.n_hidden_neurons, self.scores[-1,1,0], self.scores[-1,1,1]), color=c[k-1], alpha = a, linewidth=1)
-                ax2.plot(self.scores[:,1,1], label="Test    ", color=c[k-1], alpha = a, linewidth=1)
+                ax2.plot(self.scores[:,1,1],  color=c[k-1], alpha = a, linewidth=1)
             else:
                 a = 1
                 #ax1.plot(self.scores[:,1,0], label=  r"{:8s} LR: {:6}   $\lambda$: {:8}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))))\
@@ -398,7 +408,7 @@ class NeuralNetwork:
                                                         + r"$\bf{MSE}$:" + r"{:.3f}   ".format(self.scores[-1,1,0]) \
                                                         + r" $\bf{R2}$: " + r"{:.3f}".format(self.scores[-1,1,1]),
                                                        color=c[k-1], alpha = a, linewidth=3)
-                ax2.plot(self.scores[:,1,1], label="Test    ", color=c[k-1], alpha = a, linewidth=3)
+                ax2.plot(self.scores[:,1,1],color=c[k-1], alpha = a, linewidth=3)
 
             ax1.legend(loc='upper center', bbox_to_anchor=(1.6, 1.0),prop=legend_properties)
             #ax2.plot(self.scores[:,0,1], label="Training ", color=c[k], linestyle="--")
