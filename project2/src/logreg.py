@@ -96,7 +96,8 @@ class LogReg: # Logistic regression class
 
         # adjustable learning rate
         if (adj_lr):
-            t0 = n
+            t0 = 5*n
+            #t0 = n
             lr0=lr
 
         # We do several SGD searches with new batches for each search, with new searches

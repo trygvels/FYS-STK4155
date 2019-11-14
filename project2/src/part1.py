@@ -46,9 +46,9 @@ print()
 
 # Optimize parameters
 #lrs = np.logspace(-5,7,13)
-lrs = [0.02]
-niter=1
-sgd=False
+lrs = [0.001]
+niter=50
+sgd=True
 return_ar=True
 f1_log=[]
 f3_log=[]
@@ -58,7 +58,7 @@ ac1_log=[]
 for i in range(niter):
       print('%i of %i'%(i+1,niter))
       if (sgd):
-            beta, costs,betas = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lrs[0],adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=50,verbosity=0,max_iter=10,new_per_iter=False) # Fit using SGD. This can be looped over for best lambda (i.e. learning rate 'lr').
+            beta, costs,betas = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lrs[0],adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=25,verbosity=1,max_iter=10,new_per_iter=False) # Fit using SGD. This can be looped over for best lambda (i.e. learning rate 'lr').
       else:
             beta, costs = logreg.GD(XTrain,yTrain.ravel(),lr=lrs[0], rnd_seed=True,tol=1e-2) # Fit using GD. This can be looped over for best lambda (i.e. learning rate 'lr').
             betas=beta.copy()
@@ -103,14 +103,14 @@ f1_log=np.array(f1_log)
 f3_log=np.array(f3_log)
 ac_log=np.array(ac_log)
 ac1_log=np.array(ac1_log)
-print('label    mean    std')
+print('label    mean    std   best')
 if (return_ar):
       ar_log=np.array(ar_log)
-      print('%5s   %6.4f  %6.4f'%('ar',ar_log.mean(),ar_log.std()))
-print('%5s   %6.4f  %6.4f'%('f1',f1_log.mean(),f1_log.std()))
-print('%5s   %6.4f  %6.4f'%('f3',f3_log.mean(),f3_log.std()))
-print('%5s   %6.4f  %6.4f'%('ac1',ac1_log.mean(),ac1_log.std()))
-print('%5s   %6.4f  %6.4f'%('ac',ac_log.mean(),ac_log.std()))
+      print('%5s   %6.4f  %6.4f   %6.4f'%('ar',ar_log.mean(),ar_log.std(),ar_log.max()))
+print('%5s   %6.4f  %6.4f   %6.4f'%('f1',f1_log.mean(),f1_log.std(),f1_log.max()))
+print('%5s   %6.4f  %6.4f   %6.4f'%('f3',f3_log.mean(),f3_log.std(),f3_log.max()))
+print('%5s   %6.4f  %6.4f   %6.4f'%('ac1',ac1_log.mean(),ac1_log.std(),ac1_log.max()))
+print('%5s   %6.4f  %6.4f   %6.4f'%('ac_avg',ac_log.mean(),ac_log.std(),ac_log.max()))
 print()
 
 
@@ -224,13 +224,13 @@ if True: # Simple sklearn
 else:   # Fancy optimal sklearn
     logreg.sklearn_alternative(XTrain, yTrain, XTest, yTest)
 
-print('label    mean    std')
+print('label    mean    std    best')
 if (return_ar):
-      print('%5s   %6.4f  %6.4f'%('ar',ar_log.mean(),ar_log.std()))
-print('%5s   %6.4f  %6.4f'%('f1',f1_log.mean(),f1_log.std()))
-print('%5s   %6.4f  %6.4f'%('f3',f3_log.mean(),f3_log.std()))
-print('%5s   %6.4f  %6.4f'%('ac1',ac1_log.mean(),ac1_log.std()))
-print('%5s   %6.4f  %6.4f'%('ac',ac_log.mean(),ac_log.std()))
+      print('%5s   %6.4f  %6.4f   %6.4f'%('ar',ar_log.mean(),ar_log.std(),ar_log.max()))
+print('%5s   %6.4f  %6.4f   %6.4f'%('f1',f1_log.mean(),f1_log.std(),f1_log.max()))
+print('%5s   %6.4f  %6.4f   %6.4f'%('f3',f3_log.mean(),f3_log.std(),f3_log.max()))
+print('%5s   %6.4f  %6.4f   %6.4f'%('ac1',ac1_log.mean(),ac1_log.std(),ac1_log.max()))
+print('%5s   %6.4f  %6.4f   %6.4f'%('ac_avg',ac_log.mean(),ac_log.std(),ac_log.max()))
 print()
 
 
