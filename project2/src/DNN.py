@@ -120,15 +120,16 @@ class NeuralNetwork:
         return a_o
 
     def backpropagation(self):
-
         # Calculate gradients for output layer
-        error_output = (self.a_o - self.Ytrain_batch)
-        error_output =  self.cost.df(self.a_o,self.Ytrain_batch, self.lmbd) * self.act_o.df(self.z_o)
+        if self.nn_type=="classification":
+            error_output =  self.a_o - self.Ytrain_batch # For softmax we avoid divide by zero
+        elif self.nn_type=="regression":               # In practice there is no difference here
+            error_output =  self.cost.df(self.a_o, self.Ytrain_batch, self.lmbd) * self.act_o.df(self.z_o) 
 
         self.output_weights_gradient    = np.matmul(self.a_h.T, error_output) 
         self.output_bias_gradient       = np.sum(error_output, axis=0)
 
-        # Calculate gradients for hidden layer        
+        # Calculate gradients for hidden layer
         error_hidden = np.matmul(error_output, self.output_weights.T) * self.act_h.df(self.z_h) 
         self.hidden_weights_gradient    = np.matmul(self.Xtrain_batch.T, error_hidden)
         self.hidden_bias_gradient       = np.sum(error_hidden, axis=0)
@@ -189,16 +190,17 @@ class NeuralNetwork:
                 self.feed_forward()
                 nan = self.backpropagation()          
                 
-                
+            
                 if nan: # Search in gradients, break if found
                     print("---------------------------------------------------")
                     print(f"NaN detected in gradients, epoch {i}.")
                     break
-
-                self.costs[i,0] += self.score(self.predict_a_o(self.Xtrain),self.Ytrain)/(self.iterations*self.batch_size)
-                self.costs[i,1] += self.score(self.predict_a_o(self.Xtest),self.Ytest)/(self.iterations*self.batch_size)
                 
+                                
                 if self.nn_type=="classification":
+                    self.costs[i,0] += self.score(self.predict(self.Xtrain),self.Ytrain)/(self.iterations*self.batch_size)
+                    self.costs[i,1] += self.score(self.predict(self.Xtest),self.Ytest)/(self.iterations*self.batch_size)
+                
                     # Save accuracy and roc_auc scores
                     self.scores[i,0,0] += accuracy_score(self.Ytrain[:,1], self.predict(self.Xtrain))/self.iterations
                     self.scores[i,0,1] += roc_auc_score( self.Ytrain[:,1], self.predict(self.Xtrain))/self.iterations
@@ -206,25 +208,23 @@ class NeuralNetwork:
                     self.scores[i,1,1] += roc_auc_score( self.Ytest[:,1], self.predict(self.Xtest))/self.iterations
             
                 if self.nn_type=="regression":
+                    self.costs[i,0] += self.score(self.predict_a_o(self.Xtrain),self.Ytrain)/(self.iterations*self.batch_size)
+                    self.costs[i,1] += self.score(self.predict_a_o(self.Xtest),self.Ytest)/(self.iterations*self.batch_size)
                     # Save MSE and R2
                     self.scores[i,0,0] += self.costs[i,0]/self.iterations
                     self.scores[i,0,1] += self.cost.R2(self.predict_a_o(self.Xtrain), self.Ytrain)/self.iterations
                     self.scores[i,1,0] += self.costs[i,1]/self.iterations
                     self.scores[i,1,1] += self.cost.R2(self.predict_a_o(self.Xtest), self.Ytest)/self.iterations
-            
-            if nan:
-                break
-
+        
             # Convergence test - Average change over 5 epochs
-            if i > 10:
+            if i > 10 or nan:
                 tolerance =   np.abs( np.mean( self.costs[i-10:i-5,0] ) - np.mean( self.costs[i-5:i,0] ) )/ np.mean(self.costs[i-5:i,0]) 
-                if tolerance < self.tol:
+                if tolerance < self.tol or nan:
                     print("---------------------------------------------------")
                     print("Convergence after {} epochs".format(i))
                     print("---------------------------------------------------")
-                    self.costs = self.costs[:i+1,:]
+                    self.costs = self.costs[:i+1,: ]
                     self.scores = self.scores[:i+1,:]
-                    
                     break
 
         return self.costs, self.scores
@@ -237,7 +237,7 @@ class NeuralNetwork:
         cmap = plt.get_cmap('tab20')
         c = cmap(np.linspace(0, 1, 20))[::-1] #self.length))
 
-        if self.costs[-1,1] > 25.0: #0.7:
+        if self.costs[-1,1] > 0.05: #0.7:
             a = 1
             ax.plot(self.costs[:,1], label=r"{:8s} LR: {:6}   $\lambda$: {:6}   Cost: {:.3f}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))), self.costs[-1,1]), color=c[k], alpha = a, linewidth=1)
         else:
@@ -258,7 +258,7 @@ class NeuralNetwork:
         plt.xlabel("Epoch")
         plt.ylabel("{}".format(self.cost_tag))
         #plt.xlim(1,100)
-        plt.ylim(24.5,27)
+        #plt.ylim(24.5,27)
     
         chartBox = ax.get_position()
         if k == 0:

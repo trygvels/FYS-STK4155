@@ -30,7 +30,7 @@ For credit card data, cost=mse is chosen
 ## Get data from InitData Class ---------------------------------------
 data = InitData()
 noise = 0.05
-XTrain, yTrain, XTest, yTest, X, y, b, x_, y_ =  data.franke_data(noise=noise, N=100)
+XTrain, yTrain, XTest, yTest, X, y, b, x_, y_ =  data.franke_data(noise=noise, N=20)
 logreg = LogReg() # init Logreg class
 cf = CostFunctions()
 
@@ -47,22 +47,23 @@ if explore==True: # Explore parameter space for franke function
     acts_hidden = ["logistic", "tanh", "relu"] # Supported by sklearn
     act_o = "identity" 
     hidden_neurons = [4,8,12,16,50,100] 
-    epochs= 600
+    epochs= 100
     tol = 0.001
     batch_size = 1
     n_categories = 1
 
 else: # Optimal setup for franke function
     act_o = "identity" 
-    epochs=600 # Max epochs
-    batch_size = 20
+    epochs=100 # Max epochs
+    batch_size = 1
     n_categories = 1
-    tol = 0.001
+    tol = 0.01
     # Best sklearn
     hidden_neurons = [50]
+    hidden_neurons = [12]
     acts_hidden = ["relu"]
     eta_vals = [1e-1]
-    lmbd_vals = [1e-5]
+    lmbd_vals = [1e-3]
 
 
 # ------ Run network ------

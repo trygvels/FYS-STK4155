@@ -28,11 +28,11 @@ logreg = LogReg() # init Logreg class
 data = InitData()
 
 ## Params -------------------------------------------------------------
-explore = False
+explore = True
 sklearn = False
 metric = "accuracy" #"rocauc"
-cost = "cross_entropy"
-data_size = "full"
+cost = "binary_cross_entropy"
+data_size = "small"
 
 if data_size == "full":
     XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot =  data.credit_data(trainingShare=0.5)
@@ -64,11 +64,15 @@ else: # Optimal setup for credit card using all data
     acts_hidden = ["sigmoid"]
     hidden_neurons = [12] 
     epochs=200
+
+    eta_vals = [1e-1]
+    lmbd_vals = [1e-1]
+    acts_hidden = ["relu"]
     
 
 if sklearn == False:
     # grid search
-    best_accuracy = 0
+    best_accuracy = -100000
     best_rocauc = 0
     color_iter = 0
     for i, eta in enumerate(eta_vals):
@@ -79,8 +83,8 @@ if sklearn == False:
                     costs, scores = dnn.train()
                     accuracy = scores[-1,1,0]
                     rocauc = scores[-1,1,1]
-                    #dnn.plot_costs(color_iter)
-                    dnn.plot_scores(color_iter)
+                    dnn.plot_costs(color_iter)
+                    #dnn.plot_scores(color_iter)
                     color_iter += 1
 
                     yTrue, yPred = yTest, dnn.predict(XTest)
