@@ -48,11 +48,19 @@ print()
 #lrs = np.logspace(-5,7,13)
 
 niter=50
-sgd=True
+sgd=False
+plt_cost=False
+
 if (sgd):
-      lrs = [0.001]
+      if plt_cost:
+            lrs = [0.1,0.01,0.001]
+      else:
+            lrs = [0.001]
 else:
-      lrs = [0.01]
+      if plt_cost:
+            lrs = [1.0,0.5,0.1,0.01]
+      else:
+            lrs = [0.1]
 
 return_ar=True
 f1_log=[]
@@ -60,13 +68,24 @@ f3_log=[]
 ar_log=[]
 ac_log=[]
 ac1_log=[]
+if plt_cost:
+      plt.figure(1,figsize=(7,7))
+      niter=len(lrs)
+
 for i in range(niter):
+      if plt_cost:
+            j=i
+      else:
+            j=0
+            
       print('%i of %i'%(i+1,niter))
       if (sgd):
-            beta, costs,betas = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lrs[0],adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=50,verbosity=1,max_iter=10,new_per_iter=False) # Fit using SGD. This can be looped over for best lambda (i.e. learning rate 'lr').
+            beta, costs,betas = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lrs[j],adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=50,verbosity=1,n_iter=2,new_per_iter=False) # Fit using SGD. This can be looped over for best lambda (i.e. learning rate 'lr').
       else:
-            beta, costs = logreg.GD(XTrain,yTrain.ravel(),lr=lrs[0], rnd_seed=True,tol=1e-2) # Fit using GD. This can be looped over for best lambda (i.e. learning rate 'lr').
+            beta, costs = logreg.GD(XTrain,yTrain.ravel(),lr=lrs[j], rnd_seed=True,tol=1e-2) # Fit using GD. This can be looped over for best lambda (i.e. learning rate 'lr').
             betas=beta.copy()
+      if plt_cost:
+            plt.plot(costs,label='%5.3f'%lrs[i])
       yPred=logreg.predict(XTest) #predict
       f1,ac1=logreg.own_classification_report(yTest,yPred,return_f1=True,return_ac=True)
       yPred=logreg.predict(XTrain) #predict
@@ -102,6 +121,21 @@ for i in range(niter):
                   f3_best=f3
                   f3_beta=beta.copy()
 
+if plt_cost:
+      if (not sgd):
+            plt.xscale('log')
+            plt.yticks(fontsize=16)
+      else:
+            plt.yscale('log')
+            plt.yticks([2000,3000,5000,10000],['2000','3000','5000','10000'],fontsize=16)
+      plt.xlabel('Step number',fontsize=20)
+      plt.ylabel('Cost',fontsize=20)
+      plt.xticks(fontsize=16)
+      plt.legend(loc='upper right',fontsize=16)
+      plt.savefig('../figs/cost.pdf',bbox_inches='tight',pad_inches=0.02)
+      plt.show()
+      exit()
+                  
 print("---------—--------—--- Our Regression --------—--------—--------—")
 
 f1_log=np.array(f1_log)
