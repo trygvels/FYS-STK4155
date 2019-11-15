@@ -79,7 +79,7 @@ class LogReg: # Logistic regression class
         return self.beta, costs
 
     # Stochastic gradient descent method with batches
-    def SGD_batch(self, X, y, lr = 0.01, tol=1e-4, max_iter=1, batch_size=100, n_epoch=100, rnd_seed=False, adj_lr=False, rnd_batch=False, verbosity=0,lambda_r=0.0,new_per_iter=False):
+    def SGD_batch(self, X, y, lr = 0.01, tol=1e-4, n_iter=1, batch_size=100, n_epoch=100, rnd_seed=False, adj_lr=False, rnd_batch=False, verbosity=0,lambda_r=0.0,new_per_iter=False):
 
         # lambda_r = lambda value for ridge regulation term in cost function.
         print("Doing SGD for logreg")
@@ -102,8 +102,8 @@ class LogReg: # Logistic regression class
 
         # We do several SGD searches with new batches for each search, with new searches
         # starting from the previous endpoint
-        betas=np.zeros(shape=(X.shape[1]+1,max_iter)) #array to store the best betas with corresponding cost per iteration
-        for i in range(max_iter):
+        betas=np.zeros(shape=(X.shape[1]+1,n_iter)) #array to store the best betas with corresponding cost per iteration
+        for i in range(n_iter):
             if (new_per_iter):
                 self.beta = np.random.randn(X.shape[1],1)
                 tar = X@self.beta
@@ -112,7 +112,7 @@ class LogReg: # Logistic regression class
 
             if (verbosity>0):
 
-                print('  search %i of %i'%(i+1,max_iter))
+                print('  search %i of %i'%(i+1,n_iter))
             # Data is (semi) sorted on age after index ~15000,
             # dividing into batches based on index is therefore potentially not random.
             # We therefore have 2 options, (1) draw batch_size random values for each
