@@ -37,14 +37,14 @@ cf = CostFunctions()
 # ----- PARAMETERS ------
 sklearn = False
 NN = True
-explore = True
+explore = False
 metric = "R2" # "mse"
 
 if explore==True: # Explore parameter space for franke function
     eta_vals = np.logspace(-3, -1, 3)
     lmbd_vals =  np.logspace(-3, -1, 3)
-    acts_hidden = ["sigmoid", "tanh", "relu", "elu"]
-    #acts_hidden = ["logistic", "tanh", "relu"] # Supported by sklearn
+    #acts_hidden = ["sigmoid", "tanh", "relu", "elu"]
+    acts_hidden = ["logistic", "tanh", "relu"] # Supported by sklearn
     act_o = "identity" 
     hidden_neurons = [4,8,12,16,50,100] 
     epochs= 100
@@ -52,24 +52,19 @@ if explore==True: # Explore parameter space for franke function
     batch_size = 1
     n_categories = 1
 
-    hidden_neurons = [12] 
-    acts_hidden = ["sigmoid", "relu"]
-    eta_vals = np.logspace(-3, -1, 3)
-    lmbd_vals =  np.logspace(-3, -1, 3)
-    #acts_hidden = ["sigmoid", "relu"]
-
+    
 else: # Optimal setup for franke function
     act_o = "identity" 
-    epochs=100 # Max epochs
+    epochs=1000 # Max epochs
     batch_size = 1
     n_categories = 1
-    tol = 0.01
+    tol = 0.000001
     # Best sklearn
     hidden_neurons = [50]
-    hidden_neurons = [12]
+    #hidden_neurons = [12]
     acts_hidden = ["relu"]
     eta_vals = [1e-1]
-    lmbd_vals = [1e-3]
+    lmbd_vals = [1e-5]
 
 
 # ------ Run network ------
@@ -236,7 +231,7 @@ surf._facecolors2d=surf._facecolors3d # Bugfix for legend
 surf._edgecolors2d=surf._edgecolors3d
 
 ax1.scatter(x_,y_,best_ypred.reshape(b.shape),alpha=1, s=1, color="C1")
-#filename = "NNreg_frankefit.png"
-#plt.savefig("../figs/"+filename,bbox_inches = 'tight',pad_inches = 0)
+filename = "NNreg_frankefit.png"
+plt.savefig("../figs/"+filename,bbox_inches = 'tight',pad_inches = 0)
 plt.show()
 

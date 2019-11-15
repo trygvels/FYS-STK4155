@@ -84,7 +84,8 @@ class NeuralNetwork:
         elif tag == 'relu' or self.act_h_tag == 'elu':
             return np.random.randn(n_in, n_out)*np.sqrt(2.0/n_in)
         else:
-            return np.random.randn(n_in, n_out)
+            return np.random.randn(n_in, n_out)*np.sqrt(2.0/n_in)
+            #return np.random.randn(n_in, n_out)
 
     def create_biases_and_weights(self):  
         # Calculate inital weights and biases for hidden layer
@@ -92,7 +93,7 @@ class NeuralNetwork:
         self.hidden_bias    = np.zeros(self.n_hidden_neurons)
 
         # Calculate initial weights and biases for output layer
-        self.output_weights = self.init_weight(self.n_hidden_neurons, self.n_categories,self.act_o_tag)
+        self.output_weights = self.init_weight(self.n_hidden_neurons, self.n_categories,self.act_h_tag)
         self.output_bias    = np.zeros(self.n_categories)
 
     def feed_forward(self): # Feed forward through full network
@@ -134,7 +135,7 @@ class NeuralNetwork:
             error_output =  self.cost.df(self.a_o, self.Ytrain_batch, self.lmbd) * self.act_o.df(self.z_o) 
         
 
-        self.nantest(error_output)
+        #self.nantest(error_output)
             
         self.output_weights_gradient    = np.matmul(self.a_h.T, error_output) 
         self.output_bias_gradient       = np.sum(error_output, axis=0)
@@ -247,7 +248,7 @@ class NeuralNetwork:
         cmap = plt.get_cmap('tab20')
         c = cmap(np.linspace(0, 1, 20))[::-1] #self.length))
 
-        if self.costs[-1,1] > 0.05: #0.7:
+        if self.costs[-1,1] > 0.079: #0.7:
             a = 1
             ax.plot(self.costs[:,1], label=r"{:8s} LR: {:6}   $\lambda$: {:6}   Cost: {:.3f}".format(self.act_h_tag, "1e"+str(int(np.log10(self.eta))), "1e"+str(int(np.log10(self.lmbd))), self.costs[-1,1]), color=c[k], alpha = a, linewidth=1)
         else:

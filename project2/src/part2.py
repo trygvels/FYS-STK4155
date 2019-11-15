@@ -28,7 +28,7 @@ logreg = LogReg() # init Logreg class
 data = InitData()
 
 ## Params -------------------------------------------------------------
-explore = False
+explore = True
 sklearn = False
 metric = "accuracy" #"rocauc"
 cost = "binary_cross_entropy"
@@ -51,8 +51,8 @@ if explore==True: # Explore parameter space for credit card data
 
     # Faster
     hidden_neurons = [12] 
-    eta_vals = np.logspace(-3, -1, 3)
-    lmbd_vals =  np.logspace(-3, -1, 3)
+    eta_vals = np.logspace(-4, -2, 3)
+    lmbd_vals =  np.logspace(-4, -2, 3)
     acts_hidden = ["sigmoid", "relu"]
 
 else: # Optimal setup for credit card using all data
@@ -121,8 +121,8 @@ if sklearn == False:
 
 
 
-    #filename = "NNclassification_nhidden_small.png"
-    #plt.savefig("../figs/"+filename,bbox_inches = 'tight',pad_inches = 0)
+    filename = "NNclassification_act_lmbd_eta_cost.png"
+    plt.savefig("../figs/"+filename,bbox_inches = 'tight',pad_inches = 0)
     plt.show()
 
     print("------------------ Best Results -------------------")
