@@ -80,7 +80,7 @@ for i in range(niter):
             
       print('%i of %i'%(i+1,niter))
       if (sgd):
-            beta, costs,betas = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lrs[j],adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=50,verbosity=1,n_iter=2,new_per_iter=False) # Fit using SGD. This can be looped over for best lambda (i.e. learning rate 'lr').
+            beta, costs,betas = logreg.SGD_batch(XTrain,yTrain.ravel(),lr=lrs[j],adj_lr=True, rnd_seed=True, batch_size=100,n_epoch=50,verbosity=1,n_iter=10,new_per_iter=False) # Fit using SGD. This can be looped over for best lambda (i.e. learning rate 'lr').
       else:
             beta, costs = logreg.GD(XTrain,yTrain.ravel(),lr=lrs[j], rnd_seed=True,tol=1e-2) # Fit using GD. This can be looped over for best lambda (i.e. learning rate 'lr').
             betas=beta.copy()
@@ -125,10 +125,11 @@ if plt_cost:
       if (not sgd):
             plt.xscale('log')
             plt.yticks(fontsize=16)
+            plt.xlabel('Step number',fontsize=20)
       else:
             plt.yscale('log')
             plt.yticks([2000,3000,5000,10000],['2000','3000','5000','10000'],fontsize=16)
-      plt.xlabel('Step number',fontsize=20)
+            plt.xlabel('Epoch number',fontsize=20)
       plt.ylabel('Cost',fontsize=20)
       plt.xticks(fontsize=16)
       plt.legend(loc='upper right',fontsize=16)
