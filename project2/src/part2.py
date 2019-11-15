@@ -28,7 +28,7 @@ logreg = LogReg() # init Logreg class
 data = InitData()
 
 ## Params -------------------------------------------------------------
-explore = True
+explore = False
 sklearn = False
 metric = "accuracy" #"rocauc"
 cost = "binary_cross_entropy"
