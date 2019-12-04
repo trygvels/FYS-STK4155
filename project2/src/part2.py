@@ -28,11 +28,11 @@ logreg = LogReg() # init Logreg class
 data = InitData()
 
 ## Params -------------------------------------------------------------
-explore = True
+explore = False
 sklearn = False
 metric = "accuracy" #"rocauc"
 cost = "binary_cross_entropy"
-data_size = "small"
+data_size = "full"
 
 if data_size == "full":
     XTrain, yTrain, XTest, yTest, Y_train_onehot, Y_test_onehot =  data.credit_data(trainingShare=0.5)
@@ -60,14 +60,22 @@ else: # Optimal setup for credit card using all data
     tol = 0.001
     batch_size = 100
     eta_vals = [1e-3]
-    lmbd_vals = [1e-1]
-    acts_hidden = ["sigmoid"]
+    lmbd_vals = [1e-4]
+    acts_hidden = ["relu"]
     hidden_neurons = [12] 
     epochs=200
 
-    eta_vals = [1e-1]
-    lmbd_vals = [1e-1]
-    acts_hidden = ["relu"]
+    #------------------ Best Results -------------------
+    #Best learning rate   :  0.001
+    #Best lambda          :  0.0001
+    #Best activation      :  relu
+    #Best hidden neurons  :  12
+    #Best rocauc          :  0.6453
+    #Best accuracy        :  0.8224
+
+    #eta_vals = [1e-1]
+    #lmbd_vals = [1e-1]
+    #acts_hidden = ["relu"]
     
 
 if sklearn == False:
@@ -83,11 +91,14 @@ if sklearn == False:
                     costs, scores = dnn.train()
                     accuracy = scores[-1,1,0]
                     rocauc = scores[-1,1,1]
-                    dnn.plot_costs(color_iter)
-                    #dnn.plot_scores(color_iter)
+                    #dnn.plot_costs(color_iter)
+                    dnn.plot_scores(color_iter)
                     color_iter += 1
 
+
                     yTrue, yPred = yTest, dnn.predict(XTest)
+                    
+                    
                     logreg.own_classification_report(yTest,yPred)
                     if metric=="accuracy":
                         if accuracy > best_accuracy:
@@ -121,8 +132,8 @@ if sklearn == False:
 
 
 
-    filename = "NNclassification_act_lmbd_eta_cost.png"
-    plt.savefig("../figs/"+filename,bbox_inches = 'tight',pad_inches = 0)
+    #filename = "NNclassification_act_lmbd_eta_cost.png"
+    #plt.savefig("../figs/"+filename,bbox_inches = 'tight',pad_inches = 0)
     plt.show()
 
     print("------------------ Best Results -------------------")

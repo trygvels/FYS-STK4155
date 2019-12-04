@@ -284,8 +284,8 @@ class NeuralNetwork:
             # Color
             cmap = plt.get_cmap('tab20')
             c = cmap(np.linspace(0, 1, 20)) #self.length))
-            cmap = plt.get_cmap('tab10')
-            c = cmap(np.linspace(0, 1, 10)) #self.length))
+            #cmap = plt.get_cmap('tab10')
+            #c = cmap(np.linspace(0, 1, 10)) #self.length))
             legend_properties = { 'family': 'monospace'}
 
             # Make fig
