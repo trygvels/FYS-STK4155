@@ -149,6 +149,11 @@ class Goodness: # Logistic regression class
                 
         # print a good and easily viewable classification
         """
+        TP:  number of true positives (correctly predicted targets)
+        PCP: number of predicted positives (targets)
+        CP:  number of positives (targets)
+        PPV: Positive predictive value (precision)
+        TPR: True positive rate (recall)
 
         class    TP    PCP     CP    PPV    TPR   F1-score     AR      AUC 
         ---------------------------------------------------------------------
@@ -321,6 +326,3 @@ class Goodness: # Logistic regression class
             print(ar)
             print(arw)
 
-
-good=Goodness()
-good.test_classification(debug=False)
