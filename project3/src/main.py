@@ -121,21 +121,21 @@ def get_data(conf):
         conf["width_x"] = 32
         conf["input_dimension"] = conf["channels_x"] * conf["height_x"] * conf["width_x"]
         conf["output_dimension"] = 10
-        X_train, Y_train, X_devel, Y_devel, X_test, Y_test = import_data.load_cifar10(data_dir, conf["devel_size"])
+        X_train, Y_train, X_devel, Y_devel, X_test, Y_test = import_data.load_cifar10(conf, data_dir, conf["devel_size"])
     elif conf["dataset"] == "mnist":
         conf["channels_x"] = 1
         conf["height_x"] = 28
         conf["width_x"] = 28
         conf["input_dimension"] = conf["channels_x"] * conf["height_x"] * conf["width_x"]
         conf["output_dimension"] = 10
-        X_train, Y_train, X_devel, Y_devel, X_test, Y_test = import_data.load_mnist(data_dir, conf["devel_size"])
+        X_train, Y_train, X_devel, Y_devel, X_test, Y_test = import_data.load_mnist(conf, data_dir, conf["devel_size"])
     elif conf["dataset"] == "svhn":
         conf["channels_x"] = 3
         conf["height_x"] = 32
         conf["width_x"] = 32
         conf["input_dimension"] = conf["channels_x"] * conf["height_x"] * conf["width_x"]
         conf["output_dimension"] = 10
-        X_train, Y_train, X_devel, Y_devel, X_test, Y_test = import_data.load_svhn(data_dir, conf["devel_size"])
+        X_train, Y_train, X_devel, Y_devel, X_test, Y_test = import_data.load_svhn(conf, data_dir, conf["devel_size"])
 
     conf["layer_dimensions"] = [conf["input_dimension"]] + conf["hidden_dimensions"] + [conf["output_dimension"]]
 

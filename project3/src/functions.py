@@ -123,11 +123,10 @@ def adam(conf, params, grad_params, adams):
     updated_params = {}
     for key in params:
 
-        if adams["first"] == True:
+        if "t_" + key not in adams:
             adams["t_" + key] = 0.0
             adams["m_" + key] = 0.0
             adams["v_" + key] = 0.0
-            adams["first"] = False
 
         adams["t_" + key] = adams["t_" + key] + 1
         adams["m_" + key] = beta1 * adams["m_" + key] + (1 - beta1) * grad_params["grad_" + key]
