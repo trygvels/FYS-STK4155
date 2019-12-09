@@ -292,9 +292,9 @@ class Goodness: # Logistic regression class
     def test_classification(self,debug=False):
         # Write a short code to test the above
         """
-        do random values of an 20x4 array
+        do random values of an 20000x10 array
         normalize each row
-        create random (ish) ytrue array (40% chance of not recalling highest probability, but a random one)
+        create random (ish) ytrue array (20% chance of not recalling highest probability, but a random one)
         """
         np.random.seed(235253)
         ypred = np.random.uniform(0,1,size=(20000,10))
