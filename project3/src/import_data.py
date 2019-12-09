@@ -81,17 +81,21 @@ def load_mnist(conf, data_dir="data/mnist", devel_size=10000):
         return np.asarray(data, dtype=np.uint8)
 
     print("Loading MNIST data from ", data_dir)
-    X_train = _load_data('train-images-idx3-ubyte.gz', data_dir, 16).reshape((-1, 784)).T
+    X_train = _load_data('train-images-idx3-ubyte.gz', data_dir, 16)
     Y_train = _load_data('train-labels-idx1-ubyte.gz', data_dir, 8)
-    X_test = _load_data('t10k-images-idx3-ubyte.gz', data_dir, 16).reshape((-1, 784)).T
+    X_test = _load_data('t10k-images-idx3-ubyte.gz', data_dir, 16)
     Y_test = _load_data('t10k-labels-idx1-ubyte.gz', data_dir, 8)
 
-    # Scale data to [0.0, 1.0]
+    # Scale data to [0.0, 1.0]. Other data standardisation can be done here.
     X_train = X_train / 255.0
     X_test = X_test / 255.0
 
+    # Reorder (Batch, channels, height, width)
+    X_train = np.transpose(X_train, (3, 2, 0, 1))
+    X_test  = np.transpose(X_test, (3, 2, 0, 1))
+
     # Partition training into training and development set
-    X_train, X_devel = X_train[:, :-devel_size], X_train[:, -devel_size:]
+    X_train, X_devel = X_train[:-devel_size], X_train[-devel_size:]
     Y_train, Y_devel = Y_train[:-devel_size], Y_train[-devel_size:]
 
     return X_train, Y_train, X_devel, Y_devel, X_test, Y_test
@@ -170,16 +174,16 @@ def load_cifar10(conf, data_dir="data/cifar10", devel_size=10000):
     X_test = test_data_dict['data']
     Y_test = np.array(test_data_dict['labels'])
 
-    # Reshape data
-    X_test = X_test.reshape((-1, 32*32*3)).T
-    X_train = X_train.reshape((-1, 32*32*3)).T
-
-    # Scale data to [0.0, 1.0]
+    # Scale data to [0.0, 1.0]. Other data standardisation can be done here.
     X_train = X_train / 255.0
     X_test = X_test / 255.0
 
+    # Reorder (Batch, channels, height, width)
+    X_train = np.transpose(X_train, (3, 2, 0, 1))
+    X_test  = np.transpose(X_test, (3, 2, 0, 1))
+
     # Partition training into training and development set
-    X_train, X_devel = X_train[:, :-devel_size], X_train[:, -devel_size:]
+    X_train, X_devel = X_train[:-devel_size], X_train[-devel_size:]
     Y_train, Y_devel = Y_train[:-devel_size], Y_train[-devel_size:]
 
     return X_train, Y_train, X_devel, Y_devel, X_test, Y_test
@@ -235,11 +239,12 @@ def load_svhn(conf, data_dir, devel_size=10000):
     X_train = X_train / 255.0
     X_test = X_test / 255.0
 
+    # Reorder (Batch, channels, height, width)
     X_train = np.transpose(X_train, (3, 2, 0, 1))
     X_test  = np.transpose(X_test, (3, 2, 0, 1))
 
     # Partition training into training and development set
-    X_train, X_devel = X_train[:-devel_size], X_train[:-devel_size]
+    X_train, X_devel = X_train[:-devel_size], X_train[-devel_size:]
     Y_train, Y_devel = Y_train[:-devel_size], Y_train[-devel_size:]
 
     return X_train, Y_train, X_devel, Y_devel, X_test, Y_test
