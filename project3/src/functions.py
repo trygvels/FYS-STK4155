@@ -7,16 +7,7 @@ np.random.seed(42069)
 
 
 def one_hot(Y, num_classes):
-    """Perform one-hot encoding on input Y.
 
-    It is assumed that Y is a 1D numpy array of length m_b (batch_size) with integer values in
-    range [0, num_classes-1]. The encoded matrix Y_tilde will be a [num_classes, m_b] shaped matrix
-    with values
-
-                   | 1,  if Y[i] = j
-    Y_tilde[i,j] = |
-                   | 0,  else
-    """
     m = len(Y)
     Y_tilde = np.zeros((num_classes, m))
     Y_tilde[Y, np.arange(m)] = 1
@@ -24,15 +15,6 @@ def one_hot(Y, num_classes):
 
 
 def initialization(conf):
-    """Initialize the parameters of the network.
-
-    Args:
-        layer_dimensions: A list of length L+1 with the number of nodes in each layer, including
-                          the input layer, all hidden layers, and the output layer.
-    Returns:
-        params: A dictionary with initialized parameters for all parameters (weights and biases) in
-                the network.
-    """
     params_dnn = {}
     params_cnn = {}
     mu = 0.0
@@ -74,13 +56,6 @@ def initialization(conf):
 
 
 def activation(Z, activation_function):
-    """Compute a non-linear activation function.
-
-    Args:
-        Z: numpy array of floats with shape [n, m]
-    Returns:
-        numpy array of floats with shape [n, m]
-    """
     if activation_function == "relu":
         Z[np.where(Z < 0)] = 0.0
         return Z
@@ -90,19 +65,6 @@ def activation(Z, activation_function):
 
 
 def softmax(Z):
-    """Compute and return the softmax of the input.
-
-    To improve numerical stability, we do the following
-
-    1: Subtract Z from max(Z) in the exponentials
-    2: Take the logarithm of the whole softmax, and then take the exponential of that in the end
-
-    Args:
-        Z: numpy array of floats with shape [n, m]
-    Returns:
-        numpy array of floats with shape [n, m]
-    """
-
     ZRED = Z - np.max(Z)
     ZEXP = np.exp(ZRED)
 
@@ -112,13 +74,7 @@ def softmax(Z):
 
 
 def activation_derivative(Z, activation_function):
-    """Compute the gradient of the activation function.
 
-    Args:
-        Z: numpy array of floats with shape [n, m]
-    Returns:
-        numpy array of floats with shape [n, m]
-    """
     if activation_function == "relu":
         Z[np.where(Z >= 0)] = 1.0
         Z[np.where(Z < 0)] = 0.0
@@ -131,23 +87,53 @@ def activation_derivative(Z, activation_function):
 
 
 def cross_entropy_cost(Y_proposed, Y_reference):
-    """Compute the cross entropy cost function.
-
-    Args:
-        Y_proposed: numpy array of floats with shape [n_y, m].
-        Y_reference: numpy array of floats with shape [n_y, m]. Collection of one-hot encoded
-                     true input labels
-
-    Returns:
-        cost: Scalar float: 1/m * sum_i^m sum_j^n y_reference_ij log y_proposed_ij
-        num_correct: Scalar integer
-    """
     n_y, m = Y_reference.shape
     cost = -np.sum((Y_reference * np.log(Y_proposed))) / m
     refcorr = np.argmax(Y_reference, axis=0)
     propcorr = np.argmax(Y_proposed, axis=0)
-    # print(Y_proposed)
-    # print(Y_reference)
     num_correct = sum(refcorr == propcorr)
 
     return cost, num_correct
+
+
+def optimize(conf, params, grad_params, adams):
+    if conf["optimizer"] == "adam":
+        params, conf, adams = adam(conf, params, grad_params, adams)
+    else:
+        params, conf, adams = gradient_descent_update(conf, params, grad_params)
+    return params, conf, adams
+
+
+def gradient_descent_update(conf, params, grad_params):
+    learning_rate = conf["learning_rate"]
+    adams = {}  # Not used
+    updated_params = {}
+    for key in params:
+        updated_params[key] = params[key] - learning_rate * grad_params["grad_" + key]
+
+    return updated_params, conf, adams
+
+
+def adam(conf, params, grad_params, adams):
+    beta1 = 0.9
+    beta2 = 0.999
+    alpha = 0.001
+    epsilon = 1e-8
+
+    updated_params = {}
+    for key in params:
+
+        if adams["first"] == True:
+            adams["t_" + key] = 0.0
+            adams["m_" + key] = 0.0
+            adams["v_" + key] = 0.0
+            adams["first"] = False
+
+        adams["t_" + key] = adams["t_" + key] + 1
+        adams["m_" + key] = beta1 * adams["m_" + key] + (1 - beta1) * grad_params["grad_" + key]
+        adams["v_" + key] = beta2 * adams["v_" + key] + (1 - beta2) * (grad_params["grad_" + key] ** 2)
+        m_hat = adams["m_" + key] / (1 - beta1 ** adams["t_" + key])
+        v_hat = adams["v_" + key] / (1 - beta2 ** adams["t_" + key])
+        updated_params[key] = params[key] - alpha * (m_hat / (np.sqrt(v_hat) - epsilon))
+
+    return updated_params, conf, adams

@@ -8,39 +8,14 @@ np.random.seed(42069)
 
 
 def get_batch_indices(indices, start_index, end_index):
-    """Return the indices of the examples that are to form a batch.
-
-    This is done so that if end_index > len(example_indices), we will include the remainding
-    indices, in addition to the first indices in the example_indices list.
-
-    Args:
-        indices: 1D numpy array of integers
-        start_index: integer > 0 and smaller than len(example_indices)
-        end_index: integer > start_index
-    Returns:
-        1D numpy array of integers
-    """
     n = len(indices)
     return np.hstack((indices[start_index : min(n, end_index)], indices[0 : max(end_index - n, 0)]))
 
 
-def train(conf, X_train, Y_train, X_devel, Y_devel):
+def train(conf, X_train, Y_train, X_devel, Y_devel, adams_dnn, adams_cnn):
     import dnn
     import cnn
 
-    """Run training
-
-    Args:
-        conf: Configuration dictionary
-        X_train: numpy array of floats with shape [input dimension, number of train examples]
-        Y_train: numpy array of integers with shape [output dimension, number of train examples]
-        X_devel: numpy array of floats with shape [input dimension, number of devel examples]
-        Y_devel: numpy array of integers with shape [output dimension, number of devel examples]
-    Returns:
-        params: Dictionary with trained parameters
-        train_progress: Dictionary with progress data, to be used in visualization.
-        devel_progress: Dictionary with progress data, to be used in visualization.
-    """
     print("Run training")
 
     # Preparation
@@ -50,8 +25,6 @@ def train(conf, X_train, Y_train, X_devel, Y_devel):
 
     # Initialisation
     params_dnn, params_cnn = functions.initialization(conf)
-    stride = conf["stride"]
-    pad_size = conf["pad_size"]
 
     # For displaying training progress
     train_steps = []
@@ -89,9 +62,9 @@ def train(conf, X_train, Y_train, X_devel, Y_devel):
         grad_params_dnn, dZ = dnn.backward(conf, Y_proposal, Y_batch, params_dnn, features_dnn)
         if conf["net"] == "CNN":
             grad_params_cnn = cnn.backward(dZ, X_batch_cnn, params_cnn, params_dnn, conf, features_cnn)
-            params_cnn = dnn.gradient_descent_update(conf, params_cnn, grad_params_cnn)
+            params_cnn, conf, adams_cnn = functions.optimize(conf, params_cnn, grad_params_cnn, adams_cnn)
 
-        params_dnn = dnn.gradient_descent_update(conf, params_dnn, grad_params_dnn)
+        params_dnn, conf, adams_dnn = functions.optimize(conf, params_dnn, grad_params_dnn, adams_dnn)
 
         num_correct_since_last_check += num_correct
 
@@ -152,17 +125,6 @@ def evaluate(conf, params_dnn, params_cnn, X_data, Y_data):
     import dnn
     import cnn
 
-    """Evaluate a trained model on X_data.
-
-    Args:
-        conf: Configuration dictionary
-        params: Dictionary with parameters
-        X_data: numpy array of floats with shape [input dimension, number of examples]
-        Y_data: numpy array of integers with shape [output dimension, number of examples]
-    Returns:
-        num_correct_total: Integer
-        num_examples_evaluated: Integer
-    """
     num_examples = X_data.shape[0]
     num_examples_evaluated = 0
     num_correct_total = 0
@@ -177,8 +139,6 @@ def evaluate(conf, params_dnn, params_cnn, X_data, Y_data):
 
         X_batch = X_batch.reshape(X_batch.shape[0], -1)  # Flatten to dense form
         X_batch = np.transpose(X_batch, (1, 0))  # Reshape for dnn layer
-
-        # print("Xbatch {}, W_1 {}, W_2 {}".format(X_batch.shape, params['W_1'].shape, params['W_2'].shape))
 
         Y_proposal, _ = dnn.forward(conf, X_batch, params_dnn, is_training=False,)
         _, num_correct = functions.cross_entropy_cost(Y_proposal, Y_batch)

@@ -1,17 +1,3 @@
-#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::#
-#                                                                               #
-# Part of mandatory assignment 1 in                                             #
-# IN5400 - Machine Learning for Image analysis                                  #
-# University of Oslo                                                            #
-#                                                                               #
-#                                                                               #
-# Ole-Johan Skrede    olejohas at ifi dot uio dot no                            #
-# 2019.02.12                                                                    #
-#                                                                               #
-#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::#
-
-"""Import data"""
-
 import os
 import tarfile
 import gzip
@@ -33,7 +19,7 @@ def maybe_download(url, dest_dir):
     if not os.path.exists(dest_filepath):
         print("Downloading", url)
         response = requests.get(url)
-        with open(dest_filepath, 'wb') as fil:
+        with open(dest_filepath, "wb") as fil:
             fil.write(response.content)
     return dest_filepath
 
@@ -76,15 +62,15 @@ def load_mnist(conf, data_dir="data/mnist", devel_size=10000):
         """
         url = "http://yann.lecun.com/exdb/mnist/" + filename
         data_filepath = maybe_download(url, data_dir)
-        with gzip.open(data_filepath, 'rb') as fil:
+        with gzip.open(data_filepath, "rb") as fil:
             data = np.frombuffer(fil.read(), np.uint8, offset=header_size)
         return np.asarray(data, dtype=np.uint8)
 
     print("Loading MNIST data from ", data_dir)
-    X_train = _load_data('train-images-idx3-ubyte.gz', data_dir, 16)
-    Y_train = _load_data('train-labels-idx1-ubyte.gz', data_dir, 8)
-    X_test = _load_data('t10k-images-idx3-ubyte.gz', data_dir, 16)
-    Y_test = _load_data('t10k-labels-idx1-ubyte.gz', data_dir, 8)
+    X_train = _load_data("train-images-idx3-ubyte.gz", data_dir, 16)
+    Y_train = _load_data("train-labels-idx1-ubyte.gz", data_dir, 8)
+    X_test = _load_data("t10k-images-idx3-ubyte.gz", data_dir, 16)
+    Y_test = _load_data("t10k-labels-idx1-ubyte.gz", data_dir, 8)
 
     # Scale data to [0.0, 1.0]. Other data standardisation can be done here.
     X_train = X_train / 255.0
@@ -92,7 +78,7 @@ def load_mnist(conf, data_dir="data/mnist", devel_size=10000):
 
     # Reorder (Batch, channels, height, width)
     X_train = np.transpose(X_train, (3, 2, 0, 1))
-    X_test  = np.transpose(X_test, (3, 2, 0, 1))
+    X_test = np.transpose(X_test, (3, 2, 0, 1))
 
     # Partition training into training and development set
     X_train, X_devel = X_train[:-devel_size], X_train[-devel_size:]
@@ -147,32 +133,32 @@ def load_cifar10(conf, data_dir="data/cifar10", devel_size=10000):
 
     print("Loading cifar10 data from", data_dir)
 
-    url = 'https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
+    url = "https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz"
     filepath = maybe_download(url, data_dir)
     if tarfile.is_tarfile(filepath):
-        print('Extracting tar file:', filepath)
-        tarfile.open(filepath, 'r').extractall(data_dir)
+        print("Extracting tar file:", filepath)
+        tarfile.open(filepath, "r").extractall(data_dir)
     else:
         print("Extraction of compression format is not implemented")
 
-    #Unpickle file and fill in data
+    # Unpickle file and fill in data
     X_train = None
     Y_train = []
     for ind in range(1, 6):
         filepath = os.path.join(data_dir, "cifar-10-batches-py/data_batch_{}".format(ind))
-        with open(filepath, 'rb') as fil:
-            data_dict = pickle.load(fil, encoding='latin-1')
+        with open(filepath, "rb") as fil:
+            data_dict = pickle.load(fil, encoding="latin-1")
         if ind == 1:
-            X_train = data_dict['data']
+            X_train = data_dict["data"]
         else:
-            X_train = np.vstack((X_train, data_dict['data']))
-        Y_train.extend(data_dict['labels'])
+            X_train = np.vstack((X_train, data_dict["data"]))
+        Y_train.extend(data_dict["labels"])
     Y_train = np.array(Y_train)
 
-    with open(os.path.join(data_dir, "cifar-10-batches-py/test_batch"), 'rb') as fil:
-        test_data_dict = pickle.load(fil, encoding='latin-1')
-    X_test = test_data_dict['data']
-    Y_test = np.array(test_data_dict['labels'])
+    with open(os.path.join(data_dir, "cifar-10-batches-py/test_batch"), "rb") as fil:
+        test_data_dict = pickle.load(fil, encoding="latin-1")
+    X_test = test_data_dict["data"]
+    Y_test = np.array(test_data_dict["labels"])
 
     # Scale data to [0.0, 1.0]. Other data standardisation can be done here.
     X_train = X_train / 255.0
@@ -180,13 +166,14 @@ def load_cifar10(conf, data_dir="data/cifar10", devel_size=10000):
 
     # Reorder (Batch, channels, height, width)
     X_train = np.transpose(X_train, (3, 2, 0, 1))
-    X_test  = np.transpose(X_test, (3, 2, 0, 1))
+    X_test = np.transpose(X_test, (3, 2, 0, 1))
 
     # Partition training into training and development set
     X_train, X_devel = X_train[:-devel_size], X_train[-devel_size:]
     Y_train, Y_devel = Y_train[:-devel_size], Y_train[-devel_size:]
 
     return X_train, Y_train, X_devel, Y_devel, X_test, Y_test
+
 
 def load_svhn(conf, data_dir, devel_size=10000):
     """Load the Street View House Numbers (SVHN) dataset
@@ -219,17 +206,17 @@ def load_svhn(conf, data_dir, devel_size=10000):
     url = "http://ufldl.stanford.edu/housenumbers/"
     print("Loading svhn data from {}".format(data_dir))
 
-    _ = maybe_download(url+"train_32x32.mat", data_dir)
+    _ = maybe_download(url + "train_32x32.mat", data_dir)
     train_data = scio.loadmat(os.path.join(data_dir, "train_32x32.mat"))
-    rows, cols, channels, num_train = train_data['X'].shape
-    X_train = train_data['X']
-    Y_train = train_data['y'].squeeze()
+    rows, cols, channels, num_train = train_data["X"].shape
+    X_train = train_data["X"]
+    Y_train = train_data["y"].squeeze()
 
-    _ = maybe_download(url+"test_32x32.mat", data_dir)
+    _ = maybe_download(url + "test_32x32.mat", data_dir)
     test_data = scio.loadmat(os.path.join(data_dir, "test_32x32.mat"))
-    rows, cols, channels, num_test = test_data['X'].shape
-    X_test = test_data['X']
-    Y_test = test_data['y'].squeeze()
+    rows, cols, channels, num_test = test_data["X"].shape
+    X_test = test_data["X"]
+    Y_test = test_data["y"].squeeze()
 
     # Number 0 was initially labeled as 10
     Y_train[Y_train == 10] = 0
@@ -241,7 +228,7 @@ def load_svhn(conf, data_dir, devel_size=10000):
 
     # Reorder (Batch, channels, height, width)
     X_train = np.transpose(X_train, (3, 2, 0, 1))
-    X_test  = np.transpose(X_test, (3, 2, 0, 1))
+    X_test = np.transpose(X_test, (3, 2, 0, 1))
 
     # Partition training into training and development set
     X_train, X_devel = X_train[:-devel_size], X_train[-devel_size:]

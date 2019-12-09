@@ -4,6 +4,8 @@ import functions
 import numba
 
 np.random.seed(42069)
+
+
 def forward(conf, input_layer, params, is_training=False):
     weight = params["W_1"]
     bias = params["b_1"]
@@ -105,6 +107,8 @@ def backward(dZ, input_layer, params, params2, conf, features):
 """
 Forward pass loop written in for loop format for numba
 """
+
+
 @numba.njit(cache=True)
 def forwardloop(
     batch_size,
@@ -134,9 +138,12 @@ def forwardloop(
                         output_layer[b, n, hy, wy] += temp
     return output_layer
 
+
 """
 Backprop loop written in numba friendly format
 """
+
+
 @numba.njit(cache=True)
 def backproploop(
     weight,
@@ -174,4 +181,3 @@ def backproploop(
                                 # )
 
     return weight_gradient, bias_gradient, input_layer_gradient
-

@@ -1,16 +1,3 @@
-"""
-Main routine capable of training a dense neural network, and also running inference.
-
-This program builds an L-layer dense neural network. The number of nodes in each layer is set in
-the configuration.
-
-By default, every node has a ReLu activation, except the final layer, which has a softmax output.
-We use a cross-entropy loss for the cost function, and we use a stochastic gradient descent
-optimization routine to minimize the cost function.
-
-Custom configuration for experimentation is possible.
-"""
-
 import os
 import numpy as np
 
@@ -34,7 +21,7 @@ def config():
     # Type of neural net. (CNN adds one conv layer in front)
     conf["net"] = "CNN"
     # Output filename for plot
-    conf['out_filename'] = conf["net"]+".png" # None
+    conf["out_filename"] = conf["net"] + ".png"  # None
 
     # Number of input nodes. This is determined by the dataset in runtime.
     conf["input_dimension"] = None
@@ -78,7 +65,15 @@ def config():
         conf["stride"] = 1
         conf["pad_size"] = 1
 
-    return conf
+    conf["optimizer"] = "adam"
+
+    # parameters for
+    adams_dnn = {}
+    adams_dnn["first"] = True
+    adams_cnn = {}
+    adams_cnn["first"] = True
+
+    return conf, adams_dnn, adams_cnn
 
 
 def plot_progress(conf, train_progress, devel_progress):
@@ -109,9 +104,9 @@ def plot_progress(conf, train_progress, devel_progress):
     plt.title("Training progress")
     fig.tight_layout()
 
-    out_filename = conf['out_filename']
+    out_filename = conf["out_filename"]
     if out_filename is not None:
-        plt.savefig(out_filename)
+        plt.savefig("../figs" + out_filename)
 
     plt.show()
 
@@ -168,10 +163,12 @@ def get_data(conf):
 
 
 def main():
-    conf = config()
+    conf, adams_dnn, adams_cnn = config()
     X_train, Y_train, X_devel, Y_devel, X_test, Y_test = get_data(conf)
     # Data format is (datasize, channels, height, width) and not DNN flattened yet.
-    conf, params_dnn, params_cnn, train_progress, devel_progress = run.train(conf, X_train, Y_train, X_devel, Y_devel)
+    conf, params_dnn, params_cnn, train_progress, devel_progress = run.train(
+        conf, X_train, Y_train, X_devel, Y_devel, adams_dnn, adams_cnn
+    )
 
     plot_progress(conf, train_progress, devel_progress)
 
