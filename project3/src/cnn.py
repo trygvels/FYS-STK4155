@@ -109,7 +109,7 @@ Forward pass loop written in for loop format for numba
 """
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True,fastmath=True)
 def forwardloop(
     batch_size,
     num_filters,
@@ -144,7 +144,7 @@ Backprop loop written in numba friendly format
 """
 
 
-@numba.njit(cache=True)
+@numba.njit(cache=True,fastmath=True)
 def backproploop(
     weight,
     batch_size,

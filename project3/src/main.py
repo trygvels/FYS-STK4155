@@ -67,14 +67,8 @@ def config():
 
     conf["optimizer"] = "adam"
 
-    # parameters for
-    adams_dnn = {}
-    adams_dnn["first"] = True
-    adams_cnn = {}
-    adams_cnn["first"] = True
 
-    return conf, adams_dnn, adams_cnn
-
+    return conf
 
 def plot_progress(conf, train_progress, devel_progress):
     """Plot a chart of the training progress"""
@@ -163,11 +157,11 @@ def get_data(conf):
 
 
 def main():
-    conf, adams_dnn, adams_cnn = config()
+    conf = config()
     X_train, Y_train, X_devel, Y_devel, X_test, Y_test = get_data(conf)
     # Data format is (datasize, channels, height, width) and not DNN flattened yet.
     conf, params_dnn, params_cnn, train_progress, devel_progress = run.train(
-        conf, X_train, Y_train, X_devel, Y_devel, adams_dnn, adams_cnn
+        conf, X_train, Y_train, X_devel, Y_devel,
     )
 
     plot_progress(conf, train_progress, devel_progress)

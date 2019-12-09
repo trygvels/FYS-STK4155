@@ -12,7 +12,7 @@ def get_batch_indices(indices, start_index, end_index):
     return np.hstack((indices[start_index : min(n, end_index)], indices[0 : max(end_index - n, 0)]))
 
 
-def train(conf, X_train, Y_train, X_devel, Y_devel, adams_dnn, adams_cnn):
+def train(conf, X_train, Y_train, X_devel, Y_devel):
     import dnn
     import cnn
 
@@ -32,6 +32,10 @@ def train(conf, X_train, Y_train, X_devel, Y_devel, adams_dnn, adams_cnn):
     train_cost = []
     devel_steps = []
     devel_ccr = []
+
+    # parameters for adam optimizer
+    adams_dnn = {}
+    adams_cnn = {}
 
     # Start training
     step = 0
