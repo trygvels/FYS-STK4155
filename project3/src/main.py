@@ -19,9 +19,7 @@ def config():
     # Relevant datasets will be put in the location data_root_dir/dataset.
     conf["data_root_dir"] = "/tmp/data"
     # Type of neural net. (CNN adds one conv layer in front)
-    conf["net"] = "CNN"
-    # Output filename for plot
-    conf["out_filename"] = conf["net"] + ".png"  # None
+    conf["net"] = "DNN"
 
     # Number of input nodes. This is determined by the dataset in runtime.
     conf["input_dimension"] = None
@@ -66,6 +64,10 @@ def config():
         conf["pad_size"] = 1
 
     conf["optimizer"] = "adam"
+
+    # Output filename for plot
+    conf["out_filename"] = "{}_{}_n{}.png".format(conf["net"], conf['optimizer'],conf["max_steps"])
+
 
 
     return conf
