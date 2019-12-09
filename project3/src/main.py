@@ -92,8 +92,8 @@ def plot_progress(conf, train_progress, devel_progress):
     ax1.yaxis.grid(linestyle=":")
     ax2.yaxis.grid(linestyle="--")
 
-    ax1.legend(loc="lower left", bbox_to_anchor=(0, 0.52), framealpha=0.0)
-    ax2.legend(loc="lower left", bbox_to_anchor=(0, 0.45), framealpha=0.0)
+    ax1.legend(loc="lower left", bbox_to_anchor=(0.6, 0.52), framealpha=0.0)
+    ax2.legend(loc="lower left", bbox_to_anchor=(0.6, 0.45), framealpha=0.0)
 
     plt.title("Training progress")
     fig.tight_layout()
