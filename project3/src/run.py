@@ -125,7 +125,7 @@ def train(conf, X_train, Y_train, X_devel, Y_devel):
     return conf, params_dnn, params_cnn, train_progress, devel_progress
 
 
-def evaluate(conf, params_dnn, params_cnn, X_data, Y_data):
+def evaluate(conf, params_dnn, params_cnn, X_data, Y_data, output=False):
     import dnn
     import cnn
 
@@ -134,6 +134,11 @@ def evaluate(conf, params_dnn, params_cnn, X_data, Y_data):
     num_correct_total = 0
     start_ind = 0
     end_ind = conf["batch_size"]
+
+    if output == True:
+        yTrue_out = np.zeros_like(Y_data, dtype="int")
+        yPred_out = np.zeros_like(Y_data, dtype="float")
+
     while True:
         X_batch = X_data[start_ind:end_ind]
         Y_batch = functions.one_hot(Y_data[start_ind:end_ind], conf["output_dimension"])
@@ -153,10 +158,28 @@ def evaluate(conf, params_dnn, params_cnn, X_data, Y_data):
         start_ind += conf["batch_size"]
         end_ind += conf["batch_size"]
 
+        if output == True:
+            yTrue_out[start_ind:end_ind] = Y_batch
+            yPred_out[start_ind:end_ind] = Y_proposal
+
         if end_ind >= num_examples:
             end_ind = num_examples
 
         if start_ind >= num_examples:
             break
+
+    if output == True:
+        t = time.ctime()
+        ta = t.split()
+        hms = ta[3].split(":")
+        lab = ta[4] + "_" + ta[1] + ta[2] + "_" + hms[0] + hms[1] + hms[2]
+
+        file1 = open(conf["output_filename"] + "_true_" + lab + ".dat", "w")
+        file1.write(yTrue_out)
+        file1.close()
+
+        file2 = open(conf["output_filename"] + "_pred_" + lab + ".dat", "w")
+        file2.write(yPred_out)
+        file2.close()
 
     return num_correct_total, num_examples_evaluated

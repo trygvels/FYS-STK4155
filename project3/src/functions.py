@@ -87,6 +87,7 @@ def activation_derivative(Z, activation_function):
 
 
 def cross_entropy_cost(Y_proposed, Y_reference):
+    # (classes, batch size)
     n_y, m = Y_reference.shape
     cost = -np.sum((Y_reference * np.log(Y_proposed))) / m
     refcorr = np.argmax(Y_reference, axis=0)

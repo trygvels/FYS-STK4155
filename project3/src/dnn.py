@@ -4,7 +4,6 @@ from functions import activation, activation_derivative, softmax
 
 
 def forward(conf, X_batch, params, is_training):
-
     n = conf["layer_dimensions"]
     L = len(n) - 1
 
@@ -28,7 +27,6 @@ def forward(conf, X_batch, params, is_training):
 
 
 def backward(conf, Y_proposed, Y_reference, params, features):
-
     n_y, m = Y_reference.shape
     n = conf["layer_dimensions"]
     L = len(n) - 1

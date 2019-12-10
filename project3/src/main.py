@@ -58,19 +58,39 @@ def config():
     """
     if conf["net"] == "CNN":
         conf["num_filters"] = 3
-        conf["height_w"] = 5
-        conf["width_w"] = 5
+        conf["height_w"] = 3
+        conf["width_w"] = 3
         conf["stride"] = 1
         conf["pad_size"] = 1
+    else:
+        # If we are not using a conv layer, add an additional dense
+        conf["hidden_dimensions"] = [128, 128, 64]
 
+    # Which optimizer to use "adam" or "GD"
     conf["optimizer"] = "adam"
 
-    # Output filename for plot
-    conf["out_filename"] = "{}_{}_n{}.png".format(conf["net"], conf['optimizer'],conf["max_steps"])
+    # Output filename for plot and predictions
+    conf["output_filename"] = "{}_{}_n{}".format(conf["net"], conf["optimizer"], conf["max_steps"])
+    # Append conv layer specifications
+    if conf["net"] == "CNN":
+        conf["output_filename"] += "_D{}x{}_C{}x{}x{}".format(
+            conf["hidden_dimensions"][0],
+            conf["hidden_dimensions"][1],
+            conf["num_filters"],
+            conf["height_w"],
+            conf["width_w"],
+        )
+    else:
+        conf["output_filename"] += "_D{}x{}x{}".format(
+            conf["hidden_dimensions"][0], conf["hidden_dimensions"][1], conf["hidden_dimensions"][2]
+        )
 
-
+    # Wether or not to save predictions and figure
+    conf["output"] = True
+    conf["savefig"] = True
 
     return conf
+
 
 def plot_progress(conf, train_progress, devel_progress):
     """Plot a chart of the training progress"""
@@ -100,9 +120,9 @@ def plot_progress(conf, train_progress, devel_progress):
     plt.title("Training progress")
     fig.tight_layout()
 
-    out_filename = conf["out_filename"]
-    if out_filename is not None:
-        plt.savefig("../figs" + out_filename)
+    out_filename = conf["output_filename"]
+    if conf["savefig"]:
+        plt.savefig("../figs" + out_filename + ".png")
 
     plt.show()
 
@@ -117,7 +137,9 @@ def get_data(conf):
         conf["width_x"] = 32
         conf["input_dimension"] = conf["channels_x"] * conf["height_x"] * conf["width_x"]
         conf["output_dimension"] = 10
-        X_train, Y_train, X_devel, Y_devel, X_test, Y_test = import_data.load_cifar10(conf, data_dir, conf["devel_size"])
+        X_train, Y_train, X_devel, Y_devel, X_test, Y_test = import_data.load_cifar10(
+            conf, data_dir, conf["devel_size"]
+        )
     elif conf["dataset"] == "mnist":
         conf["channels_x"] = 1
         conf["height_x"] = 28
@@ -162,9 +184,7 @@ def main():
     conf = config()
     X_train, Y_train, X_devel, Y_devel, X_test, Y_test = get_data(conf)
     # Data format is (datasize, channels, height, width) and not DNN flattened yet.
-    conf, params_dnn, params_cnn, train_progress, devel_progress = run.train(
-        conf, X_train, Y_train, X_devel, Y_devel,
-    )
+    conf, params_dnn, params_cnn, train_progress, devel_progress = run.train(conf, X_train, Y_train, X_devel, Y_devel,)
 
     plot_progress(conf, train_progress, devel_progress)
 
@@ -175,7 +195,7 @@ def main():
     num_correct, num_evaluated = run.evaluate(conf, params_dnn, params_cnn, X_devel, Y_devel)
     print("CCR = {0:>5} / {1:>5} = {2:>6.4f}".format(num_correct, num_evaluated, num_correct / num_evaluated))
     print("Evaluating test set")
-    num_correct, num_evaluated = run.evaluate(conf, params_dnn, params_cnn, X_test, Y_test)
+    num_correct, num_evaluated = run.evaluate(conf, params_dnn, params_cnn, X_test, Y_test, output=conf["output_test"])
     print("CCR = {0:>5} / {1:>5} = {2:>6.4f}".format(num_correct, num_evaluated, num_correct / num_evaluated))
 
 
