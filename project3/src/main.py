@@ -15,11 +15,11 @@ def config():
     conf = {}
 
     # Determine what dataset to run on. 'mnist', 'cifar10' and 'svhn' are currently supported.
-    conf["dataset"] = "cifar10"  #'cifar10' #'mnist'
+    conf["dataset"] = "mnist"  #'cifar10' #'mnist'
     # Relevant datasets will be put in the location data_root_dir/dataset.
     conf["data_root_dir"] = "/tmp/data"
     # Type of neural net. (CNN adds one conv layer in front)
-    conf["net"] = "CNN"
+    conf["net"] = "DNN"
 
     # Number of input nodes. This is determined by the dataset in runtime.
     conf["input_dimension"] = None
@@ -36,7 +36,7 @@ def config():
     conf["activation_function"] = "relu"
     # The number of steps to run before termination of training. One step is one forward->backward
     # pass of a mini-batch
-    conf["max_steps"] = 10000 #20000
+    conf["max_steps"] = 2000 #20000
     # The batch size used in training.
     conf["batch_size"] = 128
     # The step size used by the optimization routine.
