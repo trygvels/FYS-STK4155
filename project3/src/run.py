@@ -234,7 +234,7 @@ def evaluate(conf, params_dnn, params_cnn, X_data, Y_data, output=False):
         t = time.ctime()
         ta = t.split()
         hms = ta[3].split(":")
-        lab = ta[4] + "_" + ta[1] + ta[2] + "_" + hms[0] + hms[1] + hms[2]
+        lab = ta[4] + "_" + ta[1] + ta[2] + "_" + hms[0] + hms[1]
         # Save predicitons to file
         np.savetxt("../data/" + conf["output_filename"] + "_true_" + lab + ".dat", (yTrue_out))
         np.savetxt("../data/" + conf["output_filename"] + "_pred_" + lab + ".dat", (yPred_out))
