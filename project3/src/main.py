@@ -19,7 +19,7 @@ def config():
     # Relevant datasets will be put in the location data_root_dir/dataset.
     conf["data_root_dir"] = "/tmp/data"
     # Type of neural net. (CNN adds one conv layer in front)
-    conf["net"] = "DNN"
+    conf["net"] = "CNN"
 
     # Number of input nodes. This is determined by the dataset in runtime.
     conf["input_dimension"] = None
@@ -36,7 +36,7 @@ def config():
     conf["activation_function"] = "relu"
     # The number of steps to run before termination of training. One step is one forward->backward
     # pass of a mini-batch
-    conf["max_steps"] = 20000
+    conf["max_steps"] = 10000 #20000
     # The batch size used in training.
     conf["batch_size"] = 128
     # The step size used by the optimization routine.
@@ -132,7 +132,7 @@ def plot_progress(conf, train_progress, devel_progress):
     if conf["savefig"]:
         plt.savefig("../figs/" + out_filename + ".png")
 
-    plt.show()
+    #plt.show()
 
 
 def get_data(conf):
