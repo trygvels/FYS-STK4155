@@ -5,13 +5,13 @@ import import_data
 import run
 
 import matplotlib.pyplot as plt
+import matplotlib
 
 np.random.seed(42069)
 
 
 def config():
     """Return a dict of configuration settings used in the program"""
-
     conf = {}
 
     # Determine what dataset to run on. 'mnist', 'cifar10' and 'svhn' are currently supported.
@@ -36,7 +36,7 @@ def config():
     conf["activation_function"] = "relu"
     # The number of steps to run before termination of training. One step is one forward->backward
     # pass of a mini-batch
-    conf["max_steps"] = 20000  # 2000
+    conf["max_steps"] = 20000
     # The batch size used in training.
     conf["batch_size"] = 128
     # The step size used by the optimization routine.
@@ -50,9 +50,6 @@ def config():
     # if verbose = True.
     conf["devel_progress"] = 100
 
-    conf["stride"] = None
-    conf["pad_size"] = None
-
     """
     CNN PARAMETERS
     """
@@ -63,6 +60,8 @@ def config():
         conf["stride"] = 1
         conf["pad_size"] = 1
     else:
+        conf["stride"] = None
+        conf["pad_size"] = None
         # If we are not using a conv layer, add an additional dense
         conf["hidden_dimensions"] = [128, 128, 64]
 
@@ -71,6 +70,7 @@ def config():
 
     # Output filename for plot and predictions
     conf["output_filename"] = "{}_{}_n{}".format(conf["net"], conf["optimizer"], conf["max_steps"])
+
     # Append conv layer specifications
     if conf["net"] == "CNN":
         conf["output_filename"] += "_D{}x{}_C{}x{}x{}".format(
@@ -95,40 +95,51 @@ def config():
 def plot_progress(conf, train_progress, devel_progress):
     """Plot a chart of the training progress"""
 
+    # Change font size
+    font = {"size": 12}
+    matplotlib.rc("font", **font)
+
+    # Plot accuracy
     fig, ax1 = plt.subplots(figsize=(8, 6), dpi=100)
     ax1.plot(
-        train_progress["steps"], train_progress["ccr"], color="C0", label="Training set ccr",
+        train_progress["steps"], train_progress["ccr"], color="C0", label="Training set accuracy",
     )
     ax1.plot(
-        devel_progress["steps"], devel_progress["ccr"], color="C1", label="Development set ccr",
+        devel_progress["steps"], devel_progress["ccr"], color="C1", label="Development set accuracy",
     )
     ax1.set_xlabel("Steps")
-    ax1.set_ylabel("Correct classification rate")
+    ax1.set_ylabel("Accuracy")
 
+    # Plot cost on right y-axis
     ax2 = ax1.twinx()
     ax2.plot(
         train_progress["steps"], train_progress["cost"], color="C2", label="Training set cost",
     )
     ax2.set_ylabel("Cross entropy cost")
 
+    # Grid lines for each sub plot
     ax1.yaxis.grid(linestyle=":")
     ax2.yaxis.grid(linestyle="--")
 
-    ax1.legend(loc="lower left", bbox_to_anchor=(0.6, 0.52), framealpha=0.0)
-    ax2.legend(loc="lower left", bbox_to_anchor=(0.6, 0.45), framealpha=0.0)
+    # Legend
+    ax1.legend(loc="lower left", bbox_to_anchor=(0.5, 0.52), framealpha=0.0)
+    ax2.legend(loc="lower left", bbox_to_anchor=(0.5, 0.45), framealpha=0.0)
 
-    plt.title("Training progress")
     fig.tight_layout()
 
+    # Save figure
     out_filename = conf["output_filename"]
     if conf["savefig"]:
-        plt.savefig("../figs" + out_filename + ".png")
+        plt.savefig("../figs/" + out_filename + ".png")
 
     plt.show()
 
 
 def get_data(conf):
-
+    """
+    Function for loading data from import_data.py and specifying correct dimensions.
+    This function returns training, development and test data.
+    """
     data_dir = os.path.join(conf["data_root_dir"], conf["dataset"])
     print(data_dir)
     if conf["dataset"] == "cifar10":
@@ -181,13 +192,22 @@ def get_data(conf):
 
 
 def main():
+    """
+    Main function for running the whole network based on the parameters set in the "conf" dictionary in the config() function.
+    First, the network is trained, and checked against a development set at the prefered increments, then the training progress is plotted, before the final evaluation is done on all three data sets.
+    """
+    # Get parameters from config() function
     conf = config()
+    # Get all data and split it into three sets. Format: (datasize, channels, height, width).
     X_train, Y_train, X_devel, Y_devel, X_test, Y_test = get_data(conf)
-    # Data format is (datasize, channels, height, width) and not DNN flattened yet.
+
+    # Run training and save weights and biases in params_dnn and params_cnn.
     conf, params_dnn, params_cnn, train_progress, devel_progress = run.train(conf, X_train, Y_train, X_devel, Y_devel,)
 
+    # Plot the progress of the network over training steps
     plot_progress(conf, train_progress, devel_progress)
 
+    # Evaluate the network on all three data sets. If output=True, then the predictions made on the test set is saved.
     print("Evaluating train set")
     num_correct, num_evaluated = run.evaluate(conf, params_dnn, params_cnn, X_train, Y_train)
     print("CCR = {0:>5} / {1:>5} = {2:>6.4f}".format(num_correct, num_evaluated, num_correct / num_evaluated))
@@ -195,7 +215,7 @@ def main():
     num_correct, num_evaluated = run.evaluate(conf, params_dnn, params_cnn, X_devel, Y_devel)
     print("CCR = {0:>5} / {1:>5} = {2:>6.4f}".format(num_correct, num_evaluated, num_correct / num_evaluated))
     print("Evaluating test set")
-    num_correct, num_evaluated = run.evaluate(conf, params_dnn, params_cnn, X_test, Y_test, output=conf["output_test"])
+    num_correct, num_evaluated = run.evaluate(conf, params_dnn, params_cnn, X_test, Y_test, output=conf["output"])
     print("CCR = {0:>5} / {1:>5} = {2:>6.4f}".format(num_correct, num_evaluated, num_correct / num_evaluated))
 
 
