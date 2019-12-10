@@ -15,11 +15,11 @@ def config():
     conf = {}
 
     # Determine what dataset to run on. 'mnist', 'cifar10' and 'svhn' are currently supported.
-    conf["dataset"] = "svhn"  #'cifar10' #'mnist'
+    conf["dataset"] = "cifar10"  #'cifar10' #'mnist'
     # Relevant datasets will be put in the location data_root_dir/dataset.
     conf["data_root_dir"] = "/tmp/data"
     # Type of neural net. (CNN adds one conv layer in front)
-    conf["net"] = "CNN"
+    conf["net"] = "DNN"
 
     # Number of input nodes. This is determined by the dataset in runtime.
     conf["input_dimension"] = None

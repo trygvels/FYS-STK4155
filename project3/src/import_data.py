@@ -77,8 +77,10 @@ def load_mnist(conf, data_dir="data/mnist", devel_size=10000):
     X_test = X_test / 255.0
 
     # Reorder (Batch, channels, height, width)
-    X_train = np.transpose(X_train, (3, 2, 0, 1))
-    X_test = np.transpose(X_test, (3, 2, 0, 1))
+    X_train = X_train.reshape((-1, 28, 28, 1))
+    X_test = X_test.reshape((-1, 28, 28, 1))
+    X_train = np.transpose(X_train, (0, 3, 1, 2))
+    X_test = np.transpose(X_test, (0, 3, 1, 2))
 
     # Partition training into training and development set
     X_train, X_devel = X_train[:-devel_size], X_train[-devel_size:]
@@ -164,9 +166,13 @@ def load_cifar10(conf, data_dir="data/cifar10", devel_size=10000):
     X_train = X_train / 255.0
     X_test = X_test / 255.0
 
+
     # Reorder (Batch, channels, height, width)
-    X_train = np.transpose(X_train, (3, 2, 0, 1))
-    X_test = np.transpose(X_test, (3, 2, 0, 1))
+    X_train = X_train.reshape((-1, 32, 32, 3))
+    X_test = X_test.reshape((-1, 32, 32, 3))
+    X_train = np.transpose(X_train, (0, 3, 1, 2))
+    X_test = np.transpose(X_test, (0, 3, 1, 2))
+
 
     # Partition training into training and development set
     X_train, X_devel = X_train[:-devel_size], X_train[-devel_size:]
