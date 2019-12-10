@@ -23,7 +23,7 @@ def forward(conf, input_layer, params, is_training=False):
 
     # Padding width and height
     (batch_size, channels_x, height_x, width_x) = input_layer.shape
-    input_padded = np.pad(input_layer, ((0, 0), (0, 0), (pad_size,), (pad_size,)), mode="constant")
+    input_padded = np.pad(input_layer, ((0,), (0,), (pad_size,), (pad_size,)), mode="constant")
     (num_filters, channels_w, height_w, width_w) = weight.shape
 
     # Calculate dimensions of output layer and initialize
@@ -93,8 +93,8 @@ def backward(dZ, params, params2, conf, features):
     input_layer_gradient = np.zeros((input_layer.shape))
 
     # Padding width and height
-    input_padded = np.pad(input_layer, ((0, 0), (0, 0), (pad_size,), (pad_size,)), mode="constant")
-    output_gradient_padded = np.pad(output_layer_gradient, ((0, 0), (0, 0), (pad_size,), (pad_size,)), mode="constant")
+    input_padded = np.pad(input_layer, ((0,), (0,), (pad_size,), (pad_size,)), mode="constant")
+    output_gradient_padded = np.pad(output_layer_gradient, ((0,), (0,), (pad_size,), (pad_size,)), mode="constant")
 
     # Backprop loop in numba
     weight_gradient, bias_gradient, input_layer_gradient = backproploop(
