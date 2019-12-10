@@ -15,11 +15,11 @@ def config():
     conf = {}
 
     # Determine what dataset to run on. 'mnist', 'cifar10' and 'svhn' are currently supported.
-    conf["dataset"] = "svhn"  #'cifar10' #'mnist'
+    conf["dataset"] = "mnist"  #'cifar10' #'mnist'
     # Relevant datasets will be put in the location data_root_dir/dataset.
     conf["data_root_dir"] = "/tmp/data"
     # Type of neural net. (CNN adds one conv layer in front)
-    conf["net"] = "DNN"
+    conf["net"] = "CNN"
 
     # Number of input nodes. This is determined by the dataset in runtime.
     conf["input_dimension"] = None
@@ -69,7 +69,7 @@ def config():
     conf["optimizer"] = "adam"
 
     # Output filename for plot and predictions
-    conf["output_filename"] = "{}_{}_n{}".format(conf["net"], conf["optimizer"], conf["max_steps"])
+    conf["output_filename"] = "{}_{}_{}_n{}".format(conf['dataset'], conf["net"], conf["optimizer"], conf["max_steps"])
 
     # Append conv layer specifications
     if conf["net"] == "CNN":
