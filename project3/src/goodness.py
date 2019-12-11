@@ -22,6 +22,7 @@ class Goodness:  # Logistic regression class
         return_f1_weight=False,
         return_ar=False,
         return_ar_weight=False,
+        return_cp=False,
         debug=False,
         label=None,
     ):
@@ -220,7 +221,7 @@ class Goodness:  # Logistic regression class
                 label = lab
             else:
                 label = label + "_" + lab
-            filename = "parameters_goodness_" + label + ".txt"
+            filename = "goodness_parameters/parameters_goodness_" + label + ".txt"
             out = open(filename, "w")
             out.write("class    TP    PCP     CP    PPV    TPR   F1-score     AR      AUC \n")
             out.write("---------------------------------------------------------------------\n")
@@ -240,7 +241,7 @@ class Goodness:  # Logistic regression class
 
 
 
-        # print table values for tables to file (to save them)
+        # print table values for latex tables to file (to save them)
         if print_to_latex_file:
             t = time.ctime()
             ta = t.split()
@@ -250,7 +251,7 @@ class Goodness:  # Logistic regression class
                 label = lab
             else:
                 label = label + "_" + lab
-            filename = "parameters_goodness_" + label + ".txt"
+            filename = "goodness_parameters/parameters_goodness_" + label + ".txt"
             out = open(filename, "w")
             out.write("class    F1-score     AR      AUC \n")
             out.write("---------------------------------------------------------------------\n")
@@ -275,8 +276,8 @@ class Goodness:  # Logistic regression class
         """
         narg = 0
         arg_ind = 0
-        arg_vec = np.zeros(3 + m * 2 + 1)
-        arg_split = np.zeros(5, dtype="int")
+        arg_vec = np.zeros(3 + m * 3 + 1)
+        arg_split = np.zeros(6, dtype="int")
 
         if debug:
             print(ac)
@@ -311,6 +312,12 @@ class Goodness:  # Logistic regression class
             arg_split[narg] = arg_ind + 1
             narg += 1
             arg_ind += 1
+        if return_cp:
+            cp=cp*1.0
+            arg_vec[arg_ind : arg_ind + m] = cp.copy()
+            arg_split[narg] = arg_ind + m
+            narg += 1
+            arg_ind += m
 
         # depending on number of outputs, split argument array and return the given
         # number of arguments
@@ -339,6 +346,14 @@ class Goodness:  # Logistic regression class
             a3 = arg_vec[arg_split[2] : arg_split[3]]
             a4 = arg_vec[arg_split[3] : arg_split[4]]
             return a0, a1, a2, a3, a4
+        elif narg == 6:
+            a0 = arg_vec[: arg_split[0]]
+            a1 = arg_vec[arg_split[0] : arg_split[1]]
+            a2 = arg_vec[arg_split[1] : arg_split[2]]
+            a3 = arg_vec[arg_split[2] : arg_split[3]]
+            a4 = arg_vec[arg_split[3] : arg_split[4]]
+            a5 = arg_vec[arg_split[4] : arg_split[5]]
+            return a0, a1, a2, a3, a4, a5
         else:
             return  # no arguments
 
