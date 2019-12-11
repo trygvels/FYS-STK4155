@@ -16,15 +16,15 @@ def config():
     conf = {}
 
     # Determine what dataset to run on. 'mnist', 'cifar10' and 'svhn' are currently supported.
-    conf["dataset"] = "mnist"  #'cifar10' #'mnist'
+    conf["dataset"] = "cifar10"  #'cifar10' #'mnist'
     # Relevant datasets will be put in the location data_root_dir/dataset.
     conf["data_root_dir"] = "/tmp/data"
     # Type of neural net. (CNN adds one conv layer in front)
-    conf["net"] = "DNN"
+    conf["net"] = "CNN"
 
     # Run keras test (Runs Keras only)
     conf["keras"] = True
-    conf["keras_optimal"] = True  # Uses max pooling and more convolution
+    conf["keras_optimal"] = False  # Uses max pooling and more convolution
     conf["epochs"] = 10  # Only used in keras
 
     # Number of input nodes. This is determined by the dataset in runtime.
@@ -46,7 +46,7 @@ def config():
     # The batch size used in training.
     conf["batch_size"] = 128
     # The step size used by the optimization routine.
-    conf["learning_rate"] = 1.0e-2
+    conf["learning_rate"] = 1.0e-3
 
     # Whether or not to write certain things to stdout.
     conf["verbose"] = True
@@ -63,7 +63,7 @@ def config():
     CNN PARAMETERS
     """
     if conf["net"] == "CNN":
-        conf["num_filters"] = 3
+        conf["num_filters"] = 32
         conf["height_w"] = 3
         conf["width_w"] = 3
         conf["stride"] = 1

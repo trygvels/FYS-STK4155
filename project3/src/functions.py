@@ -168,14 +168,13 @@ def adam(conf, params, grad_params, adams):
     Uses different learning weights for each parameter and updates throughout.
     Set learning rate is not used.
     """
+    alpha = conf['learning_rate']
     beta1 = 0.9
     beta2 = 0.999
-    alpha = 0.001
     epsilon = 1e-8
 
     updated_params = {}
     for key in params:
-
         if "t_" + key not in adams:
             adams["t_" + key] = 0.0
             adams["m_" + key] = 0.0

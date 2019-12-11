@@ -291,7 +291,7 @@ def kerasnet(conf, X_train, Y_train, X_devel, Y_devel, X_test, Y_test):
                     padding="same",
                 )
             )
-        # Relu activation
+        # relu activation
     # Flatten network for fully connected layers
     model.add(layers.Flatten())
     # Fully connected layers
