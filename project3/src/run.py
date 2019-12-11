@@ -1,6 +1,7 @@
 """Module for training and evaluation"""
 import time
 import sys
+import os
 import numpy as np
 import functions
 
@@ -229,14 +230,124 @@ def evaluate(conf, params_dnn, params_cnn, X_data, Y_data, output=False):
             break
 
     # If output=True, save predictions to file
-    if output == True:
-        # Format date and time string
-        t = time.ctime()
-        ta = t.split()
-        hms = ta[3].split(":")
-        lab = ta[4] + "_" + ta[1] + ta[2] + "_" + hms[0] + hms[1]
-        # Save predicitons to file
-        np.savetxt("../data/" + conf["output_filename"] + "_true_" + lab + ".dat", (yTrue_out))
-        np.savetxt("../data/" + conf["output_filename"] + "_pred_" + lab + ".dat", (yPred_out))
+    if output:
+        outputter(conf, yTrue_out, yPred_out)
 
     return num_correct_total, num_examples_evaluated
+
+
+def kerasnet(conf, X_train, Y_train, X_devel, Y_devel, X_test, Y_test):
+    """
+    Neural network implemented from keras for comparison with manual implementation.
+    """
+
+    print("-----------------------------")
+    print("Running Keras network")
+    if conf["keras_optimal"]:
+        print("Using 2 conv layers with max pooling")
+    else:
+        print("Using one conv layer and 2 fully connected")
+    print("-----------------------------")
+
+    os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
+    import keras
+    from keras import models
+    from keras import layers
+    from keras.utils import to_categorical
+
+    X_train = np.transpose(X_train, (0, 2, 3, 1))
+    X_devel = np.transpose(X_devel, (0, 2, 3, 1))
+    X_test = np.transpose(X_test, (0, 2, 3, 1))
+
+    Y_train_onehot = to_categorical(Y_train)
+    Y_devel_onehot = to_categorical(Y_devel)
+    Y_test_onehot = to_categorical(Y_test)
+
+    # ---- Construct keras network ----
+    model = models.Sequential()
+    if conf["net"] == "CNN":
+        if conf["keras_optimal"]:
+            # Adds 2 conv layers and max pooling
+            model.add(
+                layers.Conv2D(
+                    5,
+                    (5, 5),
+                    input_shape=(conf["height_x"], conf["width_x"], conf["channels_x"]),
+                    activation="relu",
+                    padding="same",
+                )
+            )
+            model.add(layers.MaxPooling2D(pool_size=(2, 2), padding="same"))
+            model.add(layers.Conv2D(3, (3, 3), activation="relu", padding="same"))
+            model.add(layers.MaxPooling2D(pool_size=(2, 2), padding="same"))
+        else:
+            # Add conv_layer
+            model.add(
+                layers.Conv2D(
+                    conf["num_filters"],
+                    kernel_size=(conf["height_w"], conf["width_w"]),
+                    activation="relu",
+                    input_shape=(conf["height_x"], conf["width_x"], conf["channels_x"]),
+                    padding="same",
+                )
+            )
+        # Relu activation
+    # Flatten network for fully connected layers
+    model.add(layers.Flatten())
+    # Fully connected layers
+    for l in conf["hidden_dimensions"]:
+        model.add(layers.Dense(l, activation="relu"))
+    # Output softmax layer
+    model.add(layers.Dense(conf["output_dimension"], activation="softmax"))
+    # Compile network using adam with crossentropy and accuracy
+    model.compile(loss=keras.losses.categorical_crossentropy, optimizer=keras.optimizers.Adam(), metrics=["accuracy"])
+
+    epochs = conf["epochs"]
+    # Train network
+    training = model.fit(
+        X_train,
+        Y_train_onehot,
+        batch_size=conf["batch_size"],
+        epochs=epochs,
+        verbose=1,
+        validation_data=(X_devel, Y_devel_onehot),
+    )
+
+    # Save training progress
+    train_ccr = training.history["acc"]
+    devel_ccr = training.history["val_acc"]
+    train_cost = training.history["loss"]
+    train_steps = range(1, epochs + 1)
+    devel_steps = range(1, epochs + 1)
+
+    train_progress = {"steps": train_steps, "ccr": train_ccr, "cost": train_cost}
+    devel_progress = {"steps": devel_steps, "ccr": devel_ccr}
+
+    # Evaluate on test set
+    print("Evaluating keras model on test set")
+    test_eval = model.evaluate(X_test, Y_test_onehot, verbose=1)
+
+    print("Test loss:", test_eval[0])
+    print("Test accuracy:", test_eval[1])
+
+    if conf["output"]:
+        print("Generating predictions from test data using keras model.")
+        yTrue_out = Y_test_onehot
+        yPred_out = model.predict(X_test, verbose=1)
+        outputter(conf, yTrue_out, yPred_out)
+
+    return train_progress, devel_progress
+
+
+def outputter(conf, yTrue_out, yPred_out):
+    """
+    Function for outputting predictions
+    """
+    # Format date and time string
+    t = time.ctime()
+    ta = t.split()
+    hms = ta[3].split(":")
+    lab = ta[4] + "_" + ta[1] + ta[2] + "_" + hms[0] + hms[1]
+    # Save predicitons to file
+    np.savetxt("../data/" + conf["output_filename"] + "_true_" + lab + ".dat", (yTrue_out))
+    np.savetxt("../data/" + conf["output_filename"] + "_pred_" + lab + ".dat", (yPred_out))
