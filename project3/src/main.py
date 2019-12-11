@@ -63,7 +63,7 @@ def config():
     CNN PARAMETERS
     """
     if conf["net"] == "CNN":
-        conf["num_filters"] = 32
+        conf["num_filters"] = 3 #32
         conf["height_w"] = 3
         conf["width_w"] = 3
         conf["stride"] = 1
