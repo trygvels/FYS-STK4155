@@ -15,6 +15,7 @@ class Goodness:  # Logistic regression class
         ytrue,
         pred,
         print_to_file=False,
+        print_to_latex_file=False,
         print_res=True,
         return_ac=False,
         return_f1=False,
@@ -209,7 +210,7 @@ class Goodness:  # Logistic regression class
             print("---------------------------------------------------------------------")
             print("")
 
-        # print values to file (to save them)
+        # print table values to file (to save them)
         if print_to_file:
             t = time.ctime()
             ta = t.split()
@@ -234,6 +235,34 @@ class Goodness:  # Logistic regression class
             )
             out.write("\n")
             out.write("                          Total accuracy   %7.4f\n" % (ac))
+            out.write("---------------------------------------------------------------------\n")
+            out.close()
+
+
+
+        # print table values for tables to file (to save them)
+        if print_to_latex_file:
+            t = time.ctime()
+            ta = t.split()
+            hms = ta[3].split(":")
+            lab = 'latex_' + ta[4] + "_" + ta[1] + ta[2] + "_" + hms[0] + hms[1]
+            if label == None:
+                label = lab
+            else:
+                label = label + "_" + lab
+            filename = "parameters_goodness_" + label + ".txt"
+            out = open(filename, "w")
+            out.write("class    F1-score     AR      AUC \n")
+            out.write("---------------------------------------------------------------------\n")
+            for j in range(m):
+                out.write(
+                    "%3i  &  %7.4f &  %7.4f &  %7.4f \n"
+                    % (j,  f1[j], ar[j], auc[j])
+                )
+            out.write("\n")
+            out.write(
+                "                     CP weighted average &  %7.4f & %7.4f &  %7.4f\n" % (f1_weight, ar_weight, auc_weight)
+            )
             out.write("---------------------------------------------------------------------\n")
             out.close()
 
@@ -355,6 +384,7 @@ class Goodness:  # Logistic regression class
                 ytrue,
                 ypred,
                 print_to_file=False,
+                print_to_latex_file=True,
                 label="test",
                 print_res=True,
                 return_ac=False,
