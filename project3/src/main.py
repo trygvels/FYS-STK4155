@@ -1,4 +1,5 @@
 import os
+import sys
 import numpy as np
 
 import import_data
@@ -15,11 +16,16 @@ def config():
     conf = {}
 
     # Determine what dataset to run on. 'mnist', 'cifar10' and 'svhn' are currently supported.
-    conf["dataset"] = "mnist"  #'cifar10' #'mnist'
+    conf["dataset"] = "cifar10"  #'cifar10' #'mnist'
     # Relevant datasets will be put in the location data_root_dir/dataset.
     conf["data_root_dir"] = "/tmp/data"
     # Type of neural net. (CNN adds one conv layer in front)
-    conf["net"] = "DNN"
+    conf["net"] = "CNN"
+
+    # Run keras test (Runs Keras only)
+    conf["keras"] = True
+    conf["keras_optimal"] = False  # Uses max pooling and more convolution
+    conf["epochs"] = 10  # Only used in keras
 
     # Number of input nodes. This is determined by the dataset in runtime.
     conf["input_dimension"] = None
@@ -36,11 +42,11 @@ def config():
     conf["activation_function"] = "relu"
     # The number of steps to run before termination of training. One step is one forward->backward
     # pass of a mini-batch
-    conf["max_steps"] = 2000 #20000
+    conf["max_steps"] = 10000  # 20000
     # The batch size used in training.
     conf["batch_size"] = 128
     # The step size used by the optimization routine.
-    conf["learning_rate"] = 1.0e-2
+    conf["learning_rate"] = 1.0e-3
 
     # Whether or not to write certain things to stdout.
     conf["verbose"] = True
@@ -50,11 +56,14 @@ def config():
     # if verbose = True.
     conf["devel_progress"] = 100
 
+    # Wether or not to save predictions and figure
+    conf["output"] = True
+    conf["savefig"] = True
     """
     CNN PARAMETERS
     """
     if conf["net"] == "CNN":
-        conf["num_filters"] = 3
+        conf["num_filters"] = 3 #32
         conf["height_w"] = 3
         conf["width_w"] = 3
         conf["stride"] = 1
@@ -69,7 +78,7 @@ def config():
     conf["optimizer"] = "adam"
 
     # Output filename for plot and predictions
-    conf["output_filename"] = "{}_{}_{}_n{}".format(conf['dataset'], conf["net"], conf["optimizer"], conf["max_steps"])
+    conf["output_filename"] = "{}_{}_{}_n{}".format(conf["dataset"], conf["net"], conf["optimizer"], conf["max_steps"])
 
     # Append conv layer specifications
     if conf["net"] == "CNN":
@@ -85,9 +94,8 @@ def config():
             conf["hidden_dimensions"][0], conf["hidden_dimensions"][1], conf["hidden_dimensions"][2]
         )
 
-    # Wether or not to save predictions and figure
-    conf["output"] = True
-    conf["savefig"] = True
+    conf["output_filename"] += "_KERAS" if conf["keras"] else ""
+    conf["output_filename"] += "-optimal" if conf["keras_optimal"] else ""
 
     return conf
 
@@ -107,7 +115,10 @@ def plot_progress(conf, train_progress, devel_progress):
     ax1.plot(
         devel_progress["steps"], devel_progress["ccr"], color="C1", label="Development set accuracy",
     )
-    ax1.set_xlabel("Steps")
+
+    xlab = "Epochs" if conf["keras"] else "Steps"
+    ax1.set_xlabel(xlab)
+
     ax1.set_ylabel("Accuracy")
 
     # Plot cost on right y-axis
@@ -132,7 +143,7 @@ def plot_progress(conf, train_progress, devel_progress):
     if conf["savefig"]:
         plt.savefig("../figs/" + out_filename + ".png")
 
-    #plt.show()
+    # plt.show()
 
 
 def get_data(conf):
@@ -200,6 +211,12 @@ def main():
     conf = config()
     # Get all data and split it into three sets. Format: (datasize, channels, height, width).
     X_train, Y_train, X_devel, Y_devel, X_test, Y_test = get_data(conf)
+
+    # Test with keras
+    if conf["keras"] == True:
+        train_progress, devel_progress = run.kerasnet(conf, X_train, Y_train, X_devel, Y_devel, X_test, Y_test)
+        plot_progress(conf, train_progress, devel_progress)
+        sys.exit()
 
     # Run training and save weights and biases in params_dnn and params_cnn.
     conf, params_dnn, params_cnn, train_progress, devel_progress = run.train(conf, X_train, Y_train, X_devel, Y_devel,)

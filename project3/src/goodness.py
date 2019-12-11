@@ -66,14 +66,14 @@ class Goodness:  # Logistic regression class
         pcp = np.sum(np.where(pred_bin == 1, 1, 0), axis=0)  # predicted number of targets per class
         cp = np.sum(np.where(ytrue == 1, 1, 0), axis=0)  # true number of targets per class
 
-        #the following code is written such as to not divide by zero.
+        # the following code is written such as to not divide by zero.
         # calculate positive predictive value (precission) and true positive rate (recall)
-        ppv=tp * 1.0
-        tpr=tp * 1.0
+        ppv = tp * 1.0
+        tpr = tp * 1.0
         for i in range(len(tp)):
-            if (tp[i]==0):
-                ppv[i]=0.0
-                tpr[i]=0.0
+            if tp[i] == 0:
+                ppv[i] = 0.0
+                tpr[i] = 0.0
             else:
                 ppv[i] = tp[i] * 1.0 / pcp[i]
                 tpr[i] = tp[i] * 1.0 / cp[i]
@@ -82,10 +82,10 @@ class Goodness:  # Logistic regression class
         ac = (
             np.sum(tp) * 1.0 / n
         )  # accuracy: sum all correct predictions (positive) and divide by total number of images (rows)
-        f1=ppv.copy()
+        f1 = ppv.copy()
         for i in range(len(tp)):
-            if (ppv[i]==0.0 and tpr[i]==0.0):
-                f1[i]=0.0
+            if ppv[i] == 0.0 and tpr[i] == 0.0:
+                f1[i] = 0.0
             else:
                 f1[i] = 2.0 * ppv[i] * tpr[i] / (ppv[i] + tpr[i])  # f1 score per class
 
