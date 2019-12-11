@@ -1,10 +1,6 @@
 import time
 import numpy as np
 import random
-import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix, accuracy_score, roc_auc_score, classification_report
-
 
 class Goodness:  # Logistic regression class
     def __init__(self):
