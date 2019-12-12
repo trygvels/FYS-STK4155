@@ -217,7 +217,7 @@ class Goodness:  # Logistic regression class
                 label = lab
             else:
                 label = label + "_" + lab
-            filename = "goodness_parameters/parameters_goodness_" + label + ".txt"
+            filename = "../goodness_parameters/parameters_goodness_" + label + ".txt"
             out = open(filename, "w")
             out.write("class    TP    PCP     CP    PPV    TPR   F1-score     AR      AUC \n")
             out.write("---------------------------------------------------------------------\n")
@@ -247,7 +247,7 @@ class Goodness:  # Logistic regression class
                 label = lab
             else:
                 label = label + "_" + lab
-            filename = "goodness_parameters/parameters_goodness_" + label + ".txt"
+            filename = "../goodness_parameters/parameters_goodness_" + label + ".txt"
             out = open(filename, "w")
             out.write("class    F1-score     AR      AUC \n")
             out.write("---------------------------------------------------------------------\n")

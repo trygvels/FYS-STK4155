@@ -81,7 +81,7 @@ for i in range(3):
     else:
         label='other'
     label+='_latex'
-    filename = "goodness_parameters/parameters_goodness_" + label + ".txt"
+    filename = "../goodness_parameters/parameters_goodness_" + label + ".txt"
     out = open(filename, "w")
     out.write("class  targets  |       F1-score    |      AR      \n")
     out.write("                |    DNN       CNN  |  DNN      CNN      \n")
