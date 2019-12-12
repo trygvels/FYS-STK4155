@@ -6,6 +6,8 @@ from goodness import Goodness
 Script that reads the predictions from file and outputs the goodness of fit parameters
 in a Latex table format (for easy table setup), or print the full table in a reader 
 friendly format for all files specified.
+
+Added functionality to print a user specified prediction set.
 """
 
 preds=['cifar10_DNN_adam_n10000_D128x128x64_pred_2019_Dec10_1554.dat',
@@ -43,26 +45,13 @@ if (var =='y' or var=='Y'):
                 if (not 'cifar10' in preds[i*2]):
                     break
 
-            if ('cifar10' in preds[i*2]):
-                print('CIFAR-10')
-            elif ('mnist' in preds[i*2]):
-                print('MNIST')
-            elif ('svhn' in preds[i*2]):
-                print('SVHN')
-
-            if (j==2):
-                print('KERAS')
-            elif ('DNN' in preds[i*2+j]):
-                print('DNN')
-            elif ('CNN' in preds[i*2+j]):
-                print('CNN')
-            if (j==2):
                 ypred=np.loadtxt('../data/'+preds[-1])
                 if ypred.shape[0]==10:
                     ypred=ypred.T
                 ytrue=np.loadtxt('../data/'+trues[-1])
                 if ytrue.shape[0]==10:
                     ytrue=ytrue.T
+                print('    Computing goodness-of-fit for: '+preds[-1])
 
             else:
                 ypred=np.loadtxt('../data/'+preds[i*2+j])
@@ -71,10 +60,11 @@ if (var =='y' or var=='Y'):
                 ytrue=np.loadtxt('../data/'+trues[i*2+j])
                 if ytrue.shape[0]==10:
                     ytrue=ytrue.T
+                print('    Computing goodness-of-fit for: '+preds[i*2+j])
 
             acc[j],f1[j,:],f1w[j],ar[j,:],arw[j],cp[j,:]=good.classification_report(ytrue,ypred,return_ac=True,return_f1=True,return_f1_weight=True,return_ar=True,return_ar_weight=True, return_cp=True,print_res=False)
-            print()
 
+        print()
         # print table values for latex tables to file
         keras=False
         if ('cifar10' in preds[i*2]):
@@ -119,6 +109,7 @@ if (var =='y' or var=='Y'):
 var = input('Print goodness-of-fit to terminal for predefined data? [N/y]: ')
 if (var =='y' or var=='Y'):
     for i in range(len(preds)):
+        print()
         if ('cifar10' in preds[i]):
             print('CIFAR-10')
         elif ('mnist' in preds[i]):
@@ -140,7 +131,9 @@ if (var =='y' or var=='Y'):
         print('--------------------------------------')
         good.classification_report(ytrue,ypred)
         print()
-        print()
+
+    print()
+    print()
 
 var = input('Print goodness-of-fit of other data to terminal? [N/y]: ')
 while (var =='y' or var=='Y'):
